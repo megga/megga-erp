@@ -16,19 +16,28 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 Puis initialisez la base selon la verticale déployée — section suivante.
 
-## Initialiser une verticale (exemple : dentaire)
+## Initialiser une verticale
 
-`scripts/init_dentaire.sh` crée une base de production **suisse, en
-français, sans données de démonstration** (comportement vérifié
-d'odoo-bin 19.0 : une base créée en CLI est sans démo par défaut) :
+Un moteur unique, `scripts/init_prod.sh <dental|resto|auto> [base]`, et
+trois enrobages :
+
+| Verticale | Commande | Base par défaut | Pile installée |
+|---|---|---|---|
+| Dentaire | `scripts/init_dentaire.sh` | `megga_prod` | `megga_dental` + `megga_rdv` (+ pont) |
+| Restaurant | `scripts/init_resto.sh` | `megga_resto_prod` | `megga_resto` + `megga_rdv` (+ pont) |
+| Garage | `scripts/init_garage.sh` | `megga_auto_prod` | `megga_auto` + `megga_rdv` (+ pont) |
+
+Le moteur crée une base de production **suisse, en français, sans
+données de démonstration** (comportement vérifié d'odoo-bin 19.0 : une
+base créée en CLI est sans démo par défaut) :
 
 1. base + langue `fr_CH` ;
 2. société **suisse d'abord** — c'est le pays de la société qui décide du
    plan comptable, donc `l10n_ch` s'applique de lui-même ensuite ;
-3. pile dentaire (`megga_dental` + `megga_rdv`, le pont
-   `megga_dental_rdv` s'auto-installe), mot de passe admin **exigé**
-   (jamais admin/admin), puis vérification : modules installés, plan
-   comptable `ch`, devise CHF.
+3. pile de la verticale (`megga_<verticale>` + `megga_rdv`, le pont
+   `megga_<verticale>_rdv` s'auto-installe), mot de passe admin **exigé**
+   (jamais admin/admin), puis vérification : modules attendus installés,
+   plan comptable `ch`, devise CHF.
 
 Le script ne touche **jamais** une base existante.
 
@@ -46,10 +55,11 @@ Dépendance système vécue le 23/08/2026 : `account_peppol`
 Python **`phonenumbers`** — `pip install phonenumbers` sur l'hôte ou
 dans l'image, sinon l'étape 3 échoue proprement.
 
-Les autres verticales s'initialisent pareil en surchargeant
-`MODULES` et `CHEMINS` (resto : `megga_resto,megga_rdv` et le chemin
-`addons/verticals/resto` ; garage : `megga_auto,megga_rdv` et
-`addons/verticals/auto`).
+Cycle exécuté et vérifié en réel le 23/08/2026 pour les TROIS
+verticales : init complète, plan comptable `ch`, devise CHF, langue
+fr_CH, posture `list_db` contrôlée, sauvegarde vérifiée à l'écriture.
+`MODULES` et `CHEMINS` restent surchargables pour les assemblages
+sur mesure.
 
 Certificats : en production, Let's Encrypt (`certbot certonly --standalone`,
 puis copier `fullchain.pem` et `privkey.pem` dans `certs/`). Un certificat
