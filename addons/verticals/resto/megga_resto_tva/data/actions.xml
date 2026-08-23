@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_setup_takeaway_vat" model="ir.actions.server">
+        <field name="name">TVA à l'emporter (CH)</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="state">code</field>
+        <field name="code">
+fp = env.company._megga_setup_takeaway_vat()
+if fp:
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'type': 'success',
+            'message': "Position fiscale « %s » prête, reliée au preset "
+                       "À l'emporter de la caisse." % fp.name,
+            'sticky': False,
+        },
+    }
+else:
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'type': 'warning',
+            'message': "Le plan comptable suisse manque sur cette "
+                       "société : installez d'abord la localisation "
+                       "(pays Suisse), puis relancez cette action.",
+            'sticky': True,
+        },
+    }
+        </field>
+    </record>
+
+    <menuitem id="menu_resto_takeaway_vat" name="TVA à l'emporter (CH)"
+              parent="megga_resto.menu_resto_config"
+              action="action_setup_takeaway_vat" sequence="30"/>
+</odoo>

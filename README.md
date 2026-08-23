@@ -86,6 +86,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
 
 Chaque méta-module tire tout son métier : socle Megga complet + les briques
 du cœur (dentaire : CRM + agenda + contacts ; resto : POS restaurant +
@@ -120,9 +121,18 @@ ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl
 d'une huile au litre — les unités maison comme le centilitre se créent
 en un clic, relatives au litre), le coût est converti par l'arbre
 d'unités du cœur, et seules les unités convertibles (même racine — en
-19 les catégories d'unités ont disparu) sont proposées. Chantiers
-ouverts : TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
-fiscale POS à documenter par établissement).
+19 les catégories d'unités ont disparu) sont proposées.
+
+La TVA de la restauration est câblée (`megga_resto_tva`, auto-installé
+avec la localisation suisse) : le même sandwich est au taux normal
+8.1 % sur place et au taux réduit 2.6 % à l'emporter (art. 25 LTVA) —
+la caisse encaisse au bon taux en choisissant le mode de la commande
+(preset « À l'emporter »), les ventes à l'emporter tombent en 313a du
+décompte AFC, et les tickets distincts par mode constituent les
+« mesures organisationnelles » qu'exige le taux réduit (Info TVA 08).
+Une société qui reçoit son plan comptable après coup relance le
+câblage via Restaurant ▸ Configuration ▸ TVA à l'emporter (CH). Le
+tableau resto est vide — plus de chantier ouvert.
 
 Chantiers ouverts côté auto : véhicules d'occasion en stock (reprises,
 marge bénéficiaire TVA art. 24a LTVA), carnet d'entretien imprimable ;
