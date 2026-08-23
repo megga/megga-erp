@@ -112,6 +112,20 @@ empreintes conformes. Garde-fous testés : refus d'écraser une base existante
 sans `--force`, détection d'une archive corrompue (octets altérés → refus),
 refus d'un dump tronqué.
 
+### Exercice de restauration sur la PRODUCTION dentaire (23/08/2026)
+
+Restauration de la sauvegarde de `megga_prod` vers une base d'essai,
+de bout en bout : empreintes SHA256 conformes, **450 tables**, filestore
+restauré ; égalité origine/copie contrôlée sur cinq comptages (tables,
+685 modules, contacts, 1 082 vues, 28 crons) ; **neutralisation des
+actions sortantes appliquée à la copie** (28 crons désactivés, doctrine
+du script) puis **boot réel de la copie** : registre chargé, pile
+dentaire complète, plan comptable `ch`, devise CHF. Garde anti-écrasement
+re-vérifiée (refus sans `--force`), copie jetée en fin d'exercice, crons
+de production intacts (24 actifs). Un exercice pareil vaut d'être rejoué
+après chaque changement de schéma majeur — et toujours vers une base
+d'ESSAI, jamais vers la production.
+
 ## Exploitation courante
 
 ```bash
