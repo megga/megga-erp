@@ -1,0 +1,78 @@
+# Stack de production Megga. Lancement :
+#   cd erp/prod && cp .env.example .env && $EDITOR .env
+#   docker compose -f docker-compose.prod.yml up -d --build
+name: megga
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Jamais publie : la base n'est joignable que par le reseau interne.
+    expose: ["5432"]
+
+  erp:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      ODOO_ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD:?}
+      ODOO_WORKERS: ${ODOO_WORKERS:-5}
+    entrypoint: ["/entrypoint.sh"]
+    volumes:
+      - ../odoo:/opt/odoo:ro          # coeur amont : lecture seule
+      - ../addons:/opt/addons:ro
+      - ../addons-oca:/opt/addons-oca:ro
+      - ./odoo.prod.conf:/etc/odoo/odoo.conf:ro
+      - ./entrypoint.sh:/entrypoint.sh:ro
+      - filestore:/var/lib/odoo
+    expose: ["8069", "8072"]          # jamais publie : nginx est la seule porte
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on: [erp]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/megga.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+
+  backup:
+    image: postgres:16
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PGHOST: db
+      PGUSER: odoo
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      ODOO_DB_NAME: ${ODOO_DB_NAME:-megga}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      FILESTORE_DIR: /var/lib/odoo/filestore
+    volumes:
+      - ./scripts:/scripts:ro
+      - filestore:/var/lib/odoo:ro
+      - backups:/backups
+    # Sauvegarde quotidienne a 02h15, verifiee a l'ecriture.
+    entrypoint: ["/bin/sh", "-c", "while true; do sleep $$(( ( $$(date -d 'tomorrow 02:15' +%s) - $$(date +%s) ) )); /scripts/backup.sh || echo 'ECHEC SAUVEGARDE'; done"]
+
+volumes:
+  pgdata:
+  filestore:
+  backups:
