@@ -76,6 +76,28 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
     else
         echo "  echec de merge-upstream (HTTP $CODE) :"
         printf '%s\n' "$REPONSE" | head -3 | sed 's/^/    /'
+        # Repli : mise a jour DIRECTE de la ref (Git Data API). L'endpoint
+        # merge-upstream refuse les jetons fine-grained (« Resource not
+        # accessible by personal access token », constate le 23/08/2026) ;
+        # celui-ci les accepte avec Contents: write. Le SHA amont existe
+        # deja dans le RESEAU du fork (les forks GitHub partagent leur
+        # magasin d'objets avec l'amont) : pointer refs/heads/19.0 dessus
+        # est une avance rapide sans aucun transfert — force:false, le
+        # serveur refuse tout ecrasement d'historique.
+        echo "  repli : mise a jour directe de la ref..."
+        REPONSE2="$(curl -sS -w '\n%{http_code}' -X PATCH \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${FORK_SLUG}/git/refs/heads/${BRANCHE}" \
+            -d "{\"sha\":\"${AMONT}\",\"force\":false}" || true)"
+        CODE2="$(printf '%s' "$REPONSE2" | tail -1)"
+        if [ "$CODE2" = "200" ]; then
+            echo "  fork synchronise (mise a jour directe de la ref)"
+            SYNC_OK=1
+        else
+            echo "  echec de la mise a jour directe (HTTP $CODE2) :"
+            printf '%s\n' "$REPONSE2" | head -3 | sed 's/^/    /'
+        fi
     fi
 fi
 
