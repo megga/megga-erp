@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="megga_camt_import_wizard_form" model="ir.ui.view">
+        <field name="name">megga.camt.import.wizard.form</field>
+        <field name="model">megga.camt.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importer des fichiers camt">
+                <p class="text-muted">
+                    Relevés de compte <b>camt.053</b> et avis de crédit
+                    <b>camt.054</b> (encaissements QR avec référence QRR).
+                    Les fichiers déjà importés sont détectés et ignorés.
+                </p>
+                <group>
+                    <field name="journal_id"/>
+                    <field name="attachment_ids" widget="many2many_binary"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object"
+                            string="Importer" class="btn-primary"/>
+                    <button string="Annuler" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_megga_camt_import" model="ir.actions.act_window">
+        <field name="name">Importer camt.053 / camt.054</field>
+        <field name="res_model">megga.camt.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_megga_camt_import"
+              name="Import camt (053/054)"
+              parent="account.menu_finance_entries"
+              action="action_megga_camt_import"
+              sequence="90"
+              groups="account.group_account_user"/>
+
+</odoo>

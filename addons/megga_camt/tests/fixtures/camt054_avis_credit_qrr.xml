@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08">
+  <BkToCstmrDbtCdtNtfctn>
+    <GrpHdr><MsgId>MSG-054-0001</MsgId><CreDtTm>2026-08-21T06:00:00</CreDtTm></GrpHdr>
+    <Ntfctn>
+      <Id>MEGGA-054-0001</Id>
+      <CreDtTm>2026-08-21T06:00:00</CreDtTm>
+      <Acct><Id><IBAN>CH4431999123000889012</IBAN></Id><Ccy>CHF</Ccy></Acct>
+      <Ntry>
+        <NtryRef>L1</NtryRef>
+        <Amt Ccy="CHF">900.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-08-21</Dt></BookgDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><AcctSvcrRef>LOT1-TX1</AcctSvcrRef></Refs>
+            <Amt Ccy="CHF">300.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Menuiserie Golay Sarl</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>CH2604835098765432109</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>987654321000000000000000015</Ref></CdtrRefInf></Strd></RmtInf>
+          </TxDtls>
+          <TxDtls>
+            <Refs><AcctSvcrRef>LOT1-TX2</AcctSvcrRef></Refs>
+            <Amt Ccy="CHF">300.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Fiduciaire Berney SA</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>CH1889144635975312468</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>987654321000000000000000020</Ref></CdtrRefInf></Strd></RmtInf>
+          </TxDtls>
+          <TxDtls>
+            <Refs><AcctSvcrRef>LOT1-TX3</AcctSvcrRef></Refs>
+            <Amt Ccy="CHF">300.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Atelier Vuille</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>CH3908704016075473007</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Strd><CdtrRefInf><Tp><CdOrPrtry><Prtry>QRR</Prtry></CdOrPrtry></Tp><Ref>987654321000000000000000031</Ref></CdtrRefInf></Strd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+    </Ntfctn>
+  </BkToCstmrDbtCdtNtfctn>
+</Document>
