@@ -1,5 +1,5 @@
 # Stack de production Megga. Lancement :
-#   cd erp/prod && cp .env.example .env && $EDITOR .env
+#   cd prod && cp .env.example .env && $EDITOR .env
 #   docker compose -f docker-compose.prod.yml up -d --build
 name: megga
 

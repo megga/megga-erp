@@ -7,8 +7,8 @@ quotidienne vérifiée. Complète le [socle de développement](../README.md).
 
 ```bash
 git clone https://github.com/megga/rdc.git && cd rdc
-git submodule update --init --depth 1 erp/odoo
-cd erp/prod
+git submodule update --init --depth 1 odoo
+cd prod
 cp .env.example .env && $EDITOR .env          # mots de passe longs et uniques
 mkdir -p certs                                 # fullchain.pem + privkey.pem
 docker compose -f docker-compose.prod.yml up -d --build

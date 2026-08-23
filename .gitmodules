@@ -1,0 +1,5 @@
+[submodule "odoo"]
+	path = odoo
+	url = https://github.com/megga/odoo.git
+	branch = 19.0
+	shallow = true

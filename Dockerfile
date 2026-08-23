@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Le sous-module doit etre materialise avant le build :
-#   git submodule update --init --depth 1 erp/odoo
+#   git submodule update --init --depth 1 odoo
 COPY odoo/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 

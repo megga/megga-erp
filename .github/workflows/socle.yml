@@ -1,0 +1,40 @@
+name: socle
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  garde-fous:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false   # le gitlink suffit aux controles, pas besoin des 1,4 Go
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Controle des licences (anti-AGPL)
+        run: python scripts/check_licences.py
+
+      - name: Coeur intact et epingle sur un commit amont (anti-fork)
+        run: bash scripts/check_core_pristine.sh
+
+      - name: Validation de la configuration
+        run: |
+          pip install --quiet pyyaml
+          python - <<'PY'
+          import configparser, yaml
+          yaml.safe_load(open("docker-compose.yml"))
+          yaml.safe_load(open("prod/docker-compose.prod.yml"))
+          c = configparser.ConfigParser()
+          c.read("odoo.conf")
+          assert c.has_option("options", "addons_path"), "addons_path manquant"
+          p = configparser.ConfigParser()
+          p.read("prod/odoo.prod.conf")
+          assert p.get("options", "list_db") == "False", "list_db doit rester False en production"
+          print("compose + odoo.conf + odoo.prod.conf : OK")
+          PY

@@ -5,15 +5,14 @@ Phase 1 du [plan de reprise](../PLAN-REPRISE-ODOO.md). Le cœur d'Odoo est un
 
 ## Épinglage
 
-- Sous-module : `erp/odoo` → **`megga/odoo`** (notre fork de `odoo/odoo`), branche `19.0`
+- Sous-module : `odoo/` → **`megga/odoo`** (notre fork de `odoo/odoo`), branche `19.0`
 - SHA figé : `9188766f5bab9cc7fe25e6812f9e795e5a2c212f` (relevé le 23/08/2026)
 
 ## Démarrer (sur votre machine)
 
 ```bash
-git clone <ce-depot> && cd <ce-depot>
-git submodule update --init --depth 1 erp/odoo   # ~qq minutes, plusieurs centaines de Mo
-cd erp
+git clone https://github.com/megga/megga-erp.git && cd megga-erp
+git submodule update --init --depth 1 odoo   # ~qq minutes, plusieurs centaines de Mo
 docker compose up --build
 # puis http://localhost:8069 → créer la base (le master password est dans odoo.conf)
 ```
@@ -24,8 +23,8 @@ docker compose up --build
 - [ ] http://localhost:8069 affiche l'écran de création de base
 - [ ] Après création : les ~705 modules apparaissent dans Apps
 - [ ] CRM + Ventes + Facturation s'installent
-- [ ] `python erp/scripts/check_licences.py` → OK
-- [ ] `bash erp/scripts/check_core_pristine.sh` → OK
+- [ ] `python scripts/check_licences.py` → OK
+- [ ] `bash scripts/check_core_pristine.sh` → OK
 
 ## Les règles du socle (non négociables)
 
@@ -35,17 +34,17 @@ docker compose up --build
 2. **`addons-oca/` n'accepte que du LGPL-3** — `check_licences.py` refuse
    l'AGPL (2 640 des modules OCA) et toute licence inconnue. Lire le
    `__manifest__.py` AVANT de copier un module.
-3. **Jamais `git add -A` à la racine quand `erp/odoo` n'est pas matérialisé** —
+3. **Jamais `git add -A` à la racine quand `odoo/` n'est pas matérialisé** —
    cela stagerait la suppression du gitlink. Ajouter les chemins explicitement.
 4. Refactoring : uniquement `addons/` et `scripts/` (voir `/refactor`).
 
 ## Maintenance (Phase 5 du plan)
 
 - **Mensuel** : synchroniser le fork puis le sous-module. Sur GitHub,
-  `megga/odoo` ▸ « Sync fork » (ou `git -C erp/odoo fetch upstream 19.0 &&
-  git -C erp/odoo push origin FETCH_HEAD:19.0` avec
+  `megga/odoo` ▸ « Sync fork » (ou `git -C odoo fetch upstream 19.0 &&
+  git -C odoo push origin FETCH_HEAD:19.0` avec
   `upstream = https://github.com/odoo/odoo.git`), puis
-  `git -C erp/odoo fetch origin 19.0 && git -C erp/odoo merge origin/19.0`
+  `git -C odoo fetch origin 19.0 && git -C odoo merge origin/19.0`
   → tests → commit du bump. **Le fork n'avale pas les correctifs amont tout
   seul : sans cette synchronisation, vous ne recevez plus les correctifs de
   sécurité.**
@@ -76,8 +75,9 @@ La paie reste hors périmètre code (voie connecteur/fiduciaire — volet 3 de
 l'audit) ; la Phase 5 (bump mensuel du sous-module, migration annuelle) est
 le régime permanent.
 
-## Extraction future vers un dépôt dédié
+## Origine
 
-Le socle vit dans `erp/` du dépôt d'audit. Pour l'extraire proprement :
-`git filter-repo --subdirectory-filter erp` sur un clone frais (le workflow CI
-`.github/workflows/socle.yml` et `.gitmodules` sont à reporter à la racine).
+Ce dépôt a été extrait du dépôt d'audit `megga/rdc` par `git subtree split`,
+avec son historique complet (10 commits). Les documents d'analyse — audits CRM,
+ERP, conformité suisse, stratégie de surcouche et plan de reprise — restent
+dans `megga/rdc`.
