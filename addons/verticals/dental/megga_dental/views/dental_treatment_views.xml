@@ -29,6 +29,8 @@
                             <field name="date"/>
                         </group>
                         <group>
+                            <field name="tariff_kind" widget="radio"/>
+                            <field name="point_value"/>
                             <field name="invoice_id" invisible="not invoice_id"/>
                             <field name="company_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>
@@ -37,10 +39,13 @@
                     <field name="line_ids">
                         <list editable="bottom">
                             <field name="sequence" widget="handle"/>
-                            <field name="product_id"/>
+                            <field name="position_id"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="product_id" optional="hide"/>
                             <field name="description"/>
                             <field name="tooth_ids" widget="many2many_tags"
                                    options="{'no_create': True}"/>
+                            <field name="points" optional="show"/>
                             <field name="quantity"/>
                             <field name="price_unit"/>
                             <field name="subtotal" sum="Total"/>

@@ -1,7 +1,12 @@
 from odoo import Command, _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 from ..dental_logic import next_recall_date
+
+# Valeur du point de la convention des assurances sociales (AA/AI/AM),
+# en vigueur depuis le tarif de 2018. Le champ reste modifiable sur le
+# traitement si la convention évolue.
+SOCIAL_POINT_VALUE = 1.0
 
 
 class MeggaDentalTreatment(models.Model):
@@ -46,10 +51,31 @@ class MeggaDentalTreatment(models.Model):
         currency_field='currency_id')
     invoice_id = fields.Many2one(
         'account.move', string="Facture", readonly=True, copy=False)
+    tariff_kind = fields.Selection([
+        ('prive', "Privé"),
+        ('social', "Assurances sociales (AA/AI/AM)"),
+    ], string="Tarif", default='prive', required=True)
+    # La valeur du point est FIGÉE sur le traitement (elle ne dépend pas
+    # de la valeur du cabinet au moment où on relit le devis) : seule le
+    # changement de tarif la recalcule.
+    point_value = fields.Float(
+        "Valeur du point", digits=(12, 2), tracking=True,
+        compute='_compute_point_value', store=True, readonly=False,
+        precompute=True)
     # Contenu clinique : réservé aux soins (LPD). Les actes et montants
     # restent visibles de la réception — ils figurent sur la facture.
     notes = fields.Text(
         "Notes cliniques", groups="megga_dental.group_dental_praticien")
+
+    @api.depends('tariff_kind')
+    def _compute_point_value(self):
+        for treatment in self:
+            if treatment.tariff_kind == 'social':
+                treatment.point_value = SOCIAL_POINT_VALUE
+            else:
+                treatment.point_value = (
+                    treatment.company_id.dental_point_value
+                    or self.env.company.dental_point_value or 1.0)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -134,24 +160,75 @@ class MeggaDentalTreatmentLine(models.Model):
         'megga.dental.treatment', required=True, ondelete='cascade',
         index=True)
     sequence = fields.Integer(default=10)
+    # Un acte renvoie soit à une POSITION du tarif par points (la voie
+    # suisse : montant = points × valeur du point du traitement), soit à
+    # un produit du catalogue (forfaits, fournitures) — au moins l'un
+    # des deux.
+    position_id = fields.Many2one(
+        'megga.dental.position', string="Position", index=True,
+        ondelete='restrict')
     product_id = fields.Many2one(
-        'product.product', string="Acte", required=True)
+        'product.product', string="Produit")
     description = fields.Char("Description")
     tooth_ids = fields.Many2many(
         'megga.dental.tooth', string="Dents")
     quantity = fields.Float("Quantité", default=1.0, required=True)
-    price_unit = fields.Float("Prix unitaire")
+    points = fields.Float(
+        "PT", digits=(12, 2),
+        compute='_compute_points', store=True, readonly=False,
+        precompute=True)
+    price_unit = fields.Float(
+        "Prix unitaire",
+        compute='_compute_price_unit', store=True, readonly=False,
+        precompute=True)
     currency_id = fields.Many2one(related='treatment_id.currency_id')
     subtotal = fields.Monetary(
         "Sous-total", compute='_compute_subtotal', store=True,
         currency_field='currency_id')
+
+    # treatment_id figure dans les champs surveillés : un constrains ne
+    # se déclenche à la création QUE si l'un de ses champs est fourni —
+    # sans lui, une ligne créée sans produit ni position passerait.
+    @api.constrains('product_id', 'position_id', 'treatment_id')
+    def _check_act_source(self):
+        for line in self:
+            if not line.product_id and not line.position_id:
+                raise ValidationError(_(
+                    "Chaque acte renvoie à une position tarifaire ou à "
+                    "un produit du catalogue."))
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
         for line in self:
             if line.product_id:
                 line.description = line.product_id.display_name
-                line.price_unit = line.product_id.list_price
+                if not line.position_id:
+                    line.price_unit = line.product_id.list_price
+
+    @api.onchange('position_id')
+    def _onchange_position_id(self):
+        for line in self:
+            if line.position_id:
+                line.description = line.position_id.name
+
+    @api.depends('position_id')
+    def _compute_points(self):
+        for line in self:
+            if line.position_id:
+                line.points = line.position_id.points
+            else:
+                line.points = line.points
+
+    @api.depends('position_id', 'points', 'treatment_id.point_value')
+    def _compute_price_unit(self):
+        for line in self:
+            if line.position_id:
+                value = line.points * line.treatment_id.point_value
+                line.price_unit = (
+                    line.currency_id.round(value)
+                    if line.currency_id else value)
+            else:
+                line.price_unit = line.price_unit
 
     @api.depends('quantity', 'price_unit')
     def _compute_subtotal(self):
@@ -160,7 +237,11 @@ class MeggaDentalTreatmentLine(models.Model):
 
     def _invoice_line_name(self):
         self.ensure_one()
-        name = self.description or self.product_id.display_name
+        name = self.description or (
+            self.position_id.name if self.position_id
+            else self.product_id.display_name)
+        if self.position_id:
+            name = "[%s] %s" % (self.position_id.code, name)
         teeth = self.tooth_ids.sorted('number')
         if teeth:
             prefixe = _("dent") if len(teeth) == 1 else _("dents")

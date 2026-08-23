@@ -17,6 +17,10 @@
               parent="menu_dental_root" sequence="90"
               groups="base.group_system"/>
 
+    <menuitem id="menu_dental_positions" name="Tarif par points"
+              parent="menu_dental_config" action="action_dental_position"
+              sequence="5"/>
+
     <record id="action_dental_acts" model="ir.actions.act_window">
         <field name="name">Catalogue des actes</field>
         <field name="res_model">product.template</field>

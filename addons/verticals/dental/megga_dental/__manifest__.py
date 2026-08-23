@@ -40,6 +40,7 @@ référentiel des 52 dents en notation FDI / ISO 3950.
         'data/dental_data.xml',
         'views/dental_patient_views.xml',
         'views/dental_treatment_views.xml',
+        'views/dental_position_views.xml',
         'views/dental_menus.xml',
     ],
     'demo': [

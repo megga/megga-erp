@@ -80,7 +80,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 25 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 35 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) | 23 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic | 17 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
@@ -102,9 +102,18 @@ médication, notes cliniques) protégés par `groups=` **sur les champs
 eux-mêmes** (appliqué par l'ORM, pas seulement par les vues) ; sans
 groupe dentaire, aucun accès aux dossiers, mais l'automatisation de la
 réservation en ligne continue de créer les dossiers (effet système en
-sudo, lecture toujours gardée). Chantier restant : tarif SSO par points
-(le catalogue officiel est sous licence SSO — chaque cabinet saisit ses
-actes).
+sudo, lecture toujours gardée).
+
+Le **tarif par points** est livré aussi : positions tarifaires (numéro,
+libellé, points), montant d'un acte = points × valeur du point — valeur
+du cabinet en privé (fiche Société), valeur de la convention aux
+assurances sociales (AA/AI/AM, point à 1.00), figée sur chaque devis. Le
+numéro de position figure sur la facture. Le catalogue officiel étant
+une œuvre **sous licence SSO**, il n'est pas embarqué : chaque cabinet
+au bénéfice d'une licence importe ses positions (CSV : `code`, `name`,
+`points`, `chapter` — exemple fictif dans `megga_dental/docs/`) ou les
+saisit à la main ; les lignes à produit (forfaits, fournitures) restent
+possibles et se mélangent librement.
 
 Chantiers ouverts côté resto : conversion d'unités dans les fiches
 techniques (quantités saisies dans l'unité de l'ingrédient pour l'instant),
