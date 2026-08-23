@@ -7,7 +7,7 @@ Rituel mensuel (Phase 5 du plan de reprise).
   gitlink — sans quoi le dépôt serait incassable pour quiconque le clone.
 - Garde-fou licences : aucun module AGPL dans `addons-oca`.
 - Garde-fou anti-fork : le nouveau SHA appartient bien à l'historique amont.
-- **Les 17 tests Megga passent contre ce nouveau cœur.**
+- **La suite Megga complète passe contre ce nouveau cœur** (socle + verticales + ponts — le seuil TEST_MIN de `run_tests.sh` fait foi, 179 au 23/08/2026).
 
 ### À votre charge avant de fusionner
 

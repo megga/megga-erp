@@ -118,7 +118,7 @@ jobs:
           pip install --quiet zeep pypdf lxml-html-clean python-magic
           python -c "from urllib3.contrib.pyopenssl import PyOpenSSLContext; import zeep, pypdf; print('dependances OK')"
 
-      - name: Lancer les 17 tests contre le nouveau coeur
+      - name: Lancer la suite Megga complete contre le nouveau coeur
         if: steps.detect.outputs.rien_a_faire == 'false'
         run: bash scripts/run_tests.sh
 
@@ -139,7 +139,7 @@ jobs:
           git checkout -b "$BRANCHE"
           git add "$SUB"
           git commit -m "Montee du coeur Odoo : ${ANCIEN:0:12} -> ${NOUVEAU:0:12}" \
-                     -m "Rituel mensuel automatique. Fork synchronise depuis odoo/odoo, gitlink deplace, garde-fous verts, 17 tests Megga verts contre ce nouveau coeur."
+                     -m "Rituel mensuel automatique. Fork synchronise depuis odoo/odoo, gitlink deplace, garde-fous verts, la suite Megga complete (TEST_MIN de run_tests.sh) verte contre ce nouveau coeur."
           git push -u origin "$BRANCHE"
 
           # La PR est un confort ; le livrable est la BRANCHE TESTEE, deja
@@ -156,7 +156,7 @@ jobs:
               echo "### Bump teste et pousse — pull request a ouvrir a la main"
               echo
               echo "Branche : \`$BRANCHE\` (${ANCIEN:0:12} -> ${NOUVEAU:0:12})"
-              echo "Les 17 tests Megga sont VERTS contre ce nouveau coeur."
+              echo "La suite Megga complete est VERTE contre ce nouveau coeur."
               echo
               echo "GitHub a refuse la creation automatique. Deux remedes :"
               echo "- Settings > Actions > General > Workflow permissions >"
