@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rdv_type_form" model="ir.ui.view">
+        <field name="name">megga.rdv.type.form</field>
+        <field name="model">megga.rdv.type</field>
+        <field name="arch" type="xml">
+            <form string="Type de rendez-vous">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Contrôle annuel…"/></h1>
+                    </div>
+                    <group>
+                        <group string="Créneau">
+                            <field name="active" invisible="1"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="tz"/>
+                            <field name="min_notice_hours"/>
+                            <field name="horizon_days"/>
+                        </group>
+                        <group string="Intervenants">
+                            <field name="user_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <group string="Plages hebdomadaires">
+                        <field name="line_ids" nolabel="1" colspan="2">
+                            <list editable="bottom">
+                                <field name="dayofweek"/>
+                                <field name="hour_from" widget="float_time"/>
+                                <field name="hour_to" widget="float_time"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group string="Description publique">
+                        <field name="description" nolabel="1" colspan="2"
+                               placeholder="Texte affiché sur la page de réservation…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rdv_type_list" model="ir.ui.view">
+        <field name="name">megga.rdv.type.list</field>
+        <field name="model">megga.rdv.type</field>
+        <field name="arch" type="xml">
+            <list string="Types de rendez-vous">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="duration" widget="float_time"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="horizon_days"/>
+                <field name="booking_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_rdv_type" model="ir.actions.act_window">
+        <field name="name">Types de rendez-vous</field>
+        <field name="res_model">megga.rdv.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer une prestation réservable</p>
+            <p>Durée, plages hebdomadaires et intervenants : la page
+               publique <code>/rdv</code> fait le reste.</p>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_form" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.form</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="arch" type="xml">
+            <form string="Réservation">
+                <header>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state != 'confirmed'"
+                            confirm="Annuler ce rendez-vous et libérer le créneau ?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Client">
+                            <field name="guest_name"/>
+                            <field name="email" widget="email"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group string="Rendez-vous">
+                            <field name="type_id"/>
+                            <field name="start"/>
+                            <field name="stop"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="event_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_list" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.list</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="arch" type="xml">
+            <list string="Réservations">
+                <field name="start"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="guest_name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_calendar" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.calendar</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="arch" type="xml">
+            <calendar string="Réservations" date_start="start" date_stop="stop"
+                      mode="week" quick_create="0">
+                <field name="guest_name"/>
+                <field name="type_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_search" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.search</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="arch" type="xml">
+            <search string="Réservations">
+                <field name="guest_name"/>
+                <field name="name"/>
+                <field name="email"/>
+                <filter name="a_venir" string="À venir"
+                        domain="[('start', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="confirmees" string="Confirmées"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <group>
+                    <filter name="group_type" string="Prestation"
+                            context="{'group_by': 'type_id'}"/>
+                    <filter name="group_user" string="Intervenant"
+                            context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rdv_booking" model="ir.actions.act_window">
+        <field name="name">Réservations</field>
+        <field name="res_model">megga.rdv.booking</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="context">{'search_default_a_venir': 1}</field>
+    </record>
+</odoo>

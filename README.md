@@ -103,10 +103,22 @@ Enterprise), TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
 fiscale POS à documenter par établissement).
 
 Chantiers ouverts côté auto : véhicules d'occasion en stock (reprises,
-marge bénéficiaire TVA art. 24a LTVA), carnet d'entretien imprimable,
-rendez-vous atelier en ligne (même chantier `megga_rdv` que le dentaire) ;
+marge bénéficiaire TVA art. 24a LTVA), carnet d'entretien imprimable ;
 le rythme d'expertise est le rythme fédéral — les convocations cantonales
 (OCN, SAN…) peuvent s'en écarter.
+
+## Rendez-vous en ligne (`addons/megga_rdv`)
+
+Le chantier commun aux verticales : l'équivalent Community du module
+Enterprise `appointment`. Types de rendez-vous (durée, plages
+hebdomadaires, intervenants, fuseau, préavis, horizon), page publique
+`/rdv` rendue côté serveur qui ne montre que des créneaux réellement
+libres — l'agenda `calendar.event` du cœur fait foi, dans les deux sens :
+un événement occupe le créneau, une réservation devient un événement chez
+l'intervenant le moins chargé du jour. Confirmation par e-mail avec lien
+d'annulation à jeton (l'annulation supprime l'événement et libère le
+créneau). 19 tests, dont la réservation de bout en bout par HTTP (CSRF
+compris). Indépendant des verticales : il ne dépend que de `calendar`.
 
 ## Origine
 

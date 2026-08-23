@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_rdv_public_page" model="ir.actions.act_url">
+        <field name="name">Page publique</field>
+        <field name="url">/rdv</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_rdv_root" name="Rendez-vous" sequence="58"
+              web_icon="megga_rdv,static/description/icon.png"/>
+
+    <menuitem id="menu_rdv_bookings" name="Réservations"
+              parent="menu_rdv_root" action="action_rdv_booking"
+              sequence="10"/>
+    <menuitem id="menu_rdv_types" name="Types de rendez-vous"
+              parent="menu_rdv_root" action="action_rdv_type"
+              sequence="20"/>
+    <menuitem id="menu_rdv_public" name="Page publique"
+              parent="menu_rdv_root" action="action_rdv_public_page"
+              sequence="30"/>
+</odoo>

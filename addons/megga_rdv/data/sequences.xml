@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id explicitement vide (leçon des verticales) : sans
+             cela ir.sequence prend la société courante et next_by_code
+             échoue depuis toute autre société. -->
+        <record id="seq_rdv_booking" model="ir.sequence">
+            <field name="name">Réservations en ligne</field>
+            <field name="code">megga.rdv.booking</field>
+            <field name="prefix">RDV/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

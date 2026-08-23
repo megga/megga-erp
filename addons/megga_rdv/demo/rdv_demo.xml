@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_praticien" model="res.users">
+        <field name="name">Dr Favre (démo)</field>
+        <field name="login">demo_rdv_praticien</field>
+        <field name="email">dr.favre@exemple.ch</field>
+    </record>
+
+    <record id="demo_type_controle" model="megga.rdv.type">
+        <field name="name">Contrôle annuel</field>
+        <field name="description">Examen complet, détartrage léger et conseils. Prévoir 30 minutes.</field>
+        <field name="duration">0.5</field>
+        <field name="tz">Europe/Zurich</field>
+        <field name="min_notice_hours">12</field>
+        <field name="horizon_days">14</field>
+        <field name="user_ids" eval="[(6, 0, [ref('demo_praticien')])]"/>
+        <field name="line_ids"
+               eval="[(0, 0, {'dayofweek': str(j), 'hour_from': 8.0, 'hour_to': 12.0}) for j in range(5)] +
+                     [(0, 0, {'dayofweek': str(j), 'hour_from': 14.0, 'hour_to': 17.0}) for j in range(5)]"/>
+    </record>
+
+    <record id="demo_type_hygiene" model="megga.rdv.type">
+        <field name="name">Séance d'hygiène</field>
+        <field name="description">Détartrage complet et polissage, avec l'hygiéniste.</field>
+        <field name="duration">0.75</field>
+        <field name="tz">Europe/Zurich</field>
+        <field name="min_notice_hours">12</field>
+        <field name="horizon_days">14</field>
+        <field name="user_ids" eval="[(6, 0, [ref('demo_praticien')])]"/>
+        <field name="line_ids"
+               eval="[(0, 0, {'dayofweek': str(j), 'hour_from': 9.0, 'hour_to': 12.0}) for j in (0, 2, 4)]"/>
+    </record>
+</odoo>

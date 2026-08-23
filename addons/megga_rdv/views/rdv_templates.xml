@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_layout" name="RDV : squelette de page">
+        <t t-call="web.frontend_layout">
+            <!-- Sans footer, comme la page de connexion du cœur : le
+                 sélecteur de langue que `portal` y injecte exige le
+                 contexte du routage multilingue (frontend_languages),
+                 absent d'un rendu public direct. -->
+            <t t-set="no_footer" t-value="True"/>
+            <t t-set="title" t-value="title or 'Prendre rendez-vous'"/>
+            <div class="container my-5" style="max-width: 720px;">
+                <t t-out="0"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_types" name="RDV : prestations">
+        <t t-call="megga_rdv.page_layout">
+            <h1 class="mb-4">Prendre rendez-vous</h1>
+            <t t-if="not types">
+                <p class="text-muted">Aucune prestation n'est ouverte à la
+                    réservation pour le moment.</p>
+            </t>
+            <div class="list-group">
+                <a t-foreach="types" t-as="rdv_type"
+                   t-attf-href="/rdv/#{rdv_type.id}"
+                   class="list-group-item list-group-item-action py-3">
+                    <div class="d-flex justify-content-between">
+                        <strong t-field="rdv_type.name"/>
+                        <span class="text-muted">
+                            <t t-out="'%dh%02d' % (int(rdv_type.duration), round((rdv_type.duration - int(rdv_type.duration)) * 60))"/>
+                        </span>
+                    </div>
+                    <div t-if="rdv_type.description" class="text-muted small"
+                         t-field="rdv_type.description"/>
+                </a>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_slots" name="RDV : créneaux">
+        <t t-call="megga_rdv.page_layout">
+            <a href="/rdv" class="small">&#8592; Toutes les prestations</a>
+            <h1 class="mb-1" t-field="rdv_type.name"/>
+            <p t-if="rdv_type.description" class="text-muted"
+               t-field="rdv_type.description"/>
+            <t t-if="not jours">
+                <p class="alert alert-info">Aucun créneau disponible pour le
+                    moment — revenez un peu plus tard.</p>
+            </t>
+            <div t-foreach="jours" t-as="jour" class="mb-4">
+                <h5 t-out="jour['label']"/>
+                <div class="d-flex flex-wrap gap-2">
+                    <a t-foreach="jour['slots']" t-as="slot"
+                       t-attf-href="/rdv/#{rdv_type.id}/formulaire?creneau=#{slot['value']}"
+                       class="btn btn-outline-primary btn-sm">
+                        <t t-out="slot['label']"/>
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_form" name="RDV : coordonnées">
+        <t t-call="megga_rdv.page_layout">
+            <a t-attf-href="/rdv/#{rdv_type.id}" class="small">&#8592; Autres créneaux</a>
+            <h1 class="mb-1" t-field="rdv_type.name"/>
+            <p class="lead"><t t-out="creneau_label"/></p>
+            <form t-attf-action="/rdv/#{rdv_type.id}/reserver" method="post">
+                <input type="hidden" name="csrf_token"
+                       t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="creneau" t-att-value="creneau"/>
+                <div class="mb-3">
+                    <label class="form-label" for="nom">Nom complet</label>
+                    <input type="text" class="form-control" id="nom"
+                           name="nom" required="required"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="email">E-mail</label>
+                    <input type="email" class="form-control" id="email"
+                           name="email" required="required"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="telephone">Téléphone</label>
+                    <input type="tel" class="form-control" id="telephone"
+                           name="telephone"/>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Confirmer le rendez-vous</button>
+            </form>
+        </t>
+    </template>
+
+    <template id="page_done" name="RDV : confirmation">
+        <t t-call="megga_rdv.page_layout">
+            <div class="alert alert-success">
+                <h4 class="alert-heading">Rendez-vous confirmé</h4>
+                <p class="mb-1">
+                    <strong t-field="booking.type_id.name"/> —
+                    <t t-out="creneau_label"/>
+                </p>
+                <p class="mb-0 small">Référence <t t-out="booking.name"/>.
+                    Une confirmation part à
+                    <t t-out="booking.email"/> avec le lien d'annulation.</p>
+            </div>
+            <a href="/rdv" class="small">&#8592; Retour aux prestations</a>
+        </t>
+    </template>
+
+    <template id="page_cancelled" name="RDV : annulé">
+        <t t-call="megga_rdv.page_layout">
+            <div class="alert alert-warning">
+                <h4 class="alert-heading">Rendez-vous annulé</h4>
+                <p class="mb-0">
+                    <strong t-field="booking.type_id.name"/> —
+                    <t t-out="creneau_label"/> (référence
+                    <t t-out="booking.name"/>).</p>
+            </div>
+            <a href="/rdv" class="small">Reprendre un rendez-vous</a>
+        </t>
+    </template>
+
+    <template id="page_invalid" name="RDV : indisponible">
+        <t t-call="megga_rdv.page_layout">
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">Réservation impossible</h4>
+                <p class="mb-0" t-out="message"/>
+            </div>
+            <a t-attf-href="/rdv/#{rdv_type.id}" class="small">
+                &#8592; Revoir les créneaux</a>
+        </t>
+    </template>
+</odoo>

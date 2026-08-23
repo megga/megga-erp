@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rdv_type_user,rdv.type.user,model_megga_rdv_type,base.group_user,1,1,1,1
+access_rdv_type_line_user,rdv.type.line.user,model_megga_rdv_type_line,base.group_user,1,1,1,1
+access_rdv_booking_user,rdv.booking.user,model_megga_rdv_booking,base.group_user,1,1,1,1
