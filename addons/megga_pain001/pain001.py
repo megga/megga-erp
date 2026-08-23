@@ -151,8 +151,13 @@ def _element(parent, tag, text=None, **attrs):
     return node
 
 
+def _decimal(value):
+    """Coercition sure : l'ORM d'Odoo fournit des float, l'API des Decimal."""
+    return value if isinstance(value, Decimal) else Decimal(str(value))
+
+
 def _money(value):
-    return str(Decimal(value).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+    return str(_decimal(value).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
 
 
 def _postal_address(parent, transfer):
@@ -176,7 +181,8 @@ def generate_pain001(order):
     _validate(order)
     ET.register_namespace('', NS)
 
-    control_sum = _money(sum((t.amount for t in order.transfers), Decimal('0')))
+    control_sum = _money(sum((_decimal(t.amount) for t in order.transfers),
+                             Decimal('0')))
     count = str(len(order.transfers))
 
     document = ET.Element('{%s}Document' % NS)

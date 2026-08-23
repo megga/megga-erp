@@ -16,6 +16,14 @@ class TestQrForeignDebtor(AccountTestInvoicingCommon):
     @AccountTestInvoicingCommon.setup_country('ch')
     def setUpClass(cls):
         super().setUpClass()
+        # Le controle amont exige une adresse postale complete du CREANCIER
+        # (partenaire de la societe) — une vraie societe en a une.
+        cls.env.company.partner_id.write({
+            'street': 'Rue du Stand 1',
+            'zip': '1204',
+            'city': 'Geneve',
+            'country_id': cls.env.ref('base.ch').id,
+        })
         cls.qr_bank_account = cls.env['res.partner.bank'].create({
             'acc_number': "CH4431999123000889012",
             'partner_id': cls.env.company.partner_id.id,

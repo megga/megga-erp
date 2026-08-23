@@ -1,5 +1,6 @@
 import base64
 import re
+from decimal import Decimal
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -89,7 +90,7 @@ class MeggaPain001ExportWizard(models.TransientModel):
         if valid_qrr(compact) or valid_scor(compact):
             reference, message = compact, ''
         return CreditTransfer(
-            amount=payment.amount,
+            amount=Decimal(str(payment.amount)),
             currency=payment.currency_id.name,
             creditor_name=bank.acc_holder_name or partner.name or '',
             creditor_iban=bank.acc_number or '',
