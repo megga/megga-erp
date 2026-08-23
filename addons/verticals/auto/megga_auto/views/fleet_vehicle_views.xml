@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fleet_vehicle_view_form_megga" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.megga</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_megga_view_workorders" type="object"
+                        class="oe_stat_button" icon="fa-wrench">
+                    <field name="megga_workorder_count" widget="statinfo"
+                           string="Ordres de rép."/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Garage" name="megga_garage">
+                    <group>
+                        <group string="Client">
+                            <field name="megga_owner_id"/>
+                            <field name="megga_vin_ok"/>
+                        </group>
+                        <group string="Expertise périodique (OETV)">
+                            <field name="megga_first_circulation"/>
+                            <field name="megga_last_inspection"/>
+                            <field name="megga_inspections_done"/>
+                            <field name="megga_next_inspection"/>
+                        </group>
+                    </group>
+                    <button name="action_megga_register_inspection"
+                            type="object" string="Expertise passée aujourd'hui"
+                            class="btn-secondary"
+                            confirm="Enregistrer une expertise passée aujourd'hui ? Le rythme 4-3-2 repartira de cette date."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="fleet_vehicle_view_list_megga" model="ir.ui.view">
+        <field name="name">fleet.vehicle.list.megga</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="arch" type="xml">
+            <list string="Parc clients">
+                <field name="license_plate"/>
+                <field name="model_id"/>
+                <field name="megga_owner_id"/>
+                <field name="odometer" optional="show"/>
+                <field name="megga_next_inspection"/>
+                <field name="megga_vin_ok" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_megga_auto_park" model="ir.actions.act_window">
+        <field name="name">Parc clients</field>
+        <field name="res_model">fleet.vehicle</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="fleet_vehicle_view_list_megga"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Enregistrer un premier véhicule</p>
+            <p>Marques, modèles, plaques et compteur viennent du cœur ;
+               la surcouche ajoute le propriétaire et le suivi d'expertise.</p>
+        </field>
+    </record>
+</odoo>

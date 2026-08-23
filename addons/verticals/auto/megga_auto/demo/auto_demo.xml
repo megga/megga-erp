@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_brand_vw" model="fleet.vehicle.model.brand">
+        <field name="name">Volkswagen</field>
+    </record>
+    <record id="demo_model_golf" model="fleet.vehicle.model">
+        <field name="name">Golf 8 1.5 TSI</field>
+        <field name="brand_id" ref="demo_brand_vw"/>
+    </record>
+
+    <record id="demo_client_morand" model="res.partner">
+        <field name="name">Morand Frédéric</field>
+        <field name="street">Chemin des Vignes 12</field>
+        <field name="zip">1197</field>
+        <field name="city">Prangins</field>
+        <field name="country_id" ref="base.ch"/>
+        <field name="phone">+41 22 555 12 44</field>
+    </record>
+
+    <record id="demo_vehicule_golf" model="fleet.vehicle">
+        <field name="model_id" ref="demo_model_golf"/>
+        <field name="license_plate">VD 214 780</field>
+        <field name="vin_sn">WVWZZZAUZLW000123</field>
+        <field name="megga_owner_id" ref="demo_client_morand"/>
+        <field name="megga_first_circulation">2022-06-15</field>
+    </record>
+
+    <record id="demo_forfait_service" model="product.product">
+        <field name="name">Service annuel (forfait main-d'œuvre)</field>
+        <field name="type">service</field>
+        <field name="list_price">420.0</field>
+    </record>
+    <record id="demo_piece_plaquettes" model="product.product">
+        <field name="name">Plaquettes de frein avant (jeu)</field>
+        <field name="type">consu</field>
+        <field name="list_price">260.0</field>
+    </record>
+
+    <record id="demo_or_service" model="megga.auto.workorder">
+        <field name="vehicle_id" ref="demo_vehicule_golf"/>
+        <field name="partner_id" ref="demo_client_morand"/>
+        <field name="odometer_in">48350</field>
+        <field name="diagnosis">Service des 4 ans + plaquettes avant en limite d'usure.</field>
+        <field name="line_ids"
+               eval="[(0, 0, {
+                   'product_id': ref('demo_forfait_service'),
+                   'description': 'Service annuel (forfait main-d\'œuvre)',
+                   'quantity': 1.0, 'price_unit': 420.0,
+               }), (0, 0, {
+                   'product_id': ref('demo_piece_plaquettes'),
+                   'description': 'Plaquettes de frein avant (jeu)',
+                   'quantity': 1.0, 'price_unit': 260.0,
+               })]"/>
+    </record>
+</odoo>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_auto_workorder_form" model="ir.ui.view">
+        <field name="name">megga.auto.workorder.form</field>
+        <field name="model">megga.auto.workorder</field>
+        <field name="arch" type="xml">
+            <form string="Ordre de réparation">
+                <header>
+                    <button name="action_confirm" type="object" string="Accepter"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_done" type="object" string="Terminer"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Créer la facture" class="btn-primary"
+                            invisible="state != 'done' or invoice_id"/>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Véhicule">
+                            <field name="vehicle_id"/>
+                            <field name="odometer_in"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group string="Atelier">
+                            <field name="mechanic_id" widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="product_id"/>
+                            <field name="description"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="subtotal" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_total"/>
+                    </group>
+                    <field name="diagnosis"
+                           placeholder="Diagnostic, travaux effectués, points à surveiller…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_auto_workorder_list" model="ir.ui.view">
+        <field name="name">megga.auto.workorder.list</field>
+        <field name="model">megga.auto.workorder</field>
+        <field name="arch" type="xml">
+            <list string="Ordres de réparation">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="vehicle_id"/>
+                <field name="partner_id"/>
+                <field name="mechanic_id" widget="many2one_avatar_user"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="invoice_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_workorder_search" model="ir.ui.view">
+        <field name="name">megga.auto.workorder.search</field>
+        <field name="model">megga.auto.workorder</field>
+        <field name="arch" type="xml">
+            <search string="Ordres de réparation">
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="partner_id"/>
+                <filter name="state_draft" string="Devis"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="state_confirmed" string="Acceptés"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="a_facturer" string="À facturer"
+                        domain="[('state', '=', 'done'), ('invoice_id', '=', False)]"/>
+                <group>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_vehicle" string="Véhicule"
+                            context="{'group_by': 'vehicle_id'}"/>
+                    <filter name="group_mechanic" string="Mécanicien"
+                            context="{'group_by': 'mechanic_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_auto_workorder" model="ir.actions.act_window">
+        <field name="name">Ordres de réparation</field>
+        <field name="res_model">megga.auto.workorder</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Ouvrir un premier ordre de réparation</p>
+            <p>Devis, acceptation, clôture avec report du compteur, puis
+               facture en un clic — la QR-facture suit automatiquement.</p>
+        </field>
+    </record>
+</odoo>

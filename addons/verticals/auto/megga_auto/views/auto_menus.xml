@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_auto_root" name="Garage" sequence="57"
+              web_icon="megga_auto,static/description/icon.png"/>
+
+    <menuitem id="menu_auto_park" name="Parc clients"
+              parent="menu_auto_root" action="action_megga_auto_park"
+              sequence="10"/>
+    <menuitem id="menu_auto_workorders" name="Ordres de réparation"
+              parent="menu_auto_root" action="action_auto_workorder"
+              sequence="20"/>
+
+    <menuitem id="menu_auto_config" name="Configuration"
+              parent="menu_auto_root" sequence="90"
+              groups="base.group_system"/>
+    <menuitem id="menu_auto_models" name="Modèles de véhicules"
+              parent="menu_auto_config" action="fleet.fleet_vehicle_model_action"
+              sequence="10"/>
+</odoo>

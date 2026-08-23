@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_auto_workorder_user,auto.workorder.user,model_megga_auto_workorder,base.group_user,1,1,1,1
+access_auto_workorder_line_user,auto.workorder.line.user,model_megga_auto_workorder_line,base.group_user,1,1,1,1
+access_fleet_vehicle_interne,fleet.vehicle.interne,fleet.model_fleet_vehicle,base.group_user,1,1,1,0
+access_fleet_vehicle_odometer_interne,fleet.vehicle.odometer.interne,fleet.model_fleet_vehicle_odometer,base.group_user,1,1,1,0
+access_fleet_vehicle_model_interne,fleet.vehicle.model.interne,fleet.model_fleet_vehicle_model,base.group_user,1,0,0,0
+access_fleet_vehicle_model_brand_interne,fleet.vehicle.model.brand.interne,fleet.model_fleet_vehicle_model_brand,base.group_user,1,0,0,0

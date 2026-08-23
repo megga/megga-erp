@@ -82,10 +82,14 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic | 19 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) | 23 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic | 17 |
 
 Chaque méta-module tire tout son métier : socle Megga complet + les briques
 du cœur (dentaire : CRM + agenda + contacts ; resto : POS restaurant +
-contacts). Prochaine verticale prévue : `auto/` (assemble `repair` + `fleet`).
+contacts ; auto : fleet + CRM + contacts). Note d'architecture : le module
+`repair` du cœur n'est PAS utilisé par `auto/` — il répare un produit tenu
+en stock (product_id + lot), pas le véhicule d'un client ; l'atelier est
+donc un modèle métier propre, adossé à fleet.
 
 Chantiers ouverts côté dentaire : prise de RDV en ligne (`megga_rdv`, car
 `appointment` est un module Enterprise), tarif SSO par points (le catalogue
@@ -97,6 +101,12 @@ techniques (quantités saisies dans l'unité de l'ingrédient pour l'instant),
 réservation en ligne (l'équivalent cœur, `pos_restaurant_appointment`, est
 Enterprise), TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
 fiscale POS à documenter par établissement).
+
+Chantiers ouverts côté auto : véhicules d'occasion en stock (reprises,
+marge bénéficiaire TVA art. 24a LTVA), carnet d'entretien imprimable,
+rendez-vous atelier en ligne (même chantier `megga_rdv` que le dentaire) ;
+le rythme d'expertise est le rythme fédéral — les convocations cantonales
+(OCN, SAN…) peuvent s'en écarter.
 
 ## Origine
 
