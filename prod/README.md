@@ -16,6 +16,66 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 Puis initialisez la base selon la verticale déployée — section suivante.
 
+## Vrai serveur en un passage (`deployer.sh`)
+
+Sur un VPS neuf (Debian 12 / Ubuntu 24.04, 4 Go+, root), avec un
+enregistrement DNS `A` pointant sur la machine :
+
+```bash
+DOMAINE=erp.moncabinet.ch COURRIEL=admin@moncabinet.ch VERTICALE=dental \
+  bash prod/scripts/deployer.sh
+```
+
+Le script : installe Docker et les outils, clone le dépôt et matérialise
+le sous-module, génère `.env` (jamais écrasé s'il existe), obtient le
+certificat Let's Encrypt (défi standalone + hook de renouvellement qui
+recharge nginx ; sans `DOMAINE` : auto-signé, pour un essai seulement),
+lance le stack, **vérifie la posture** (le gestionnaire de bases doit
+répondre 404 à travers nginx avant d'aller plus loin), puis initialise
+la verticale (`VERTICALE=dental|resto|auto`) avec un mot de passe admin
+généré, affiché une seule fois. La garde d'`init_prod.sh` reste : une
+base existante n'est jamais touchée. Prérequis PDF : `wkhtmltopdf` est
+dans l'image (carnet d'entretien, rapports).
+
+Après le passage : checklist de premier jour (société, IBAN QR,
+utilisateurs et rôles, catalogue métier), timer des sauvegardes déjà
+actif dans le stack, et **expédition hors de l'hôte** à brancher
+(section Sauvegardes).
+
+## Cloudflare — devant et derrière (pas comme hébergeur)
+
+Cloudflare ne peut pas héberger Odoo (Workers exécute du
+JavaScript/WASM sans processus long, D1 est du SQLite — il faut un
+Python durable et PostgreSQL). Ses deux vrais rôles ici :
+
+**Devant le serveur.** Deux options :
+- *Proxy orange* : la zone DNS chez Cloudflare, l'enregistrement
+  proxifié, mode TLS **Full (strict)** — le certificat Let's Encrypt du
+  serveur reste en place, Cloudflare ajoute WAF, cache et masquage
+  d'IP.
+- *Cloudflare Tunnel* (`cloudflared`) : **aucun port entrant ouvert**
+  sur le serveur — le tunnel sort du serveur vers Cloudflare et amène
+  le trafic à nginx. Firewall fermé à tout sauf SSH. Recommandé pour un
+  cabinet : `cloudflared tunnel create megga`, route DNS, service
+  systemd — la documentation Cloudflare Zero Trust fait foi.
+
+**Derrière le serveur : R2 comme destination d'expédition.** Le bucket
+`megga-sauvegardes` existe (créé le 23/08/2026). R2 étant S3-compatible,
+c'est la variante rclone d'`expedier.sh` : créer un jeton d'accès R2
+(tableau de bord R2 ▸ Manage API tokens), configurer un remote rclone
+de type s3 (provider Cloudflare), et — **obligatoire pour des données de
+santé** (nLPD, et bucket hors juridiction suisse/UE) — l'envelopper d'un
+remote `crypt` (chiffrement côté client, clés gardées hors du cloud) :
+
+```bash
+rclone copy --checksum "$ARCHIVE" crypt-r2:megga-sauvegardes/$(basename "$ARCHIVE")
+rclone check "$ARCHIVE" crypt-r2:megga-sauvegardes/$(basename "$ARCHIVE")
+```
+
+Sans chiffrement client, n'expédiez vers R2 que les bases sans données
+sensibles — ou créez le bucket en juridiction UE et documentez-le au
+registre des traitements.
+
 ## Initialiser une verticale
 
 Un moteur unique, `scripts/init_prod.sh <dental|resto|auto> [base]`, et

@@ -1,4 +1,8 @@
-FROM python:3.12-slim
+# Base EPINGLEE sur bookworm : l'etiquette flottante python:3.12-slim a
+# bascule sur trixie, qui a retire wkhtmltopdf de ses depots — le build
+# cassait sans qu'aucune ligne du depot n'ait change (constate en reel
+# le 23/08/2026). Une base de production ne flotte pas.
+FROM python:3.12-slim-bookworm
 
 # Dependances de compilation et d'execution des paquets Python d'Odoo
 # (psycopg2 et lxml sont compiles depuis les sources epinglees par requirements.txt),
@@ -15,7 +19,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Le sous-module doit etre materialise avant le build :
 #   git submodule update --init --depth 1 odoo
 COPY odoo/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# phonenumbers : exige par account_peppol, auto-installe avec la chaine
+# comptable suisse mais absent de requirements.txt — sans lui,
+# l'initialisation d'une base echoue a l'etape comptable (constate en
+# reel le 23/08/2026).
+RUN pip install --no-cache-dir -r /tmp/requirements.txt phonenumbers
 
 EXPOSE 8069
 CMD ["python3", "/opt/odoo/odoo-bin", "-c", "/etc/odoo/odoo.conf"]
