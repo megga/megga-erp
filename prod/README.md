@@ -99,9 +99,43 @@ docker compose -f docker-compose.prod.yml start erp
 ```
 
 ⚠️ **Sortez les sauvegardes de la machine.** Le volume `backups` vit sur le
-même hôte que la base : un incident matériel emporte les deux. Synchronisez
-`backups` vers un stockage externe (rsync, S3, NAS) — c'est la seule pièce
-que ce stack ne fournit pas.
+même hôte que la base : un incident matériel emporte les deux.
+
+### Expédition hors de l'hôte (`expedier.sh`)
+
+`prod/scripts/expedier.sh` pousse les archives **déjà vérifiées** vers une
+destination distante, avec la même doctrine que le reste du runbook :
+
+1. une archive dont `SHA256SUMS` ne se vérifie plus **ne s'expédie pas**
+   (on n'exporte pas une corruption) ;
+2. après la copie, une passe `rsync --checksum` à blanc doit ne rien
+   trouver à transférer — la copie distante est identique au bit près,
+   sinon échec ;
+3. le marqueur `EXPEDIEE` (journal destination + date) n'est posé
+   qu'après cette contre-vérification.
+
+```bash
+# NAS ou autre machine, par SSH (clé déposée, rsync des deux côtés)
+EXPEDITION_DEST=nas:/volume1/megga-sauvegardes /scripts/expedier.sh
+
+# Point de montage (NFS, disque externe)
+EXPEDITION_DEST=/mnt/sauvegardes /scripts/expedier.sh
+
+# Tout l'historique plutôt que la dernière archive de chaque base
+EXPEDITION_ALL=1 EXPEDITION_DEST=... /scripts/expedier.sh
+```
+
+Enchaînez-le au timer nocturne : `backup.sh && expedier.sh`. Variante
+stockage objet (S3 et compatibles) : remplacer l'appel rsync par
+`rclone copy --checksum "$d" remote:megga-sauvegardes/$(basename "$d")`
+puis `rclone check` — mêmes garde-fous, autre transport.
+
+Cycle validé en réel (23/08/2026) : trois archives de production
+expédiées puis re-vérifiées côté destination (`sha256sum -c` sur place),
+deuxième passage idempotent, archive volontairement corrompue **refusée
+avant tout envoi**, absence de rsync détectée proprement. Le transport
+SSH/NAS reste à brancher sur votre infrastructure — la logique, elle,
+est éprouvée.
 
 ### Cycle validé en réel (23/08/2026)
 
