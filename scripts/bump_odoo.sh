@@ -76,14 +76,17 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
     else
         echo "  echec de merge-upstream (HTTP $CODE) :"
         printf '%s\n' "$REPONSE" | head -3 | sed 's/^/    /'
-        # Repli : mise a jour DIRECTE de la ref (Git Data API). L'endpoint
-        # merge-upstream refuse les jetons fine-grained (« Resource not
-        # accessible by personal access token », constate le 23/08/2026) ;
-        # celui-ci les accepte avec Contents: write. Le SHA amont existe
-        # deja dans le RESEAU du fork (les forks GitHub partagent leur
-        # magasin d'objets avec l'amont) : pointer refs/heads/19.0 dessus
-        # est une avance rapide sans aucun transfert — force:false, le
-        # serveur refuse tout ecrasement d'historique.
+        # Repli : mise a jour DIRECTE de la ref (Git Data API) — defense
+        # en profondeur si merge-upstream echoue pour une autre raison
+        # que les droits. (Constate le 23/08/2026 : un jeton SANS
+        # « Contents: write » recolte le meme 403 « Resource not
+        # accessible » sur LES DEUX voies — le remede est alors la
+        # permission du jeton, pas le repli ; avec Contents: write,
+        # merge-upstream passe, fine-grained compris.) Le SHA amont
+        # existe deja dans le RESEAU du fork (les forks GitHub partagent
+        # leur magasin d'objets avec l'amont) : pointer refs/heads/19.0
+        # dessus est une avance rapide sans aucun transfert —
+        # force:false, le serveur refuse tout ecrasement d'historique.
         echo "  repli : mise a jour directe de la ref..."
         REPONSE2="$(curl -sS -w '\n%{http_code}' -X PATCH \
             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
