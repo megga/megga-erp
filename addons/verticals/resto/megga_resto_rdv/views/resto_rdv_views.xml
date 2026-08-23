@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rdv_type_form_resto" model="ir.ui.view">
+        <field name="name">megga.rdv.type.form.resto</field>
+        <field name="model">megga.rdv.type</field>
+        <field name="inherit_id" ref="megga_rdv.view_rdv_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='horizon_days']" position="after">
+                <field name="resto_reservation"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_form_resto" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.form.resto</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="inherit_id" ref="megga_rdv.view_rdv_booking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="resto_party_size"
+                       invisible="not resto_reservation_id"/>
+                <field name="resto_reservation_id"
+                       invisible="not resto_reservation_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_resto_reservation_form_rdv" model="ir.ui.view">
+        <field name="name">megga.resto.reservation.form.rdv</field>
+        <field name="model">megga.resto.reservation</field>
+        <field name="inherit_id" ref="megga_resto.view_resto_reservation_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='party_size']" position="after">
+                <field name="rdv_booking_id"
+                       invisible="not rdv_booking_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <template id="page_form_resto" name="RDV : couverts (restaurant)"
+              inherit_id="megga_rdv.page_form">
+        <xpath expr="//input[@id='nom']/.." position="before">
+            <div class="mb-3" t-if="rdv_type.resto_reservation">
+                <label class="form-label" for="couverts">Couverts</label>
+                <input type="number" class="form-control" id="couverts"
+                       name="couverts" min="1" max="50" value="2"
+                       required="required"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

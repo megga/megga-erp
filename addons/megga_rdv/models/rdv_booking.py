@@ -93,13 +93,29 @@ class MeggaRdvBooking(models.Model):
                  heure=local.strftime('%H:%M'))
 
     @api.model
+    def _calendar_event_vals(self, rdv_type, start_utc, user, partner,
+                             guest_name):
+        """Valeurs de l'événement d'agenda matérialisant la réservation.
+        Point d'extension pour les modules-ponts (le pont restaurant le
+        rend non bloquant : plusieurs tablées partagent un créneau)."""
+        return {
+            'name': "%s — %s" % (rdv_type.name, guest_name),
+            'start': start_utc,
+            'stop': start_utc + timedelta(hours=rdv_type.duration),
+            'user_id': user.id,
+            'partner_ids': [(4, user.partner_id.id), (4, partner.id)],
+        }
+
+    @api.model
     def _reserver(self, rdv_type, start_utc, guest_name, email,
-                  phone=False, now=None):
+                  phone=False, now=None, extra_vals=None):
         """Réserve un créneau APRÈS re-vérification serveur (le créneau
         affiché a pu être pris entre-temps). Choisit l'intervenant le
         moins chargé du jour parmi les libres, rattache ou crée le
         contact par e-mail, matérialise l'événement d'agenda et envoie
-        la confirmation. Lève UserError si le créneau n'est plus libre."""
+        la confirmation. Lève UserError si le créneau n'est plus libre.
+        `extra_vals` : champs supplémentaires posés sur la réservation
+        par les modules-ponts (ex. les couverts du pont restaurant)."""
         slots = rdv_type._available_slots(now=now)
         slot = next((s for s in slots if s['start'] == start_utc), None)
         if slot is None:
@@ -129,14 +145,10 @@ class MeggaRdvBooking(models.Model):
             partner = Partner.create({
                 'name': guest_name, 'email': email, 'phone': phone or False})
 
-        event = self.env['calendar.event'].create({
-            'name': "%s — %s" % (rdv_type.name, guest_name),
-            'start': start_utc,
-            'stop': start_utc + timedelta(hours=rdv_type.duration),
-            'user_id': user.id,
-            'partner_ids': [(4, user.partner_id.id), (4, partner.id)],
-        })
-        booking = self.create({
+        event = self.env['calendar.event'].create(
+            self._calendar_event_vals(
+                rdv_type, start_utc, user, partner, guest_name))
+        vals = {
             'type_id': rdv_type.id,
             'guest_name': guest_name,
             'email': email,
@@ -145,7 +157,9 @@ class MeggaRdvBooking(models.Model):
             'start': start_utc,
             'user_id': user.id,
             'event_id': event.id,
-        })
+        }
+        vals.update(extra_vals or {})
+        booking = self.create(vals)
         template = self.env.ref(
             'megga_rdv.mail_template_rdv_confirmation',
             raise_if_not_found=False)

@@ -11,6 +11,13 @@ class MeggaRdvController(http.Controller):
     voit que des créneaux libres recalculés à chaque affichage — et la
     réservation re-vérifie le créneau au moment du POST."""
 
+    def _reserver_extra_vals(self, rdv_type, kw):
+        """Champs supplémentaires posés sur la réservation depuis le
+        formulaire public. Vide ici : les modules-ponts surchargent
+        (ex. les couverts du pont restaurant) en filtrant eux-mêmes ce
+        qu'ils acceptent de `kw` — jamais de passage aveugle."""
+        return {}
+
     def _type_ou_404(self, type_id):
         rdv_type = request.env['megga.rdv.type'].sudo().browse(
             int(type_id)).exists()
@@ -84,7 +91,8 @@ class MeggaRdvController(http.Controller):
         try:
             booking = request.env['megga.rdv.booking'].sudo()._reserver(
                 rdv_type, start, nom.strip(), email.strip(),
-                (telephone or '').strip() or False)
+                (telephone or '').strip() or False,
+                extra_vals=self._reserver_extra_vals(rdv_type, kw))
         except UserError as exc:
             return request.render('megga_rdv.page_invalid', {
                 'rdv_type': rdv_type, 'message': str(exc)})
