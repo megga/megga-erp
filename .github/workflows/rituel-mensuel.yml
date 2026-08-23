@@ -1,0 +1,137 @@
+name: rituel-mensuel
+
+# Phase 5 du plan de reprise : faire monter le coeur Odoo, le tester, et
+# PROPOSER le bump — jamais le fusionner tout seul.
+on:
+  schedule:
+    # 1er du mois a 03h17 UTC. Heure decalee volontairement : les minutes
+    # rondes sont surchargees chez GitHub et le declenchement y derape.
+    - cron: "17 3 1 * *"
+  workflow_dispatch:
+    inputs:
+      forcer:
+        description: "Preparer le bump meme si l'amont n'a pas bouge"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write        # pousser la branche de bump
+  pull-requests: write   # ouvrir la pull request
+
+concurrency:
+  group: rituel-mensuel
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U odoo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: odoo
+      PGPASSWORD: odoo
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false   # le sous-module est materialise a la demande
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Detecter une montee disponible
+        id: detect
+        run: |
+          set +e
+          bash scripts/bump_odoo.sh --dry-run
+          CODE=$?
+          set -e
+          if [ "$CODE" = "99" ] && [ "${{ inputs.forcer }}" != "true" ]; then
+            echo "rien_a_faire=true" >> "$GITHUB_OUTPUT"
+          elif [ "$CODE" = "99" ] || [ "$CODE" = "0" ]; then
+            echo "rien_a_faire=false" >> "$GITHUB_OUTPUT"
+          else
+            exit "$CODE"
+          fi
+
+      - name: Preparer le bump (synchronise le fork, deplace le gitlink)
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        env:
+          # Jeton autorise a ecrire sur le fork megga/odoo. Sans lui, le
+          # script s'arrete avec les instructions de synchronisation manuelle :
+          # le GITHUB_TOKEN par defaut ne porte que sur CE depot.
+          GITHUB_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+        run: bash scripts/bump_odoo.sh
+
+      - name: Garde-fous (licences, coeur intact et amont)
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        run: |
+          python scripts/check_licences.py
+          bash scripts/check_core_pristine.sh
+
+      - name: Dependances Python d'Odoo
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libldap2-dev libsasl2-dev libxml2-dev libxslt1-dev
+          python -m pip install --quiet --upgrade pip
+          # psycopg2 ne compile pas de facon fiable : variante binaire.
+          grep -v '^psycopg2' odoo/requirements.txt > /tmp/req.txt
+          pip install --quiet psycopg2-binary
+          SETUPTOOLS_USE_DISTUTILS=stdlib pip install --quiet -r /tmp/req.txt
+          # ir_mail_server importe urllib3.contrib.pyopenssl : ce trio doit
+          # rester coherent, sinon le serveur ne demarre pas.
+          pip install --quiet --ignore-installed \
+            'urllib3==2.0.7' 'cryptography==42.0.8' 'pyopenssl==24.1.0'
+          # Absents des requirements mais requis au demarrage.
+          pip install --quiet zeep pypdf lxml-html-clean python-magic
+          python -c "from urllib3.contrib.pyopenssl import PyOpenSSLContext; import zeep, pypdf; print('dependances OK')"
+
+      - name: Lancer les 17 tests contre le nouveau coeur
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        run: bash scripts/run_tests.sh
+
+      - name: Ouvrir la pull request de bump
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SUB=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk 'NR==1{print $2}')
+          ANCIEN=$(git ls-tree HEAD "$SUB" | awk '$2=="commit"{print $3}')
+          NOUVEAU=$(git -C "$SUB" rev-parse HEAD)
+          BRANCHE="bump-odoo-$(date -u +%Y%m%d)"
+
+          git config user.name "rituel-mensuel"
+          git config user.email "actions@github.com"
+          git checkout -b "$BRANCHE"
+          git add "$SUB"
+          git commit -m "Montee du coeur Odoo : ${ANCIEN:0:12} -> ${NOUVEAU:0:12}" \
+                     -m "Rituel mensuel automatique. Fork synchronise depuis odoo/odoo, gitlink deplace, garde-fous verts, 17 tests Megga verts contre ce nouveau coeur."
+          git push -u origin "$BRANCHE"
+
+          gh pr create --base main --head "$BRANCHE" \
+            --title "Montee mensuelle du coeur Odoo (${NOUVEAU:0:12})" \
+            --body-file .github/pr-bump-odoo.md
+
+      - name: Rien a faire
+        if: steps.detect.outputs.rien_a_faire == 'true'
+        run: echo "Le coeur est deja au sommet de l'amont — aucune action."
