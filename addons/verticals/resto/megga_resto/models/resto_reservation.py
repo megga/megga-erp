@@ -54,6 +54,17 @@ class MeggaRestoReservation(models.Model):
                     'megga.resto.reservation') or '/'
         return super().create(vals_list)
 
+    @api.depends('guest_name', 'party_size')
+    def _compute_display_name(self):
+        """Sur le calendrier de service, on veut lire « Famille Rochat (4) »,
+        pas une référence RSV/… — la référence reste le champ name."""
+        for reservation in self:
+            if reservation.guest_name:
+                reservation.display_name = "%s (%s)" % (
+                    reservation.guest_name, reservation.party_size)
+            else:
+                reservation.display_name = reservation.name
+
     @api.depends('start', 'duration')
     def _compute_stop(self):
         for reservation in self:
