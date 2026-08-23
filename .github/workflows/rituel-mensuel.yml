@@ -110,11 +110,15 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             libldap2-dev libsasl2-dev libxml2-dev libxslt1-dev
-          python -m pip install --quiet --upgrade pip
+          # Python 3.12 ne fournit plus setuptools implicitement, et
+          # plusieurs paquets des requirements d'Odoo sont distribues en
+          # sdist : sans setuptools, pip echoue sur
+          # « BackendUnavailable: Cannot import 'setuptools.build_meta' ».
+          python -m pip install --quiet --upgrade pip setuptools wheel
           # psycopg2 ne compile pas de facon fiable : variante binaire.
           grep -v '^psycopg2' odoo/requirements.txt > /tmp/req.txt
           pip install --quiet psycopg2-binary
-          SETUPTOOLS_USE_DISTUTILS=stdlib pip install --quiet -r /tmp/req.txt
+          pip install --quiet -r /tmp/req.txt
           # ir_mail_server importe urllib3.contrib.pyopenssl : ce trio doit
           # rester coherent, sinon le serveur ne demarre pas.
           pip install --quiet --ignore-installed \
