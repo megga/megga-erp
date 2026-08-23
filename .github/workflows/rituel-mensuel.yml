@@ -90,19 +90,10 @@ jobs:
           python scripts/check_licences.py
           bash scripts/check_core_pristine.sh
 
-      - name: Cle de cache (SHA du coeur)
-        id: cache_key
-        if: steps.detect.outputs.rien_a_faire == 'false'
-        run: |
-          SUB=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk 'NR==1{print $2}')
-          echo "sha=$(git -C "$SUB" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v4
-        if: steps.detect.outputs.rien_a_faire == 'false'
-        with:
-          path: ~/.cache/pip
-          key: pip-odoo-${{ steps.cache_key.outputs.sha }}
-          restore-keys: pip-odoo-
+      # Pas de cache pip : GitHub evince les caches inutilises au bout de
+      # 7 jours, or ce rituel tourne une fois par mois — le cache serait
+      # systematiquement froid. On paie l'installation (~1 min) plutot que
+      # d'entretenir un mecanisme qui ne sert jamais.
 
       - name: Dependances Python d'Odoo
         if: steps.detect.outputs.rien_a_faire == 'false'
@@ -134,12 +125,14 @@ jobs:
       - name: Ouvrir la pull request de bump
         if: steps.detect.outputs.rien_a_faire == 'false'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Un jeton personnel (le meme que pour la synchronisation du fork)
+          # contourne l'interdiction faite aux Actions d'ouvrir des PR.
+          GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           SUB=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk 'NR==1{print $2}')
           ANCIEN=$(git ls-tree HEAD "$SUB" | awk '$2=="commit"{print $3}')
           NOUVEAU=$(git -C "$SUB" rev-parse HEAD)
-          BRANCHE="bump-odoo-$(date -u +%Y%m%d)"
+          BRANCHE="bump-odoo-${NOUVEAU:0:12}"
 
           git config user.name "rituel-mensuel"
           git config user.email "actions@github.com"
@@ -149,9 +142,31 @@ jobs:
                      -m "Rituel mensuel automatique. Fork synchronise depuis odoo/odoo, gitlink deplace, garde-fous verts, 17 tests Megga verts contre ce nouveau coeur."
           git push -u origin "$BRANCHE"
 
-          gh pr create --base main --head "$BRANCHE" \
-            --title "Montee mensuelle du coeur Odoo (${NOUVEAU:0:12})" \
-            --body-file .github/pr-bump-odoo.md
+          # La PR est un confort ; le livrable est la BRANCHE TESTEE, deja
+          # poussee. Si GitHub refuse la creation (reglage « Allow GitHub
+          # Actions to create and approve pull requests », desactive par
+          # defaut), on le signale sans faire echouer le job : le rouge doit
+          # rester reserve aux vrais problemes, sinon plus personne ne le lit.
+          if gh pr create --base main --head "$BRANCHE" \
+               --title "Montee mensuelle du coeur Odoo (${NOUVEAU:0:12})" \
+               --body-file .github/pr-bump-odoo.md; then
+            echo "Pull request ouverte." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Bump teste et pousse — pull request a ouvrir a la main"
+              echo
+              echo "Branche : \`$BRANCHE\` (${ANCIEN:0:12} -> ${NOUVEAU:0:12})"
+              echo "Les 17 tests Megga sont VERTS contre ce nouveau coeur."
+              echo
+              echo "GitHub a refuse la creation automatique. Deux remedes :"
+              echo "- Settings > Actions > General > Workflow permissions >"
+              echo "  cocher « Allow GitHub Actions to create and approve pull requests »"
+              echo "- ou definir le secret FORK_SYNC_TOKEN (jeton personnel)"
+              echo
+              echo "Ouvrir la PR : https://github.com/\${GITHUB_REPOSITORY}/pull/new/$BRANCHE"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::PR non creee (reglage du depot). Branche testee poussee : $BRANCHE"
+          fi
 
       - name: Rien a faire
         if: steps.detect.outputs.rien_a_faire == 'true'
