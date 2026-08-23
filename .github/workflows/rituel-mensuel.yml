@@ -36,7 +36,7 @@ jobs:
           POSTGRES_DB: postgres
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U odoo"
+          --health-cmd "pg_isready -U odoo -d postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -55,7 +55,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
+          # PAS de « cache: pip » : l'action exige un fichier de dependances
+          # a la racine pour calculer sa cle, or odoo/requirements.txt vit
+          # DANS le sous-module, qui n'est pas recupere ici. La mise en cache
+          # se fait plus bas, une fois le sous-module materialise.
 
       - name: Detecter une montee disponible
         id: detect
@@ -86,6 +89,20 @@ jobs:
         run: |
           python scripts/check_licences.py
           bash scripts/check_core_pristine.sh
+
+      - name: Cle de cache (SHA du coeur)
+        id: cache_key
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        run: |
+          SUB=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk 'NR==1{print $2}')
+          echo "sha=$(git -C "$SUB" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: steps.detect.outputs.rien_a_faire == 'false'
+        with:
+          path: ~/.cache/pip
+          key: pip-odoo-${{ steps.cache_key.outputs.sha }}
+          restore-keys: pip-odoo-
 
       - name: Dependances Python d'Odoo
         if: steps.detect.outputs.rien_a_faire == 'false'
