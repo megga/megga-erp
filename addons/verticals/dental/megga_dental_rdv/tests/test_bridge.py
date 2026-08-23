@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from odoo.exceptions import AccessError
 from odoo.tests import TransactionCase
 
 
@@ -102,6 +103,27 @@ class TestDentalRdvBridge(TransactionCase):
                                  nom="Emma Connue", email="emma@exemple.ch")
         self.assertEqual(booking.partner_id, partner)
         self.assertEqual(booking.patient_id.partner_id, partner)
+
+    def test_sans_groupe_dentaire_le_pont_fonctionne(self):
+        """Un utilisateur SANS groupe dentaire (opérateur RDV pur) prend
+        une réservation au comptoir : l'automatisation crée quand même le
+        dossier (effet système, en sudo) — mais lui n'en voit rien, pas
+        même le lien (champ patient_id gardé par les groupes LPD)."""
+        operateur = self.env['res.users'].create({
+            'name': "Opérateur Guichet", 'login': "bridge_operateur",
+            'email': "operateur@exemple.ch"})
+        booking = self.Booking.with_user(operateur).create({
+            'type_id': self.rdv_type.id,
+            'guest_name': "Zoé Guichet",
+            'email': "zoe@exemple.ch",
+            'start': datetime(2026, 9, 4, 7, 0),
+        })
+        with self.assertRaises(AccessError):
+            booking.with_user(operateur).read(['patient_id'])
+        self.assertTrue(booking.sudo().patient_id,
+                        "le dossier est créé malgré l'absence de groupe")
+        self.assertEqual(booking.sudo().patient_id.partner_id.email,
+                         "zoe@exemple.ch")
 
     def test_annulation_conserve_le_dossier(self):
         booking = self._reserver(datetime(2026, 9, 3, 7, 0))

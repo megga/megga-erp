@@ -29,9 +29,18 @@ class MeggaDentalPatient(models.Model):
         default=lambda self: self.env.user)
     insurance_name = fields.Char("Assurance complémentaire")
     insurance_policy = fields.Char("N° de police")
-    allergies = fields.Text("Allergies")
-    medical_history = fields.Text("Antécédents médicaux")
-    medications = fields.Text("Médication en cours")
+    # Dossier médical : données personnelles SENSIBLES (art. 5 nLPD).
+    # groups= sur le champ = protection par l'ORM lui-même — la
+    # réception ne peut ni les lire ni les écrire, quelles que soient
+    # les vues.
+    allergies = fields.Text(
+        "Allergies", groups="megga_dental.group_dental_praticien")
+    medical_history = fields.Text(
+        "Antécédents médicaux",
+        groups="megga_dental.group_dental_praticien")
+    medications = fields.Text(
+        "Médication en cours",
+        groups="megga_dental.group_dental_praticien")
 
     recall_months = fields.Integer("Intervalle de rappel (mois)", default=6)
     recall_date = fields.Date("Prochain rappel")

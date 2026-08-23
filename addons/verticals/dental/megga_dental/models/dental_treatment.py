@@ -46,7 +46,10 @@ class MeggaDentalTreatment(models.Model):
         currency_field='currency_id')
     invoice_id = fields.Many2one(
         'account.move', string="Facture", readonly=True, copy=False)
-    notes = fields.Text("Notes cliniques")
+    # Contenu clinique : réservé aux soins (LPD). Les actes et montants
+    # restent visibles de la réception — ils figurent sur la facture.
+    notes = fields.Text(
+        "Notes cliniques", groups="megga_dental.group_dental_praticien")
 
     @api.model_create_multi
     def create(self, vals_list):

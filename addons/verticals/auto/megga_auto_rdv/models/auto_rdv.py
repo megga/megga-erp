@@ -32,17 +32,22 @@ class MeggaRdvBooking(models.Model):
     def _auto_link_vehicle(self):
         """Rattache d'office le véhicule quand il n'y a pas d'ambiguïté :
         le contact (garanti par e-mail) possède exactement UN véhicule au
-        parc. Plusieurs ou aucun : le comptoir tranche à la réception."""
-        Vehicle = self.env['fleet.vehicle']
+        parc. Plusieurs ou aucun : le comptoir tranche à la réception.
+
+        En sudo : le rattachement est un effet système de la réservation
+        (elle peut être saisie par un utilisateur sans droit sur les
+        contacts ni sur le parc) — comme le pont dentaire."""
+        Vehicle = self.env['fleet.vehicle'].sudo()
         for booking in self:
-            if booking.vehicle_id \
+            booking_sudo = booking.sudo()
+            if booking_sudo.vehicle_id \
                     or not booking.type_id.auto_vehicle_link:
                 continue
-            booking._ensure_partner()
+            booking_sudo._ensure_partner()
             vehicles = Vehicle.search(
-                [('megga_owner_id', '=', booking.partner_id.id)])
+                [('megga_owner_id', '=', booking_sudo.partner_id.id)])
             if len(vehicles) == 1:
-                booking.vehicle_id = vehicles
+                booking_sudo.vehicle_id = vehicles
 
     def action_create_workorder(self):
         """Ouvre l'atelier depuis la réservation : ordre de réparation en

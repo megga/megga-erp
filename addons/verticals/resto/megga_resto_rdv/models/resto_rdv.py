@@ -73,16 +73,21 @@ class MeggaRdvBooking(models.Model):
         """Matérialise la réservation en ligne dans le carnet, table
         attribuée et entrée confirmée. Complet : UserError — dans le flux
         public, toute la réservation (événement compris) est annulée et
-        le visiteur voit un refus propre."""
-        Reservation = self.env['megga.resto.reservation']
+        le visiteur voit un refus propre.
+
+        En sudo : la matérialisation est un effet système de la
+        réservation (elle peut être saisie par un utilisateur sans droit
+        sur les contacts ni sur le carnet) — comme les autres ponts."""
+        Reservation = self.env['megga.resto.reservation'].sudo()
         for booking in self:
             rdv_type = booking.type_id
+            booking_sudo = booking.sudo()
             if not rdv_type.resto_reservation \
-                    or booking.resto_reservation_id:
+                    or booking_sudo.resto_reservation_id:
                 continue
-            booking._ensure_partner()
+            booking_sudo._ensure_partner()
             party = booking.resto_party_size or 2
-            table = booking._resto_find_table(
+            table = booking_sudo._resto_find_table(
                 booking.start, rdv_type.duration, party)
             if not table:
                 raise UserError(_(
@@ -91,7 +96,7 @@ class MeggaRdvBooking(models.Model):
             try:
                 reservation = Reservation.create({
                     'guest_name': booking.guest_name,
-                    'partner_id': booking.partner_id.id,
+                    'partner_id': booking_sudo.partner_id.id,
                     'phone': booking.phone or False,
                     'start': booking.start,
                     'duration': rdv_type.duration,
@@ -105,7 +110,7 @@ class MeggaRdvBooking(models.Model):
                 # Course entre deux visiteurs sur la même table : la
                 # contrainte du carnet reste l'arbitre final.
                 raise UserError(str(exc)) from exc
-            booking.resto_reservation_id = reservation
+            booking_sudo.resto_reservation_id = reservation
 
     def action_cancel(self):
         res = super().action_cancel()

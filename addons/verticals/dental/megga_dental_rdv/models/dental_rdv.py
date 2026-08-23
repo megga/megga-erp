@@ -16,7 +16,8 @@ class MeggaRdvBooking(models.Model):
 
     patient_id = fields.Many2one(
         'megga.dental.patient', string="Patient", readonly=True,
-        copy=False, index=True)
+        copy=False, index=True,
+        groups="megga_dental.group_dental_reception")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -31,20 +32,26 @@ class MeggaRdvBooking(models.Model):
           si la saisie interne n'en a pas fourni) ;
         - la recherche de dossier ignore le filtre d'archivage : un
           patient archivé qui re-réserve est rattaché, jamais dupliqué ;
-        - annuler la réservation ne touche évidemment pas au dossier.
+        - annuler la réservation ne touche évidemment pas au dossier ;
+        - en sudo : depuis les groupes LPD, seuls Réception/Soins voient
+          les dossiers — mais l'automatisation (réservation publique, ou
+          saisie par un utilisateur sans groupe dentaire) doit continuer
+          de créer le dossier. Le rattachement est un effet système ; sa
+          LECTURE reste gardée par les groupes (champ patient_id compris).
         """
-        Patient = self.env['megga.dental.patient']
+        Patient = self.env['megga.dental.patient'].sudo()
         for booking in self:
-            if booking.patient_id \
+            booking_sudo = booking.sudo()
+            if booking_sudo.patient_id \
                     or not booking.type_id.dental_patient_creation:
                 continue
-            booking._ensure_partner()
-            partner = booking.partner_id
+            booking_sudo._ensure_partner()
+            partner = booking_sudo.partner_id
             patient = Patient.with_context(active_test=False).search(
                 [('partner_id', '=', partner.id)], limit=1)
             if not patient:
                 patient = Patient.create({'partner_id': partner.id})
-            booking.patient_id = patient
+            booking_sudo.patient_id = patient
 
 
 class MeggaDentalPatient(models.Model):

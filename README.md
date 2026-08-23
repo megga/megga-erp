@@ -80,12 +80,12 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic | 19 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 25 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) | 23 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic | 17 |
-| [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV | 8 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
-| [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 10 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 
 Chaque méta-module tire tout son métier : socle Megga complet + les briques
 du cœur (dentaire : CRM + agenda + contacts ; resto : POS restaurant +
@@ -94,10 +94,17 @@ contacts ; auto : fleet + CRM + contacts). Note d'architecture : le module
 en stock (product_id + lot), pas le véhicule d'un client ; l'atelier est
 donc un modèle métier propre, adossé à fleet.
 
-Chantiers ouverts côté dentaire : prise de RDV en ligne (`megga_rdv`, car
-`appointment` est un module Enterprise), tarif SSO par points (le catalogue
-officiel est sous licence SSO — chaque cabinet saisit ses actes), groupes
-d'accès dédiés au dossier médical (LPD).
+Côté dentaire, la prise de RDV en ligne (`megga_rdv`) et les **groupes
+LPD** sont livrés : deux rôles — *Réception* (identité, coordonnées,
+rendez-vous, facturation) et *Soins* (dossier médical complet, implique
+Réception) — avec les champs sensibles (allergies, antécédents,
+médication, notes cliniques) protégés par `groups=` **sur les champs
+eux-mêmes** (appliqué par l'ORM, pas seulement par les vues) ; sans
+groupe dentaire, aucun accès aux dossiers, mais l'automatisation de la
+réservation en ligne continue de créer les dossiers (effet système en
+sudo, lecture toujours gardée). Chantier restant : tarif SSO par points
+(le catalogue officiel est sous licence SSO — chaque cabinet saisit ses
+actes).
 
 Chantiers ouverts côté resto : conversion d'unités dans les fiches
 techniques (quantités saisies dans l'unité de l'ingrédient pour l'instant),

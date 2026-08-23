@@ -16,6 +16,10 @@ class TestTreatment(AccountTestInvoicingCommon):
     @AccountTestInvoicingCommon.setup_country('ch')
     def setUpClass(cls):
         super().setUpClass()
+        # L'utilisateur comptable du décor reçoit le groupe Soins : les
+        # dossiers patients sont désormais fermés hors groupes dentaires.
+        cls.env.user.group_ids = [(4, cls.env.ref(
+            'megga_dental.group_dental_praticien').id)]
         cls.patient = cls.env['megga.dental.patient'].create({
             'name': "Alice Dupont",
             'birthdate': '1990-05-01',

@@ -1,6 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_dental_tooth_user,dental.tooth.user,model_megga_dental_tooth,base.group_user,1,0,0,0
+access_dental_tooth_reception,dental.tooth.reception,model_megga_dental_tooth,group_dental_reception,1,0,0,0
 access_dental_tooth_system,dental.tooth.system,model_megga_dental_tooth,base.group_system,1,1,1,1
-access_dental_patient_user,dental.patient.user,model_megga_dental_patient,base.group_user,1,1,1,1
-access_dental_treatment_user,dental.treatment.user,model_megga_dental_treatment,base.group_user,1,1,1,1
-access_dental_treatment_line_user,dental.treatment.line.user,model_megga_dental_treatment_line,base.group_user,1,1,1,1
+access_dental_patient_reception,dental.patient.reception,model_megga_dental_patient,group_dental_reception,1,1,1,0
+access_dental_patient_praticien,dental.patient.praticien,model_megga_dental_patient,group_dental_praticien,1,1,1,1
+access_dental_treatment_reception,dental.treatment.reception,model_megga_dental_treatment,group_dental_reception,1,1,1,0
+access_dental_treatment_praticien,dental.treatment.praticien,model_megga_dental_treatment,group_dental_praticien,1,1,1,1
+access_dental_treatment_line_reception,dental.treatment.line.reception,model_megga_dental_treatment_line,group_dental_reception,1,1,1,0
+access_dental_treatment_line_praticien,dental.treatment.line.praticien,model_megga_dental_treatment_line,group_dental_praticien,1,1,1,1

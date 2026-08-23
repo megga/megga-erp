@@ -115,3 +115,24 @@ class TestRestoRdvBridge(TransactionCase):
             self.rdv_type, self.jeudi_18h, "Sans Couverts",
             "sans.couverts@exemple.ch", now=self.now)
         self.assertEqual(booking.resto_reservation_id.party_size, 2)
+
+    def test_sans_droit_contact_le_pont_fonctionne(self):
+        """Un utilisateur interne SANS droit sur les contacts prend une
+        réservation au comptoir : la matérialisation au carnet (contact
+        créé par e-mail compris) est un effet système, en sudo — comme
+        pour les autres ponts."""
+        operateur = self.env['res.users'].create({
+            'name': "Opérateur Comptoir", 'login': "resto_operateur",
+            'email': "operateur.resto@exemple.ch"})
+        booking = self.Booking.with_user(operateur).create({
+            'type_id': self.rdv_type.id,
+            'guest_name': "Tablée Comptoir",
+            'email': "tablee.comptoir@exemple.ch",
+            'start': self.jeudi_18h,
+            'resto_party_size': 2,
+        })
+        entree = booking.resto_reservation_id
+        self.assertTrue(entree, "l'entrée du carnet est créée quand même")
+        self.assertEqual(entree.state, 'confirmed')
+        self.assertEqual(entree.partner_id.email,
+                         "tablee.comptoir@exemple.ch")

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_dental_root" name="Dentaire" sequence="55"
-              web_icon="megga_dental,static/description/icon.png"/>
+              web_icon="megga_dental,static/description/icon.png"
+              groups="megga_dental.group_dental_reception"/>
 
     <menuitem id="menu_dental_patients" name="Patients"
               parent="menu_dental_root" action="action_dental_patient"
-              sequence="10"/>
+              sequence="10"
+              groups="megga_dental.group_dental_reception"/>
     <menuitem id="menu_dental_treatments" name="Traitements"
               parent="menu_dental_root" action="action_dental_treatment"
-              sequence="20"/>
+              sequence="20"
+              groups="megga_dental.group_dental_reception"/>
 
     <menuitem id="menu_dental_config" name="Configuration"
               parent="menu_dental_root" sequence="90"

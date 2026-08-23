@@ -50,7 +50,8 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Dossier médical" name="medical">
+                        <page string="Dossier médical" name="medical"
+                              groups="megga_dental.group_dental_praticien">
                             <group>
                                 <field name="allergies"/>
                                 <field name="medical_history"/>

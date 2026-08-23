@@ -33,6 +33,7 @@ référentiel des 52 dents en notation FDI / ISO 3950.
         'contacts',
     ],
     'data': [
+        'security/dental_security.xml',
         'security/ir.model.access.csv',
         'data/sequences.xml',
         'data/megga.dental.tooth.csv',
