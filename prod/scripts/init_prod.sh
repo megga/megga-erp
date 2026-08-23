@@ -131,6 +131,10 @@ Base « $BASE » prete. RESTE A FAIRE, dans l'application :
   2. Banque  : IBAN QR (compte 30000-31999) sur le journal de banque —
      sans lui, pas de QR-facture.
   3. Utilisateurs : un compte par personne, jamais de compte partage.
+     Dentaire : attribuer le role LPD (Reception ou Soins) sur chaque
+     fiche — sur une base EXISTANTE, la mise a jour de module ne touche
+     pas aux utilisateurs (donnees noupdate), le role s'attribue a la
+     main ; seule une base fraiche met l'admin en Soins d'office.
   4. Catalogue metier (actes, fiches techniques ou forfaits atelier) et
      types de rendez-vous en ligne (/rdv).
   5. Sauvegardes : timer sur prod/scripts/backup.sh (ODOO_DB_NAME=$BASE),
