@@ -47,9 +47,28 @@ docker compose up --build
 
 ## Nom du produit : Megga
 
-Décidé le 23/08/2026. Préfixe de tous les modules : `megga_` (`megga_base`,
-`megga_camt`, …). Le premier module, [`addons/megga_base`](addons/megga_base/),
-porte la surcouche de marque (Phase 2).
+Décidé le 23/08/2026. Préfixe de tous les modules : `megga_`.
+
+## Modules livrés (Phases 2 et 4 — complètes)
+
+| Module | Rôle | Tests au boot |
+|---|---|---|
+| [`megga_base`](addons/megga_base/) | Surcouche de marque (titre, favicon, couleur, e-mails, menu) | checklist visuelle |
+| [`megga_qr_export`](addons/megga_qr_export/) | QR-facture pour clients hors CH/LI (norme SIX) | 3 |
+| [`megga_camt`](addons/megga_camt/) | Import camt.053/054 — encaissements QRR, rapprochement | 5 |
+| [`megga_pain001`](addons/megga_pain001/) | Paiements fournisseurs pain.001.001.09.ch.03 | 5 |
+| [`megga_tva_ch`](addons/megga_tva_ch/) | Décompte TVA AFC (rendu du rapport l10n_ch) | 4 |
+
+Premier boot — validation groupée :
+
+```bash
+odoo-bin -i megga_base,megga_qr_export,megga_camt,megga_pain001,megga_tva_ch \
+  --test-enable --test-tags /megga_qr_export,/megga_camt,/megga_pain001,/megga_tva_ch
+```
+
+La paie reste hors périmètre code (voie connecteur/fiduciaire — volet 3 de
+l'audit) ; la Phase 5 (bump mensuel du sous-module, migration annuelle) est
+le régime permanent.
 
 ## Extraction future vers un dépôt dédié
 
