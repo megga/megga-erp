@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Titre de l'onglet : repli « Megga » (web.layout : <title t-esc="title or 'Odoo'"/>) -->
+    <template id="layout_title" inherit_id="web.layout" name="Megga — titre">
+        <xpath expr="//title" position="replace">
+            <title t-esc="title or 'Megga'"/>
+        </xpath>
+    </template>
+
+    <!-- Favicon (web.layout : <link rel="shortcut icon" t-att-href="x_icon or ..."/>) -->
+    <template id="layout_favicon" inherit_id="web.layout" name="Megga — favicon">
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link type="image/png" rel="shortcut icon" href="/megga_base/static/img/favicon.png"/>
+        </xpath>
+    </template>
+
+    <!-- Pied de la page de connexion : on retire le lien promotionnel,
+         on conserve « Manage Databases » (web.login_layout) -->
+    <template id="login_layout_footer" inherit_id="web.login_layout" name="Megga — pied de connexion">
+        <xpath expr="//a[contains(@href, 'utm_medium=auth')]" position="replace"/>
+    </template>
+
+    <!-- Bloc de promotion frontend/portail : neutralisé (web.brand_promotion_message) -->
+    <template id="brand_promotion_message" inherit_id="web.brand_promotion_message" name="Megga — promotion neutralisée">
+        <xpath expr="//t[@t-out]" position="replace"/>
+    </template>
+
+</odoo>

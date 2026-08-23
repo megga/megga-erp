@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Logo par défaut de la société principale (placeholder à remplacer
+         par le vrai logo — même chemin, mêmes proportions) -->
+    <record id="base.main_company" model="res.company">
+        <field name="logo" type="base64" file="megga_base/static/img/logo.png"/>
+    </record>
+</odoo>

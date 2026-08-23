@@ -45,12 +45,11 @@ docker compose up --build
   → tests → commit du bump. Les correctifs de sécurité arrivent par ce canal.
 - **Annuel** : migration majeure (rebrancher le sous-module, migrer nos modules).
 
-## À décider avant la Phase 2
+## Nom du produit : Megga
 
-**Le nom du produit.** Il deviendra le préfixe de tous les modules
-(`<nom>_base`, `<nom>_camt`, …) — c'est la seule décision coûteuse à changer
-après coup. Rien dans la Phase 1 ne le fige. Pas de « odoo » dans le nom :
-la marque n'est pas cédée.
+Décidé le 23/08/2026. Préfixe de tous les modules : `megga_` (`megga_base`,
+`megga_camt`, …). Le premier module, [`addons/megga_base`](addons/megga_base/),
+porte la surcouche de marque (Phase 2).
 
 ## Extraction future vers un dépôt dédié
 
