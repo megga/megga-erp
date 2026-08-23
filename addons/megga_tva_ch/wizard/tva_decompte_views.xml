@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="megga_tva_decompte_wizard_form" model="ir.ui.view">
+        <field name="name">megga.tva.decompte.wizard.form</field>
+        <field name="model">megga.tva.decompte.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Décompte TVA (AFC)">
+                <p class="text-muted">
+                    Agrège les écritures validées de la période selon les
+                    rubriques du formulaire AFC définies par la localisation
+                    suisse (200–299, 302–399, 400–479, 500/510, 900/910),
+                    et produit le décompte en PDF — de quoi remplir le
+                    formulaire en ligne sans ressaisie.
+                </p>
+                <group>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button name="action_print" type="object"
+                            string="Imprimer le décompte" class="btn-primary"/>
+                    <button string="Annuler" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_megga_tva_decompte" model="ir.actions.act_window">
+        <field name="name">Décompte TVA (AFC)</field>
+        <field name="res_model">megga.tva.decompte.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_megga_tva_decompte"
+              name="Décompte TVA (AFC)"
+              parent="account.menu_finance_entries"
+              action="action_megga_tva_decompte"
+              sequence="92"
+              groups="account.group_account_user"/>
+
+</odoo>

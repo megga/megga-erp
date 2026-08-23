@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_decompte" model="ir.actions.report">
+        <field name="name">Décompte TVA (AFC)</field>
+        <field name="model">megga.tva.decompte.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_tva_ch.decompte_template</field>
+        <field name="report_file">megga_tva_ch.decompte_template</field>
+    </record>
+
+    <template id="decompte_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Décompte TVA — formulaire AFC</h2>
+                    <p>
+                        Société : <b t-esc="wizard.company_id.name"/><br/>
+                        Période : du <b t-esc="wizard.date_from"/>
+                        au <b t-esc="wizard.date_to"/>
+                    </p>
+                    <table class="table table-sm">
+                        <tbody>
+                            <t t-foreach="rows" t-as="row">
+                                <tr t-att-class="'fw-bold' if row['is_total'] else ''">
+                                    <td>
+                                        <span t-att-style="'padding-left: %dpx' % (12 * row['level'])"
+                                              t-esc="row['name']"/>
+                                    </td>
+                                    <td class="text-end" style="width: 30%; white-space: nowrap;">
+                                        <span t-if="row['has_value']"
+                                              t-esc="fmt(row['value'])"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <p class="text-muted small">
+                        Montants en <t t-esc="wizard.company_id.currency_id.name"/>,
+                        écritures validées uniquement. Document de travail destiné
+                        à la saisie du décompte officiel — ne remplace pas la
+                        déclaration auprès de l'AFC.
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
