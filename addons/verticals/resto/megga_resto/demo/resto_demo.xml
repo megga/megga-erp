@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_floor_salle" model="restaurant.floor">
+        <field name="name">Salle principale</field>
+    </record>
+    <record id="demo_table_101" model="restaurant.table">
+        <field name="floor_id" ref="demo_floor_salle"/>
+        <field name="table_number">101</field>
+        <field name="seats">2</field>
+    </record>
+    <record id="demo_table_102" model="restaurant.table">
+        <field name="floor_id" ref="demo_floor_salle"/>
+        <field name="table_number">102</field>
+        <field name="seats">4</field>
+    </record>
+    <record id="demo_table_103" model="restaurant.table">
+        <field name="floor_id" ref="demo_floor_salle"/>
+        <field name="table_number">103</field>
+        <field name="seats">6</field>
+    </record>
+
+    <record id="demo_reservation_soir" model="megga.resto.reservation">
+        <field name="guest_name">Famille Rochat</field>
+        <field name="phone">+41 21 555 44 33</field>
+        <field name="start">2026-08-23 17:30:00</field>
+        <field name="duration">2.0</field>
+        <field name="party_size">4</field>
+        <field name="table_ids" eval="[(6, 0, [ref('demo_table_102')])]"/>
+        <field name="notes">Anniversaire — dessert avec bougie.</field>
+    </record>
+
+    <record id="demo_ing_entrecote" model="product.product">
+        <field name="name">Entrecôte de bœuf (kg)</field>
+        <field name="type">consu</field>
+        <field name="standard_price">38.0</field>
+        <field name="purchase_ok">True</field>
+        <field name="sale_ok">False</field>
+    </record>
+    <record id="demo_ing_beurre" model="product.product">
+        <field name="name">Beurre café de Paris (kg)</field>
+        <field name="type">consu</field>
+        <field name="standard_price">24.0</field>
+        <field name="purchase_ok">True</field>
+        <field name="sale_ok">False</field>
+    </record>
+    <record id="demo_ing_frites" model="product.product">
+        <field name="name">Pommes frites (kg)</field>
+        <field name="type">consu</field>
+        <field name="standard_price">2.0</field>
+        <field name="purchase_ok">True</field>
+        <field name="sale_ok">False</field>
+    </record>
+    <record id="demo_plat_entrecote" model="product.product">
+        <field name="name">Entrecôte café de Paris, frites</field>
+        <field name="type">consu</field>
+        <field name="list_price">42.0</field>
+    </record>
+
+    <record id="demo_recette_entrecote" model="megga.resto.recipe">
+        <field name="product_id" ref="demo_plat_entrecote"/>
+        <field name="notes">Cuisson au gril, beurre maison, frites fraîches.</field>
+        <field name="line_ids"
+               eval="[(0, 0, {
+                   'product_id': ref('demo_ing_entrecote'),
+                   'quantity': 0.3,
+               }), (0, 0, {
+                   'product_id': ref('demo_ing_beurre'),
+                   'quantity': 0.05,
+               }), (0, 0, {
+                   'product_id': ref('demo_ing_frites'),
+                   'quantity': 0.4,
+               })]"/>
+    </record>
+</odoo>

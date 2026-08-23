@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_resto_root" name="Restaurant" sequence="56"
+              web_icon="megga_resto,static/description/icon.png"/>
+
+    <menuitem id="menu_resto_reservations" name="Réservations"
+              parent="menu_resto_root" action="action_resto_reservation"
+              sequence="10"/>
+    <menuitem id="menu_resto_recipes" name="Fiches techniques"
+              parent="menu_resto_root" action="action_resto_recipe"
+              sequence="20"/>
+
+    <menuitem id="menu_resto_config" name="Configuration"
+              parent="menu_resto_root" sequence="90"
+              groups="base.group_system"/>
+    <menuitem id="menu_resto_tables" name="Tables"
+              parent="menu_resto_config" action="action_resto_tables"
+              sequence="10"/>
+</odoo>

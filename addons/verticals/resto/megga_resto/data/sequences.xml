@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id explicitement vide (leçon de la verticale dentaire) :
+             sans cela ir.sequence prend la société courante par défaut et
+             next_by_code échoue depuis toute autre société. -->
+        <record id="seq_resto_reservation" model="ir.sequence">
+            <field name="name">Réservations de tables</field>
+            <field name="code">megga.resto.reservation</field>
+            <field name="prefix">RSV/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_resto_reservation_user,resto.reservation.user,model_megga_resto_reservation,base.group_user,1,1,1,1
+access_resto_recipe_user,resto.recipe.user,model_megga_resto_recipe,base.group_user,1,1,1,1
+access_resto_recipe_line_user,resto.recipe.line.user,model_megga_resto_recipe_line,base.group_user,1,1,1,1
+access_restaurant_table_internal,restaurant.table.interne,pos_restaurant.model_restaurant_table,base.group_user,1,0,0,0
+access_restaurant_floor_internal,restaurant.floor.interne,pos_restaurant.model_restaurant_floor,base.group_user,1,0,0,0

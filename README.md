@@ -81,15 +81,22 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic | 19 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) | 23 |
 
-L'installation de `megga_dental` tire tout le métier : socle Megga complet
-+ CRM + agenda + contacts. Prochaines verticales prévues : `resto/`
-(assemble `pos_restaurant` du cœur), `auto/` (assemble `repair` + `fleet`).
+Chaque méta-module tire tout son métier : socle Megga complet + les briques
+du cœur (dentaire : CRM + agenda + contacts ; resto : POS restaurant +
+contacts). Prochaine verticale prévue : `auto/` (assemble `repair` + `fleet`).
 
 Chantiers ouverts côté dentaire : prise de RDV en ligne (`megga_rdv`, car
 `appointment` est un module Enterprise), tarif SSO par points (le catalogue
 officiel est sous licence SSO — chaque cabinet saisit ses actes), groupes
 d'accès dédiés au dossier médical (LPD).
+
+Chantiers ouverts côté resto : conversion d'unités dans les fiches
+techniques (quantités saisies dans l'unité de l'ingrédient pour l'instant),
+réservation en ligne (l'équivalent cœur, `pos_restaurant_appointment`, est
+Enterprise), TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
+fiscale POS à documenter par établissement).
 
 ## Origine
 
