@@ -23,5 +23,28 @@
             </field>
             <field name="auto_delete" eval="True"/>
         </record>
+
+        <record id="mail_template_rdv_rappel" model="mail.template">
+            <field name="name">RDV : rappel de la veille</field>
+            <field name="model_id" ref="model_megga_rdv_booking"/>
+            <field name="subject">Rappel : votre rendez-vous {{ object.name }}</field>
+            <field name="email_to">{{ object.email }}</field>
+            <field name="body_html" type="html">
+<div style="font-family: sans-serif; font-size: 14px;">
+    <p>Bonjour <t t-out="object.guest_name"/>,</p>
+    <p>Petit rappel — nous vous attendons :</p>
+    <p style="margin-left: 16px;">
+        <strong t-out="object.type_id.name"/><br/>
+        <t t-out="object._local_label()"/><br/>
+        Référence : <t t-out="object.name"/>
+    </p>
+    <p>Un empêchement ? Annulez en un clic :
+        <a t-att-href="object.get_base_url() + '/rdv/annuler/' + object.access_token">annuler ce rendez-vous</a>.
+    </p>
+    <p t-if="object.company_id" t-out="object.company_id.name"/>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
     </data>
 </odoo>

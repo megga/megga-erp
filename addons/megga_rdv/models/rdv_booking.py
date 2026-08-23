@@ -42,6 +42,10 @@ class MeggaRdvBooking(models.Model):
     access_token = fields.Char(
         "Jeton d'annulation", readonly=True, copy=False, index=True,
         default=lambda self: uuid.uuid4().hex)
+    reminder_sent = fields.Datetime(
+        "Rappel envoyé le", readonly=True, copy=False,
+        help="Horodatage du rappel de la veille ; garantit qu'une même "
+             "réservation n'est rappelée qu'une fois.")
     company_id = fields.Many2one(
         'res.company', required=True,
         default=lambda self: self.env.company)
@@ -166,6 +170,34 @@ class MeggaRdvBooking(models.Model):
         if template:
             template.send_mail(booking.id)
         return booking
+
+    @api.model
+    def _cron_rdv_reminders(self, lead_hours=24, now=None):
+        """Chaque jour : un e-mail de rappel aux réservations confirmées
+        qui démarrent dans la fenêtre (les prochaines `lead_hours`
+        heures). Idempotent : le marqueur reminder_sent garantit un seul
+        rappel par réservation, quel que soit le rythme du cron. `now`
+        est injectable pour des tests déterministes."""
+        now = now or fields.Datetime.now()
+        template = self.env.ref(
+            'megga_rdv.mail_template_rdv_rappel',
+            raise_if_not_found=False)
+        if not template:
+            return True
+        bookings = self.search([
+            ('state', '=', 'confirmed'),
+            ('reminder_sent', '=', False),
+            ('start', '>', now),
+            ('start', '<=', now + timedelta(hours=lead_hours)),
+            ('type_id.send_reminder', '=', True),
+        ])
+        for booking in bookings:
+            if booking.email:
+                template.send_mail(booking.id)
+            # Marqué même sans e-mail : inutile de rebalayer sans fin
+            # une réservation qu'on ne peut de toute façon pas joindre.
+            booking.reminder_sent = now
+        return True
 
     def action_cancel(self):
         """Annulation (bouton interne ou lien public par jeton) :

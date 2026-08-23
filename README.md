@@ -120,8 +120,11 @@ libres — l'agenda `calendar.event` du cœur fait foi, dans les deux sens :
 un événement occupe le créneau, une réservation devient un événement chez
 l'intervenant le moins chargé du jour. Confirmation par e-mail avec lien
 d'annulation à jeton (l'annulation supprime l'événement et libère le
-créneau). 19 tests, dont la réservation de bout en bout par HTTP (CSRF
-compris). Indépendant des verticales : il ne dépend que de `calendar`.
+créneau). Rappel de la veille : un cron quotidien idempotent rappelle
+par e-mail chaque réservation confirmée qui démarre dans les 24 heures
+(lien d'annulation compris, débrayable par type). 24 tests, dont la
+réservation de bout en bout par HTTP (CSRF compris). Indépendant des
+verticales : il ne dépend que de `calendar`.
 
 ## Origine
 

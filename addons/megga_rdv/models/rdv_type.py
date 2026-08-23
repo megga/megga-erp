@@ -34,6 +34,10 @@ class MeggaRdvType(models.Model):
         help="Un créneau plus proche que ce préavis n'est pas proposé.")
     horizon_days = fields.Integer(
         "Réservable jusqu'à (jours)", default=21)
+    send_reminder = fields.Boolean(
+        "Rappel par e-mail la veille", default=True,
+        help="Un e-mail de rappel (avec le lien d'annulation) part dans "
+             "les 24 heures qui précèdent le rendez-vous.")
     user_ids = fields.Many2many(
         'res.users', string="Intervenants",
         domain=[('share', '=', False)],

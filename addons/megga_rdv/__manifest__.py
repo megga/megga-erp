@@ -30,6 +30,7 @@ pour les suivants.
         'security/ir.model.access.csv',
         'data/sequences.xml',
         'data/mail_template.xml',
+        'data/cron.xml',
         'views/rdv_views.xml',
         'views/rdv_templates.xml',
         'views/rdv_menus.xml',

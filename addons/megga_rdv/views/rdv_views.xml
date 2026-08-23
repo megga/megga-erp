@@ -19,6 +19,7 @@
                             <field name="tz"/>
                             <field name="min_notice_hours"/>
                             <field name="horizon_days"/>
+                            <field name="send_reminder"/>
                         </group>
                         <group string="Intervenants">
                             <field name="user_ids" widget="many2many_tags"/>
@@ -96,6 +97,8 @@
                             <field name="stop"/>
                             <field name="user_id" widget="many2one_avatar_user"/>
                             <field name="event_id"/>
+                            <field name="reminder_sent"
+                                   invisible="not reminder_sent"/>
                             <field name="company_id" invisible="1"/>
                         </group>
                     </group>
