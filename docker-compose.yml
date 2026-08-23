@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  erp:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    volumes:
+      # :ro sur le coeur — la derive vers le fork est impossible par construction
+      - ./odoo:/opt/odoo:ro
+      - ./addons:/opt/addons
+      - ./addons-oca:/opt/addons-oca
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      - filestore:/root/.local/share/Odoo
+
+volumes:
+  pgdata: {}
+  filestore: {}
