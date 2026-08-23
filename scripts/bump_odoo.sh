@@ -34,12 +34,25 @@ AMONT="$(git ls-remote "$UPSTREAM_URL" "refs/heads/${BRANCHE}" | cut -f1)"
 [ -n "$AMONT" ] || { echo "ERREUR: branche $BRANCHE introuvable sur l'amont"; exit 1; }
 echo "sommet amont : $AMONT"
 
+EXERCICE=0
 if [ "$ACTUEL" = "$AMONT" ]; then
-    echo "RIEN A FAIRE — le coeur est deja a jour."
-    exit 99
+    if [ "${FORCER:-0}" = "1" ] && [ "$DRY_RUN" != "--dry-run" ]; then
+        # Mode force sans montee : EXERCICE de synchronisation. On
+        # deroule la section fork (jeton compris) pour prouver la
+        # plomberie, puis on sort en 99 — pas de bump a blanc, pas de
+        # tests, pas de PR. C'est le chemin de verification du
+        # FORK_SYNC_TOKEN. (Avant cette branche, un run force sans
+        # montee sortait en 99 AVANT la section fork : rouge en CI et
+        # jeton jamais exerce — constate le 23/08/2026.)
+        echo "AMONT INCHANGE — exercice de synchronisation (FORCER=1)."
+        EXERCICE=1
+    else
+        echo "RIEN A FAIRE — le coeur est deja a jour."
+        exit 99
+    fi
+else
+    echo "Un bump est disponible : ${ACTUEL:0:12} -> ${AMONT:0:12}"
 fi
-
-echo "Un bump est disponible : ${ACTUEL:0:12} -> ${AMONT:0:12}"
 if [ "$DRY_RUN" = "--dry-run" ]; then
     echo "(--dry-run : on s'arrete ici)"
     exit 0
@@ -73,6 +86,12 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 if git -c protocol.version=2 ls-remote "$FORK_URL" "refs/heads/${BRANCHE}" \
      | cut -f1 | grep -qx "$AMONT"; then
     echo "  verifie : le fork pointe bien $AMONT"
+    if [ "$EXERCICE" = "1" ]; then
+        echo
+        echo "EXERCICE REUSSI — plomberie de synchronisation verifiee,"
+        echo "rien a bumper (le coeur est deja au sommet de l'amont)."
+        exit 99
+    fi
 else
     echo
     echo "ARRET — le fork ${FORK_SLUG} n'est PAS a jour."

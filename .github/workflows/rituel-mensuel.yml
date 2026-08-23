@@ -76,16 +76,33 @@ jobs:
           fi
 
       - name: Preparer le bump (synchronise le fork, deplace le gitlink)
+        id: preparer
         if: steps.detect.outputs.rien_a_faire == 'false'
         env:
           # Jeton autorise a ecrire sur le fork megga/odoo. Sans lui, le
           # script s'arrete avec les instructions de synchronisation manuelle :
           # le GITHUB_TOKEN par defaut ne porte que sur CE depot.
           GITHUB_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
-        run: bash scripts/bump_odoo.sh
+          # Force sans montee = EXERCICE de synchronisation : le script
+          # exerce le jeton et verifie le fork, puis sort en 99 — pas de
+          # bump a blanc, les etapes suivantes sont sautees.
+          FORCER: ${{ inputs.forcer == true && '1' || '0' }}
+        run: |
+          set +e
+          bash scripts/bump_odoo.sh
+          CODE=$?
+          set -e
+          if [ "$CODE" = "0" ]; then
+            echo "bump_pret=true" >> "$GITHUB_OUTPUT"
+          elif [ "$CODE" = "99" ]; then
+            echo "bump_pret=false" >> "$GITHUB_OUTPUT"
+            echo "### Exercice de synchronisation reussi — fork verifie, rien a bumper." >> "$GITHUB_STEP_SUMMARY"
+          else
+            exit "$CODE"
+          fi
 
       - name: Garde-fous (licences, coeur intact et amont)
-        if: steps.detect.outputs.rien_a_faire == 'false'
+        if: steps.detect.outputs.rien_a_faire == 'false' && steps.preparer.outputs.bump_pret == 'true'
         run: |
           python scripts/check_licences.py
           bash scripts/check_core_pristine.sh
@@ -96,7 +113,7 @@ jobs:
       # d'entretenir un mecanisme qui ne sert jamais.
 
       - name: Dependances Python d'Odoo
-        if: steps.detect.outputs.rien_a_faire == 'false'
+        if: steps.detect.outputs.rien_a_faire == 'false' && steps.preparer.outputs.bump_pret == 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
@@ -119,11 +136,11 @@ jobs:
           python -c "from urllib3.contrib.pyopenssl import PyOpenSSLContext; import zeep, pypdf; print('dependances OK')"
 
       - name: Lancer la suite Megga complete contre le nouveau coeur
-        if: steps.detect.outputs.rien_a_faire == 'false'
+        if: steps.detect.outputs.rien_a_faire == 'false' && steps.preparer.outputs.bump_pret == 'true'
         run: bash scripts/run_tests.sh
 
       - name: Ouvrir la pull request de bump
-        if: steps.detect.outputs.rien_a_faire == 'false'
+        if: steps.detect.outputs.rien_a_faire == 'false' && steps.preparer.outputs.bump_pret == 'true'
         env:
           # Un jeton personnel (le meme que pour la synchronisation du fork)
           # contourne l'interdiction faite aux Actions d'ouvrir des PR.
