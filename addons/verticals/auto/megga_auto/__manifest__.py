@@ -40,6 +40,7 @@ journal de compteur, facture en un clic.
         'security/ir.model.access.csv',
         'data/sequences.xml',
         'data/auto_data.xml',
+        'report/carnet_report.xml',
         'views/fleet_vehicle_views.xml',
         'views/auto_workorder_views.xml',
         'views/auto_menus.xml',

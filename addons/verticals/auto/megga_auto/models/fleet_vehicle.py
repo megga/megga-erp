@@ -67,6 +67,15 @@ class FleetVehicle(models.Model):
                 'megga_inspections_done': vehicle.megga_inspections_done + 1,
             })
 
+    def _megga_carnet_workorders(self):
+        """Les interventions du carnet d'entretien : les ordres TERMINÉS
+        seulement (un devis ou un ordre annulé n'est pas un entretien),
+        du plus ancien au plus récent — l'ordre d'un carnet papier."""
+        self.ensure_one()
+        return self.megga_workorder_ids.filtered(
+            lambda o: o.state == 'done'
+        ).sorted(key=lambda o: (o.date, o.odometer_in, o.id))
+
     def action_megga_view_workorders(self):
         self.ensure_one()
         return {

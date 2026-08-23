@@ -82,7 +82,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 35 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
-| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic | 17 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
@@ -145,8 +145,15 @@ déduit, la revente porte la TVA pleine incluse — la charge nette
 l'**imposition de la marge** (art. 24a : TVA extraite de la marge
 seule, marge négative sans crédit, et facture de vente sans mention de
 TVA — la mentionner rendrait tout le montant dû ; la TVA de la marge se
-déclare au décompte). Chantier ouvert : carnet d'entretien imprimable ;
-le rythme d'expertise est le rythme fédéral — les convocations
+déclare au décompte).
+
+Le **carnet d'entretien** s'imprime depuis la fiche véhicule (menu
+Imprimer) : identité du véhicule (plaque, VIN, première mise en
+circulation, expertises), puis les interventions **terminées** en ordre
+chronologique — date, compteur, référence, travaux. Jamais les prix :
+le carnet se remet à l'acheteur, les tarifs du garage ne le suivent
+pas. Le tableau auto est vide — plus de chantier ouvert ; pour
+mémoire, le rythme d'expertise est le rythme fédéral, les convocations
 cantonales (OCN, SAN…) peuvent s'en écarter.
 
 ## Rendez-vous en ligne (`addons/megga_rdv`)

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le carnet d'entretien : la vie du véhicule, à remettre au client
+         (ou à l'acheteur d'une occasion). Il montre le SUIVI — dates,
+         compteur, travaux — jamais les prix : un carnet se transmet, les
+         tarifs du garage ne le suivent pas. -->
+    <record id="action_report_carnet" model="ir.actions.report">
+        <field name="name">Carnet d'entretien</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_auto.report_carnet</field>
+        <field name="report_file">megga_auto.report_carnet</field>
+        <field name="print_report_name">'Carnet - %s' % (object.license_plate or object.display_name)</field>
+        <field name="binding_model_id" ref="fleet.model_fleet_vehicle"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_carnet">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="vehicle">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Carnet d'entretien</h2>
+
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong>Véhicule</strong>
+                                <div t-esc="vehicle.model_id.display_name"/>
+                                <div t-if="vehicle.license_plate">
+                                    Plaque : <span t-esc="vehicle.license_plate"/>
+                                </div>
+                                <div t-if="vehicle.vin_sn">
+                                    Châssis (VIN) : <span t-esc="vehicle.vin_sn"/>
+                                </div>
+                                <div t-if="vehicle.megga_first_circulation">
+                                    Première mise en circulation :
+                                    <span t-field="vehicle.megga_first_circulation"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <strong>Suivi</strong>
+                                <div t-if="vehicle.megga_owner_id">
+                                    Propriétaire :
+                                    <span t-esc="vehicle.megga_owner_id.display_name"/>
+                                </div>
+                                <div>
+                                    Compteur au jour du carnet :
+                                    <span t-esc="'%s km' % int(vehicle.odometer)"/>
+                                </div>
+                                <div t-if="vehicle.megga_last_inspection">
+                                    Dernière expertise :
+                                    <span t-field="vehicle.megga_last_inspection"/>
+                                </div>
+                                <div t-if="vehicle.megga_next_inspection">
+                                    Prochaine expertise (rythme OETV) :
+                                    <span t-field="vehicle.megga_next_inspection"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <t t-set="orders" t-value="vehicle._megga_carnet_workorders()"/>
+                        <table class="table table-sm" t-if="orders">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-end">Compteur</th>
+                                    <th>Référence</th>
+                                    <th>Travaux effectués</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="orders" t-as="order">
+                                    <td><span t-field="order.date"/></td>
+                                    <td class="text-end">
+                                        <span t-esc="'%s km' % int(order.odometer_in)"/>
+                                    </td>
+                                    <td><span t-esc="order.name"/></td>
+                                    <td>
+                                        <div t-foreach="order.line_ids" t-as="line">
+                                            <span t-esc="line.description or line.product_id.display_name"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-else="">Aucune intervention terminée au carnet.</p>
+
+                        <p class="text-muted mt-4">
+                            Entretiens et réparations effectués par
+                            <span t-esc="vehicle.company_id.name or user.company_id.name"/> —
+                            document établi le <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d.%m.%Y')"/>.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
