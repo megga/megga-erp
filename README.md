@@ -87,6 +87,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto_occasion` (**auto_install**) | Commerce d'occasion : reprise → stock → revente (le nouveau propriétaire entre au parc clients). Régime ordinaire = impôt préalable fictif (art. 28a LTVA, taxe incluse extraite du prix de reprise, revente TTC — la charge nette est la TVA de la marge) ; pièces de collection = imposition de la marge (art. 24a : TVA sur la marge seule, marge négative sans crédit, facture de vente **sans mention de TVA**). Factures de reprise et de vente en un clic | 15 |
 
 Chaque méta-module tire tout son métier : socle Megga complet + les briques
 du cœur (dentaire : CRM + agenda + contacts ; resto : POS restaurant +
@@ -134,10 +135,19 @@ Une société qui reçoit son plan comptable après coup relance le
 câblage via Restaurant ▸ Configuration ▸ TVA à l'emporter (CH). Le
 tableau resto est vide — plus de chantier ouvert.
 
-Chantiers ouverts côté auto : véhicules d'occasion en stock (reprises,
-marge bénéficiaire TVA art. 24a LTVA), carnet d'entretien imprimable ;
-le rythme d'expertise est le rythme fédéral — les convocations cantonales
-(OCN, SAN…) peuvent s'en écarter.
+Côté auto, le commerce d'occasion est livré (`megga_auto_occasion`,
+auto-installé avec la localisation suisse) : la reprise à un particulier
+ne porte pas de TVA, mais la loi ne taxe pas le garage sur le prix
+plein — la voie ordinaire est l'**impôt préalable fictif** (art. 28a
+LTVA : le prix de reprise est réputé TVA comprise, 8.1/108.1 en est
+déduit, la revente porte la TVA pleine incluse — la charge nette
+équivaut à taxer la marge) ; les **pièces de collection** relèvent de
+l'**imposition de la marge** (art. 24a : TVA extraite de la marge
+seule, marge négative sans crédit, et facture de vente sans mention de
+TVA — la mentionner rendrait tout le montant dû ; la TVA de la marge se
+déclare au décompte). Chantier ouvert : carnet d'entretien imprimable ;
+le rythme d'expertise est le rythme fédéral — les convocations
+cantonales (OCN, SAN…) peuvent s'en écarter.
 
 ## Rendez-vous en ligne (`addons/megga_rdv`)
 

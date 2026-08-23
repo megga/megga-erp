@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_auto_occasion_form" model="ir.ui.view">
+        <field name="name">megga.auto.occasion.form</field>
+        <field name="model">megga.auto.occasion</field>
+        <field name="arch" type="xml">
+            <form string="Occasion">
+                <header>
+                    <button name="action_buy" type="object"
+                            string="Entrer au stock" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_purchase_bill" type="object"
+                            string="Facture de reprise"
+                            invisible="state == 'draft' or purchase_bill_id"/>
+                    <button name="action_sell" type="object"
+                            string="Vendre" class="btn-primary"
+                            invisible="state != 'stock'"/>
+                    <button name="action_create_sale_invoice" type="object"
+                            string="Facture de vente" class="btn-primary"
+                            invisible="state != 'sold' or sale_invoice_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,stock,sold"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="regime" widget="radio"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Reprise">
+                            <field name="seller_id"/>
+                            <field name="buy_date"/>
+                            <field name="buy_price"/>
+                            <field name="purchase_bill_id"
+                                   invisible="not purchase_bill_id"/>
+                        </group>
+                        <group string="Revente">
+                            <field name="buyer_id"/>
+                            <field name="sale_date"/>
+                            <field name="sale_price"/>
+                            <field name="sale_invoice_id"
+                                   invisible="not sale_invoice_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="TVA (impôt préalable fictif)"
+                               invisible="regime != 'fictif'">
+                            <field name="fictive_tax_amount"/>
+                            <field name="sale_vat_amount"/>
+                            <field name="net_vat_amount"/>
+                        </group>
+                        <group string="TVA (imposition de la marge)"
+                               invisible="regime != 'marge'">
+                            <field name="margin_amount"/>
+                            <field name="margin_vat_amount"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_auto_occasion_list" model="ir.ui.view">
+        <field name="name">megga.auto.occasion.list</field>
+        <field name="model">megga.auto.occasion</field>
+        <field name="arch" type="xml">
+            <list string="Occasions">
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="regime" optional="show"/>
+                <field name="buy_price" sum="Reprises"/>
+                <field name="sale_price" sum="Reventes"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'stock'"
+                       decoration-success="state == 'sold'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_occasion_search" model="ir.ui.view">
+        <field name="name">megga.auto.occasion.search</field>
+        <field name="model">megga.auto.occasion</field>
+        <field name="arch" type="xml">
+            <search string="Occasions">
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="seller_id"/>
+                <field name="buyer_id"/>
+                <filter name="state_stock" string="Au stock"
+                        domain="[('state', '=', 'stock')]"/>
+                <filter name="state_sold" string="Vendues"
+                        domain="[('state', '=', 'sold')]"/>
+                <group>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_regime" string="Régime TVA"
+                            context="{'group_by': 'regime'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_auto_occasion" model="ir.actions.act_window">
+        <field name="name">Occasions</field>
+        <field name="res_model">megga.auto.occasion</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Reprendre une première occasion</p>
+            <p>Reprise (impôt préalable fictif, art. 28a LTVA — ou
+               imposition de la marge, art. 24a, pour les pièces de
+               collection), stock, revente : le nouveau propriétaire
+               entre au parc clients.</p>
+        </field>
+    </record>
+    <menuitem id="menu_auto_occasions" name="Occasions"
+              parent="megga_auto.menu_auto_root"
+              action="action_auto_occasion" sequence="30"/>
+</odoo>
