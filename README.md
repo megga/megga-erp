@@ -41,15 +41,43 @@ docker compose up --build
 
 ## Maintenance (Phase 5 du plan)
 
-- **Mensuel** : synchroniser le fork puis le sous-module. Sur GitHub,
-  `megga/odoo` ▸ « Sync fork » (ou `git -C odoo fetch upstream 19.0 &&
-  git -C odoo push origin FETCH_HEAD:19.0` avec
-  `upstream = https://github.com/odoo/odoo.git`), puis
-  `git -C odoo fetch origin 19.0 && git -C odoo merge origin/19.0`
-  → tests → commit du bump. **Le fork n'avale pas les correctifs amont tout
-  seul : sans cette synchronisation, vous ne recevez plus les correctifs de
-  sécurité.**
+- **Mensuel** : le workflow `rituel-mensuel` (1ᵉʳ du mois, 03h17 UTC, ou à
+  la demande via *Run workflow*) synchronise le fork, déplace le gitlink,
+  passe les garde-fous et **la suite Megga complète** contre le nouveau
+  cœur, puis pousse une branche `bump-odoo-*` et propose la pull request —
+  il ne fusionne jamais seul. Cycle complet exécuté et fusionné en réel le
+  23/08/2026 (`5a12710b` → `ba4315ec`). **Le fork n'avale pas les
+  correctifs amont tout seul : sans ce rituel, vous ne recevez plus les
+  correctifs de sécurité.** À la main, la même chose :
+  `bash scripts/bump_odoo.sh` → `bash scripts/run_tests.sh` → commit.
 - **Annuel** : migration majeure (rebrancher le sous-module, migrer nos modules).
+
+### `FORK_SYNC_TOKEN` — l'autonomie complète du rituel
+
+Sans ce secret, le rituel fonctionne mais s'arrête à deux guichets : la
+synchronisation du fork doit avoir été faite d'avance (sinon arrêt propre
+avec instructions), et GitHub interdit aux Actions d'ouvrir la pull
+request (la branche testée est poussée, la PR s'ouvre à la main). Avec le
+secret, tout est automatique. Seul le propriétaire du compte peut le
+frapper — deux minutes :
+
+1. **Frapper le jeton** : GitHub ▸ *Settings* ▸ *Developer settings* ▸
+   *Fine-grained personal access tokens* ▸ *Generate new token*.
+   - *Resource owner* : `megga` ; *Repository access* : **seulement**
+     `megga/odoo` et `megga/megga-erp`.
+   - *Permissions* (le minimum qui suffit) : **Contents : Read and
+     write** (synchronisation du fork par `merge-upstream`) et **Pull
+     requests : Read and write** (ouverture de la PR de bump) —
+     *Metadata : Read* s'ajoute d'office.
+   - Expiration : 1 an, et un rappel de rotation à l'agenda — un jeton
+     expiré redonne simplement le comportement sans secret, rien ne casse.
+2. **Poser le secret** : `megga/megga-erp` ▸ *Settings* ▸ *Secrets and
+   variables* ▸ *Actions* ▸ *New repository secret* — nom exact
+   `FORK_SYNC_TOKEN`, valeur = le jeton. Jamais dans un fichier, jamais
+   dans le dépôt.
+3. **Vérifier** : relancer `rituel-mensuel` avec l'entrée `forcer` cochée
+   — le journal doit montrer « fork synchronise (merge-upstream) » et la
+   PR s'ouvrir toute seule.
 
 ## Nom du produit : Megga
 
