@@ -34,7 +34,10 @@
                             <field name="sequence" widget="handle"/>
                             <field name="product_id"/>
                             <field name="quantity"/>
-                            <field name="uom_id"/>
+                            <field name="uom_id"
+                                   options="{'no_create': True}"/>
+                            <field name="allowed_uom_ids"
+                                   column_invisible="1"/>
                             <field name="cost" sum="Coût matière"/>
                             <field name="currency_id" column_invisible="1"/>
                         </list>

@@ -81,7 +81,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 35 |
-| [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) | 23 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic | 17 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
@@ -115,10 +115,13 @@ au bénéfice d'une licence importe ses positions (CSV : `code`, `name`,
 saisit à la main ; les lignes à produit (forfaits, fournitures) restent
 possibles et se mélangent librement.
 
-Chantiers ouverts côté resto : conversion d'unités dans les fiches
-techniques (quantités saisies dans l'unité de l'ingrédient pour l'instant),
-réservation en ligne (l'équivalent cœur, `pos_restaurant_appointment`, est
-Enterprise), TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
+Côté resto, les fiches techniques convertissent les unités : chaque
+ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl
+d'une huile au litre — les unités maison comme le centilitre se créent
+en un clic, relatives au litre), le coût est converti par l'arbre
+d'unités du cœur, et seules les unités convertibles (même racine — en
+19 les catégories d'unités ont disparu) sont proposées. Chantiers
+ouverts : TVA à l'emporter 2.6 % vs sur place 8.1 % (configuration
 fiscale POS à documenter par établissement).
 
 Chantiers ouverts côté auto : véhicules d'occasion en stock (reprises,
