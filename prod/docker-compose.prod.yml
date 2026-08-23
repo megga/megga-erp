@@ -39,6 +39,7 @@ services:
       - ../addons-oca:/opt/addons-oca:ro
       - ./odoo.prod.conf:/etc/odoo/odoo.conf:ro
       - ./entrypoint.sh:/entrypoint.sh:ro
+      - ./scripts:/scripts:ro         # init_dentaire.sh & co. depuis erp
       - filestore:/var/lib/odoo
     expose: ["8069", "8072"]          # jamais publie : nginx est la seule porte
 
