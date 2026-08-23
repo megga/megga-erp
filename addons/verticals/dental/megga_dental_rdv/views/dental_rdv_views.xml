@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rdv_booking_form_dental" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.form.dental</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="inherit_id" ref="megga_rdv.view_rdv_booking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="patient_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_rdv_booking_list_dental" model="ir.ui.view">
+        <field name="name">megga.rdv.booking.list.dental</field>
+        <field name="model">megga.rdv.booking</field>
+        <field name="inherit_id" ref="megga_rdv.view_rdv_booking_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='guest_name']" position="after">
+                <field name="patient_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_rdv_type_form_dental" model="ir.ui.view">
+        <field name="name">megga.rdv.type.form.dental</field>
+        <field name="model">megga.rdv.type</field>
+        <field name="inherit_id" ref="megga_rdv.view_rdv_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='horizon_days']" position="after">
+                <field name="dental_patient_creation"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_dental_patient_form_rdv" model="ir.ui.view">
+        <field name="name">megga.dental.patient.form.rdv</field>
+        <field name="model">megga.dental.patient</field>
+        <field name="inherit_id" ref="megga_dental.view_dental_patient_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_rdv_bookings" type="object"
+                        class="oe_stat_button" icon="fa-calendar">
+                    <field name="rdv_booking_count" widget="statinfo"
+                           string="RDV en ligne"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
