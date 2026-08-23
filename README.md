@@ -6,7 +6,8 @@ Phase 1 du [plan de reprise](../PLAN-REPRISE-ODOO.md). Le cœur d'Odoo est un
 ## Épinglage
 
 - Sous-module : `odoo/` → **`megga/odoo`** (notre fork de `odoo/odoo`), branche `19.0`
-- SHA figé : `9188766f5bab9cc7fe25e6812f9e795e5a2c212f` (relevé le 23/08/2026)
+- SHA figé : celui du gitlink — `git ls-tree HEAD odoo` fait foi. Il n'avance
+  que par le rituel mensuel (`rituel-mensuel.yml`), jamais à la main.
 
 ## Démarrer (sur votre machine)
 
@@ -64,16 +65,31 @@ Décidé le 23/08/2026. Préfixe de tous les modules : `megga_`.
 | [`megga_pain001`](addons/megga_pain001/) | Paiements fournisseurs pain.001.001.09.ch.03 | 5 |
 | [`megga_tva_ch`](addons/megga_tva_ch/) | Décompte TVA AFC (rendu du rapport l10n_ch) | 4 |
 
-Premier boot — validation groupée :
-
-```bash
-odoo-bin -i megga_base,megga_qr_export,megga_camt,megga_pain001,megga_tva_ch \
-  --test-enable --test-tags /megga_qr_export,/megga_camt,/megga_pain001,/megga_tva_ch
-```
+Validation groupée (socle + verticales) : `bash scripts/run_tests.sh`.
 
 La paie reste hors périmètre code (voie connecteur/fiduciaire — volet 3 de
 l'audit) ; la Phase 5 (bump mensuel du sous-module, migration annuelle) est
 le régime permanent.
+
+## Verticales métier (`addons/verticals/`)
+
+Un cœur, un socle suisse, N secteurs. Chaque verticale est un répertoire
+d'addons **supplémentaire** : un déploiement client assemble
+`odoo/addons` + `addons` + `addons/verticals/<secteur>`, et le rituel
+mensuel teste toutes les verticales contre chaque bump du cœur.
+
+| Verticale | Méta-module | Contenu | Tests |
+|---|---|---|---|
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), facturation en un clic | 19 |
+
+L'installation de `megga_dental` tire tout le métier : socle Megga complet
++ CRM + agenda + contacts. Prochaines verticales prévues : `resto/`
+(assemble `pos_restaurant` du cœur), `auto/` (assemble `repair` + `fleet`).
+
+Chantiers ouverts côté dentaire : prise de RDV en ligne (`megga_rdv`, car
+`appointment` est un module Enterprise), tarif SSO par points (le catalogue
+officiel est sous licence SSO — chaque cabinet saisit ses actes), groupes
+d'accès dédiés au dossier médical (LPD).
 
 ## Origine
 

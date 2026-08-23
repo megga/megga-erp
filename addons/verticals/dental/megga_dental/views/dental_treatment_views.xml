@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_treatment_form" model="ir.ui.view">
+        <field name="name">megga.dental.treatment.form</field>
+        <field name="model">megga.dental.treatment</field>
+        <field name="arch" type="xml">
+            <form string="Traitement">
+                <header>
+                    <button name="action_confirm" type="object" string="Planifier"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_done" type="object" string="Terminer"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Créer la facture" class="btn-primary"
+                            invisible="state != 'done' or invoice_id"/>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="dentist_id" widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="product_id"/>
+                            <field name="description"/>
+                            <field name="tooth_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="subtotal" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_total"/>
+                    </group>
+                    <field name="notes" placeholder="Notes cliniques…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_treatment_list" model="ir.ui.view">
+        <field name="name">megga.dental.treatment.list</field>
+        <field name="model">megga.dental.treatment</field>
+        <field name="arch" type="xml">
+            <list string="Traitements">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="patient_id"/>
+                <field name="dentist_id" widget="many2one_avatar_user"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="invoice_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_treatment_search" model="ir.ui.view">
+        <field name="name">megga.dental.treatment.search</field>
+        <field name="model">megga.dental.treatment</field>
+        <field name="arch" type="xml">
+            <search string="Traitements">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <filter name="state_draft" string="Devis"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="state_confirmed" string="Planifiés"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="state_done" string="Terminés"
+                        domain="[('state', '=', 'done')]"/>
+                <filter name="a_facturer" string="À facturer"
+                        domain="[('state', '=', 'done'), ('invoice_id', '=', False)]"/>
+                <group>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_dentist" string="Praticien"
+                            context="{'group_by': 'dentist_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_treatment" model="ir.actions.act_window">
+        <field name="name">Traitements</field>
+        <field name="res_model">megga.dental.treatment</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier traitement</p>
+            <p>Devis, planification, actes par dent (FDI) puis facturation
+               en un clic — la QR-facture suit automatiquement.</p>
+        </field>
+    </record>
+
+    <record id="view_dental_tooth_list" model="ir.ui.view">
+        <field name="name">megga.dental.tooth.list</field>
+        <field name="model">megga.dental.tooth</field>
+        <field name="arch" type="xml">
+            <list string="Dents" create="false" delete="false">
+                <field name="number"/>
+                <field name="name"/>
+                <field name="deciduous"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dental_tooth" model="ir.actions.act_window">
+        <field name="name">Dents (FDI)</field>
+        <field name="res_model">megga.dental.tooth</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

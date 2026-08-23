@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dental_tooth_user,dental.tooth.user,model_megga_dental_tooth,base.group_user,1,0,0,0
+access_dental_tooth_system,dental.tooth.system,model_megga_dental_tooth,base.group_system,1,1,1,1
+access_dental_patient_user,dental.patient.user,model_megga_dental_patient,base.group_user,1,1,1,1
+access_dental_treatment_user,dental.treatment.user,model_megga_dental_treatment,base.group_user,1,1,1,1
+access_dental_treatment_line_user,dental.treatment.line.user,model_megga_dental_treatment_line,base.group_user,1,1,1,1

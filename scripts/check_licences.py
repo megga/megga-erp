@@ -43,10 +43,13 @@ def main() -> int:
                 else "non reconnue : revue humaine requise"
             erreurs.append(f"addons-oca/{manifest.parent.name}: '{lic}' — {motif}")
 
-    for manifest in sorted((base / "addons").glob("*/__manifest__.py")):
+    notres = sorted((base / "addons").glob("*/__manifest__.py")) + \
+        sorted((base / "addons" / "verticals").glob("*/*/__manifest__.py"))
+    for manifest in notres:
         lic = licence_de(manifest)
         if lic in CONTAMINANTES:
-            erreurs.append(f"addons/{manifest.parent.name}: '{lic}' — "
+            chemin = manifest.parent.relative_to(base)
+            erreurs.append(f"{chemin}: '{lic}' — "
                            "copyleft contaminant dans un module propre")
 
     if erreurs:

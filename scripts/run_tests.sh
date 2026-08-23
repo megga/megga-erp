@@ -40,10 +40,13 @@ ODOO_BIN="$SUB/odoo-bin"
 [ -d "${PREFIXE}addons" ] || { echo "ERREUR: ${PREFIXE}addons introuvable"; exit 1; }
 
 BASE="${TEST_DB:-megga_ci_$$}"
-MODULES="${TEST_MODULES:-megga_base,megga_qr_export,megga_camt,megga_pain001,megga_tva_ch}"
-TAGS="${TEST_TAGS:-/megga_qr_export,/megga_camt,/megga_pain001,/megga_tva_ch}"
-MIN="${TEST_MIN:-17}"
-CHEMINS="$SUB/addons,${PREFIXE}addons,${PREFIXE}addons-oca${EXTRA_ADDONS:+,$EXTRA_ADDONS}"
+MODULES="${TEST_MODULES:-megga_base,megga_qr_export,megga_camt,megga_pain001,megga_tva_ch,megga_dental}"
+TAGS="${TEST_TAGS:-/megga_qr_export,/megga_camt,/megga_pain001,/megga_tva_ch,/megga_dental}"
+MIN="${TEST_MIN:-36}"
+# Chaque verticale (addons/verticals/<secteur>/) est un chemin d'addons
+# supplémentaire : le rituel teste ainsi le cœur + le socle + TOUTES les
+# verticales d'un coup à chaque bump.
+CHEMINS="$SUB/addons,${PREFIXE}addons,${PREFIXE}addons/verticals/dental,${PREFIXE}addons-oca${EXTRA_ADDONS:+,$EXTRA_ADDONS}"
 
 echo "Base de test : $BASE"
 echo "Chemins      : $CHEMINS"

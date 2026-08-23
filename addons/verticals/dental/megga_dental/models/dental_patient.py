@@ -1,0 +1,113 @@
+from odoo import _, api, fields, models
+
+from ..dental_logic import age_years, next_recall_date
+
+
+class MeggaDentalPatient(models.Model):
+    """Le patient délègue son identité à res.partner (_inherits) : il a
+    d'emblée nom, adresse, téléphone, e-mail — et surtout il est facturable
+    tel quel, donc la chaîne du socle (facture -> QR-facture -> encaissement
+    camt) s'applique sans pont supplémentaire."""
+    _name = 'megga.dental.patient'
+    _description = "Patient du cabinet dentaire"
+    _inherits = {'res.partner': 'partner_id'}
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'code desc'
+
+    partner_id = fields.Many2one(
+        'res.partner', string="Contact lié", required=True,
+        ondelete='cascade', index=True)
+    code = fields.Char(
+        "N° de patient", readonly=True, copy=False, default='/')
+    # `active` propre au patient : archiver un dossier ne doit pas archiver
+    # le contact, qui peut rester débiteur de factures ouvertes.
+    active = fields.Boolean(default=True)
+    birthdate = fields.Date("Date de naissance")
+    age = fields.Integer("Âge", compute='_compute_age')
+    dentist_id = fields.Many2one(
+        'res.users', string="Praticien référent",
+        default=lambda self: self.env.user)
+    insurance_name = fields.Char("Assurance complémentaire")
+    insurance_policy = fields.Char("N° de police")
+    allergies = fields.Text("Allergies")
+    medical_history = fields.Text("Antécédents médicaux")
+    medications = fields.Text("Médication en cours")
+
+    recall_months = fields.Integer("Intervalle de rappel (mois)", default=6)
+    recall_date = fields.Date("Prochain rappel")
+    recall_notified_date = fields.Date(
+        "Rappel déjà notifié", readonly=True, copy=False,
+        help="Date de rappel pour laquelle une activité a déjà été créée ;"
+             " garantit qu'un même rappel ne génère qu'une seule activité.")
+    last_visit_date = fields.Date("Dernière visite", readonly=True, copy=False)
+
+    treatment_ids = fields.One2many(
+        'megga.dental.treatment', 'patient_id', string="Traitements")
+    treatment_count = fields.Integer(compute='_compute_treatment_count')
+
+    _code_uniq = models.Constraint(
+        'unique(code)', "Ce numéro de patient existe déjà.")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('code') or vals['code'] == '/':
+                vals['code'] = self.env['ir.sequence'].next_by_code(
+                    'megga.dental.patient') or '/'
+        return super().create(vals_list)
+
+    @api.depends('birthdate')
+    def _compute_age(self):
+        today = fields.Date.context_today(self)
+        for patient in self:
+            patient.age = (
+                age_years(patient.birthdate, today) if patient.birthdate else 0)
+
+    @api.depends('treatment_ids')
+    def _compute_treatment_count(self):
+        for patient in self:
+            patient.treatment_count = len(patient.treatment_ids)
+
+    def action_view_treatments(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Traitements"),
+            'res_model': 'megga.dental.treatment',
+            'view_mode': 'list,form',
+            'domain': [('patient_id', '=', self.id)],
+            'context': {'default_patient_id': self.id},
+        }
+
+    def action_plan_recall(self):
+        """Planifie manuellement le prochain rappel à aujourd'hui + intervalle."""
+        today = fields.Date.context_today(self)
+        for patient in self:
+            patient.recall_date = next_recall_date(
+                today, patient.recall_months or 6)
+
+    @api.model
+    def _cron_dental_recalls(self, horizon_days=14):
+        """Chaque jour : crée une activité « Rappel de contrôle » pour tout
+        patient dont le rappel tombe dans l'horizon. Idempotent : un même
+        rappel (recall_notified_date == recall_date) n'est notifié qu'une fois ;
+        une nouvelle date de rappel relance naturellement la notification."""
+        today = fields.Date.today()
+        limite = fields.Date.add(today, days=horizon_days)
+        patients = self.search([
+            ('recall_date', '!=', False),
+            ('recall_date', '<=', limite),
+        ])
+        for patient in patients:
+            if patient.recall_notified_date == patient.recall_date:
+                continue
+            patient.activity_schedule(
+                'megga_dental.mail_activity_dental_recall',
+                date_deadline=patient.recall_date,
+                summary=_("Rappel de contrôle : %s") % patient.name,
+                note=_("Contrôle périodique à planifier (intervalle : %s mois)."
+                       ) % (patient.recall_months or 6),
+                user_id=patient.dentist_id.id or self.env.uid,
+            )
+            patient.recall_notified_date = patient.recall_date
+        return True

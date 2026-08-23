@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_patient_form" model="ir.ui.view">
+        <field name="name">megga.dental.patient.form</field>
+        <field name="model">megga.dental.patient</field>
+        <field name="arch" type="xml">
+            <form string="Patient">
+                <header>
+                    <button name="action_plan_recall" type="object"
+                            string="Planifier le rappel" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_treatments" type="object"
+                                class="oe_stat_button" icon="fa-medkit">
+                            <field name="treatment_count" widget="statinfo"
+                                   string="Traitements"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Nom du patient"/></h1>
+                    </div>
+                    <group>
+                        <group string="Dossier">
+                            <field name="active" invisible="1"/>
+                            <field name="code"/>
+                            <field name="birthdate"/>
+                            <field name="age"/>
+                            <field name="dentist_id" widget="many2one_avatar_user"/>
+                            <field name="insurance_name"/>
+                            <field name="insurance_policy"/>
+                        </group>
+                        <group string="Coordonnées">
+                            <field name="phone" widget="phone"/>
+                            <field name="email" widget="email"/>
+                            <field name="street"/>
+                            <field name="zip"/>
+                            <field name="city"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Rappel de contrôle">
+                            <field name="recall_months"/>
+                            <field name="recall_date"/>
+                            <field name="last_visit_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Dossier médical" name="medical">
+                            <group>
+                                <field name="allergies"/>
+                                <field name="medical_history"/>
+                                <field name="medications"/>
+                            </group>
+                        </page>
+                        <page string="Traitements" name="treatments">
+                            <field name="treatment_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="dentist_id" widget="many2one_avatar_user"/>
+                                    <field name="amount_total"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'done'"
+                                           decoration-info="state == 'confirmed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_patient_list" model="ir.ui.view">
+        <field name="name">megga.dental.patient.list</field>
+        <field name="model">megga.dental.patient</field>
+        <field name="arch" type="xml">
+            <list string="Patients">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="birthdate" optional="hide"/>
+                <field name="phone"/>
+                <field name="email" optional="hide"/>
+                <field name="dentist_id" widget="many2one_avatar_user"/>
+                <field name="last_visit_date"/>
+                <field name="recall_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_patient_search" model="ir.ui.view">
+        <field name="name">megga.dental.patient.search</field>
+        <field name="model">megga.dental.patient</field>
+        <field name="arch" type="xml">
+            <search string="Patients">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="phone"/>
+                <filter name="rappel_du" string="Rappel dû"
+                        domain="[('recall_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="inactive" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_dentist" string="Praticien"
+                            context="{'group_by': 'dentist_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_patient" model="ir.actions.act_window">
+        <field name="name">Patients</field>
+        <field name="res_model">megga.dental.patient</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier patient</p>
+            <p>Le dossier patient regroupe identité, dossier médical,
+               traitements et rappels de contrôle.</p>
+        </field>
+    </record>
+</odoo>

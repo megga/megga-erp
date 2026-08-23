@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_act_consultation" model="product.product">
+        <field name="name">Consultation et diagnostic</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_dental"/>
+        <field name="list_price">120.0</field>
+    </record>
+    <record id="demo_act_detartrage" model="product.product">
+        <field name="name">Détartrage et hygiène</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_dental"/>
+        <field name="list_price">140.0</field>
+    </record>
+    <record id="demo_act_composite" model="product.product">
+        <field name="name">Obturation composite (une face)</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_dental"/>
+        <field name="list_price">180.0</field>
+    </record>
+    <record id="demo_act_extraction" model="product.product">
+        <field name="name">Extraction simple</field>
+        <field name="type">service</field>
+        <field name="categ_id" ref="product_category_dental"/>
+        <field name="list_price">160.0</field>
+    </record>
+
+    <record id="demo_patient_exemple" model="megga.dental.patient">
+        <field name="name">Jeanne Exemple</field>
+        <field name="birthdate">1988-04-12</field>
+        <field name="street">Rue de la Serre 4</field>
+        <field name="zip">2300</field>
+        <field name="city">La Chaux-de-Fonds</field>
+        <field name="country_id" ref="base.ch"/>
+        <field name="recall_months">6</field>
+    </record>
+
+    <record id="demo_treatment_exemple" model="megga.dental.treatment">
+        <field name="patient_id" ref="demo_patient_exemple"/>
+        <field name="line_ids"
+               eval="[(0, 0, {
+                   'product_id': ref('demo_act_consultation'),
+                   'description': 'Consultation et diagnostic',
+                   'quantity': 1.0, 'price_unit': 120.0,
+               }), (0, 0, {
+                   'product_id': ref('demo_act_composite'),
+                   'description': 'Obturation composite (une face)',
+                   'tooth_ids': [(6, 0, [ref('tooth_16'), ref('tooth_26')])],
+                   'quantity': 2.0, 'price_unit': 180.0,
+               })]"/>
+    </record>
+</odoo>

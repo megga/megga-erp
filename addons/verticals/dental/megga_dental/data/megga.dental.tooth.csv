@@ -1,0 +1,53 @@
+id,number,name,deciduous
+tooth_11,11,Incisive centrale supérieure droite,0
+tooth_12,12,Incisive latérale supérieure droite,0
+tooth_13,13,Canine supérieure droite,0
+tooth_14,14,Première prémolaire supérieure droite,0
+tooth_15,15,Deuxième prémolaire supérieure droite,0
+tooth_16,16,Première molaire supérieure droite,0
+tooth_17,17,Deuxième molaire supérieure droite,0
+tooth_18,18,Dent de sagesse supérieure droite,0
+tooth_21,21,Incisive centrale supérieure gauche,0
+tooth_22,22,Incisive latérale supérieure gauche,0
+tooth_23,23,Canine supérieure gauche,0
+tooth_24,24,Première prémolaire supérieure gauche,0
+tooth_25,25,Deuxième prémolaire supérieure gauche,0
+tooth_26,26,Première molaire supérieure gauche,0
+tooth_27,27,Deuxième molaire supérieure gauche,0
+tooth_28,28,Dent de sagesse supérieure gauche,0
+tooth_31,31,Incisive centrale inférieure gauche,0
+tooth_32,32,Incisive latérale inférieure gauche,0
+tooth_33,33,Canine inférieure gauche,0
+tooth_34,34,Première prémolaire inférieure gauche,0
+tooth_35,35,Deuxième prémolaire inférieure gauche,0
+tooth_36,36,Première molaire inférieure gauche,0
+tooth_37,37,Deuxième molaire inférieure gauche,0
+tooth_38,38,Dent de sagesse inférieure gauche,0
+tooth_41,41,Incisive centrale inférieure droite,0
+tooth_42,42,Incisive latérale inférieure droite,0
+tooth_43,43,Canine inférieure droite,0
+tooth_44,44,Première prémolaire inférieure droite,0
+tooth_45,45,Deuxième prémolaire inférieure droite,0
+tooth_46,46,Première molaire inférieure droite,0
+tooth_47,47,Deuxième molaire inférieure droite,0
+tooth_48,48,Dent de sagesse inférieure droite,0
+tooth_51,51,Incisive centrale de lait supérieure droite,1
+tooth_52,52,Incisive latérale de lait supérieure droite,1
+tooth_53,53,Canine de lait supérieure droite,1
+tooth_54,54,Première molaire de lait supérieure droite,1
+tooth_55,55,Deuxième molaire de lait supérieure droite,1
+tooth_61,61,Incisive centrale de lait supérieure gauche,1
+tooth_62,62,Incisive latérale de lait supérieure gauche,1
+tooth_63,63,Canine de lait supérieure gauche,1
+tooth_64,64,Première molaire de lait supérieure gauche,1
+tooth_65,65,Deuxième molaire de lait supérieure gauche,1
+tooth_71,71,Incisive centrale de lait inférieure gauche,1
+tooth_72,72,Incisive latérale de lait inférieure gauche,1
+tooth_73,73,Canine de lait inférieure gauche,1
+tooth_74,74,Première molaire de lait inférieure gauche,1
+tooth_75,75,Deuxième molaire de lait inférieure gauche,1
+tooth_81,81,Incisive centrale de lait inférieure droite,1
+tooth_82,82,Incisive latérale de lait inférieure droite,1
+tooth_83,83,Canine de lait inférieure droite,1
+tooth_84,84,Première molaire de lait inférieure droite,1
+tooth_85,85,Deuxième molaire de lait inférieure droite,1
