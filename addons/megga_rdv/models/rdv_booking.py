@@ -63,6 +63,26 @@ class MeggaRdvBooking(models.Model):
             else:
                 booking.stop = booking.start
 
+    def _ensure_partner(self):
+        """Garantit un contact sur la réservation : rattache par e-mail
+        (insensible à la casse) ou le crée depuis les champs saisis.
+        Utilisé par les modules-ponts (dentaire, garage) pour les
+        réservations saisies au comptoir sans contact."""
+        Partner = self.env['res.partner']
+        for booking in self:
+            if booking.partner_id:
+                continue
+            partner = Partner.search(
+                [('email', '=ilike', booking.email)], limit=1)
+            if not partner:
+                partner = Partner.create({
+                    'name': booking.guest_name,
+                    'email': booking.email,
+                    'phone': booking.phone or False,
+                })
+            booking.partner_id = partner
+        return True
+
     def _local_label(self):
         """« jeudi 3 septembre 2026 à 09:00 », dans le fuseau du type."""
         self.ensure_one()

@@ -34,22 +34,12 @@ class MeggaRdvBooking(models.Model):
         - annuler la réservation ne touche évidemment pas au dossier.
         """
         Patient = self.env['megga.dental.patient']
-        Partner = self.env['res.partner']
         for booking in self:
             if booking.patient_id \
                     or not booking.type_id.dental_patient_creation:
                 continue
+            booking._ensure_partner()
             partner = booking.partner_id
-            if not partner:
-                partner = Partner.search(
-                    [('email', '=ilike', booking.email)], limit=1)
-                if not partner:
-                    partner = Partner.create({
-                        'name': booking.guest_name,
-                        'email': booking.email,
-                        'phone': booking.phone or False,
-                    })
-                booking.partner_id = partner
             patient = Patient.with_context(active_test=False).search(
                 [('partner_id', '=', partner.id)], limit=1)
             if not patient:
