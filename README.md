@@ -5,7 +5,7 @@ Phase 1 du [plan de reprise](../PLAN-REPRISE-ODOO.md). Le cœur d'Odoo est un
 
 ## Épinglage
 
-- Sous-module : `erp/odoo` → `odoo/odoo`, branche `19.0`
+- Sous-module : `erp/odoo` → **`megga/odoo`** (notre fork de `odoo/odoo`), branche `19.0`
 - SHA figé : `9188766f5bab9cc7fe25e6812f9e795e5a2c212f` (relevé le 23/08/2026)
 
 ## Démarrer (sur votre machine)
@@ -41,8 +41,14 @@ docker compose up --build
 
 ## Maintenance (Phase 5 du plan)
 
-- **Mensuel** : `git -C erp/odoo fetch origin 19.0 && git -C erp/odoo merge origin/19.0`
-  → tests → commit du bump. Les correctifs de sécurité arrivent par ce canal.
+- **Mensuel** : synchroniser le fork puis le sous-module. Sur GitHub,
+  `megga/odoo` ▸ « Sync fork » (ou `git -C erp/odoo fetch upstream 19.0 &&
+  git -C erp/odoo push origin FETCH_HEAD:19.0` avec
+  `upstream = https://github.com/odoo/odoo.git`), puis
+  `git -C erp/odoo fetch origin 19.0 && git -C erp/odoo merge origin/19.0`
+  → tests → commit du bump. **Le fork n'avale pas les correctifs amont tout
+  seul : sans cette synchronisation, vous ne recevez plus les correctifs de
+  sécurité.**
 - **Annuel** : migration majeure (rebrancher le sous-module, migrer nos modules).
 
 ## Nom du produit : Megga

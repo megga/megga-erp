@@ -9,7 +9,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SUB="erp/odoo"
 BRANCHE_AMONT="19.0"
-URL_AMONT="https://github.com/odoo/odoo.git"
+URL_AMONT="https://github.com/megga/odoo.git"
 
 GITLINK="$(git -C "$ROOT" ls-tree HEAD "$SUB" | awk '$2 == "commit" { print $3 }')"
 if [ -z "$GITLINK" ]; then
