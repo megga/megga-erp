@@ -127,9 +127,19 @@ class MeggaCareMandate(models.Model):
             mandate.amount_cost = costs
             mandate.amount_margin = mandate.amount_client - costs
 
-    @api.depends('event_ids.billing_state', 'event_ids.cost_state')
+    @api.depends('event_ids.billing_state', 'event_ids.cost_state',
+                 'state')
     def _compute_watchdog_counts(self):
         for mandate in self:
+            # Un mandat clôturé ou annulé n'est plus « à facturer » : le
+            # garde-fou a fait son travail À la clôture — et l'historique
+            # repris d'Office Maker (mandats importés déjà clos, sans
+            # factures re-migrées) ne doit polluer ni les filtres ni les
+            # rappels.
+            if mandate.state in ('done', 'cancelled'):
+                mandate.unbilled_event_count = 0
+                mandate.uncovered_cost_count = 0
+                continue
             events = mandate.event_ids
             mandate.unbilled_event_count = len(events.filtered(
                 lambda e: e.billing_state == 'to_invoice'))

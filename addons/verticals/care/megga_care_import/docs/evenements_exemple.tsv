@@ -1,0 +1,4 @@
+Mandat	Date	Heure	Libellé	Type	Prestataire	Prix client	Coût réel	Durée
+M-2024-018	08.07.2024	08:00	Petit laboratoire de check-up	LABO	Laboratoire Central Genève	500.00	450.00	1
+M-2024-018	08.07.2024	10:00	Trois examens de base	RADIO	Institut de Radiologie du Léman	1'000.00	1'000.00	1.5
+M-2024-018	09.07.2024	09:00	Consultation de cardiologie	CONS	Dr Anne Favre	500.00	500.00	1
