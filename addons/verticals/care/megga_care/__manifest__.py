@@ -41,6 +41,7 @@ protégé par groupes nLPD.
         'megga_qr_export',
         'megga_camt',
         'megga_pain001',
+        'megga_qr_import',
         'megga_tva_ch',
         # Briques du cœur pour le métier.
         'crm',
