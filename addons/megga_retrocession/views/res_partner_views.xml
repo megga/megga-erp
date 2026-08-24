@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- L'apporteur se note une fois sur le contact (onglet Ventes &
+         Achats) : ses factures le proposeront d'elles-mêmes. -->
+    <record id="view_partner_form_retrocession" model="ir.ui.view">
+        <field name="name">res.partner.form.retrocession</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='misc']" position="inside">
+                <field name="referrer_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_retro_agreement_invoice,retro.agreement.invoice,model_megga_retrocession_agreement,account.group_account_invoice,1,1,1,0
+access_retro_agreement_manager,retro.agreement.manager,model_megga_retrocession_agreement,account.group_account_manager,1,1,1,1
+access_retro_settlement_invoice,retro.settlement.invoice,model_megga_retrocession_settlement,account.group_account_invoice,1,1,1,0
+access_retro_settlement_manager,retro.settlement.manager,model_megga_retrocession_settlement,account.group_account_manager,1,1,1,1
