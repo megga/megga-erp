@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id explicitement vide : sans cela ir.sequence prend la
+             société courante par défaut et next_by_code ne trouve plus la
+             séquence depuis une autre société (multi-sociétés, tests). -->
+        <record id="seq_care_patient" model="ir.sequence">
+            <field name="name">Clients de la conciergerie</field>
+            <field name="code">megga.care.patient</field>
+            <field name="prefix">CLI/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_care_mandate" model="ir.sequence">
+            <field name="name">Mandats de conciergerie</field>
+            <field name="code">megga.care.mandate</field>
+            <field name="prefix">MAN/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

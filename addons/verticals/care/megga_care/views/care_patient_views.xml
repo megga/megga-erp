@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_care_patient_form" model="ir.ui.view">
+        <field name="name">megga.care.patient.form</field>
+        <field name="model">megga.care.patient</field>
+        <field name="arch" type="xml">
+            <form string="Client">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_mandates" type="object"
+                                class="oe_stat_button" icon="fa-briefcase"
+                                invisible="mandate_count == 0">
+                            <field name="mandate_count" widget="statinfo"
+                                   string="Mandats"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nom du client"/></h1>
+                        <field name="code" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="lang"/>
+                        </group>
+                        <group>
+                            <!-- Le pays porte le régime TVA (position
+                                 fiscale : étranger hors TVA) et le pays
+                                 du débiteur de la QR-facture. -->
+                            <field name="country_id"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="email" widget="email"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Parcours de santé"
+                              groups="megga_care.group_care_coordination">
+                            <field name="medical_notes"
+                                   placeholder="Parcours de santé, praticiens référents, points d'attention…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_care_patient_list" model="ir.ui.view">
+        <field name="name">megga.care.patient.list</field>
+        <field name="model">megga.care.patient</field>
+        <field name="arch" type="xml">
+            <list string="Clients">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="country_id"/>
+                <field name="phone"/>
+                <field name="email" optional="hide"/>
+                <field name="mandate_count" string="Mandats"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_care_patient_search" model="ir.ui.view">
+        <field name="name">megga.care.patient.search</field>
+        <field name="model">megga.care.patient</field>
+        <field name="arch" type="xml">
+            <search string="Clients">
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="inactive" string="Archivés"
+                        domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_country" string="Pays"
+                            context="{'group_by': 'country_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_care_patient" model="ir.actions.act_window">
+        <field name="name">Clients</field>
+        <field name="res_model">megga.care.patient</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier client</p>
+            <p>L'identité vit sur le contact (facturable tel quel, QR-facture
+               comprise) ; le parcours de santé reste réservé à la
+               coordination.</p>
+        </field>
+    </record>
+</odoo>

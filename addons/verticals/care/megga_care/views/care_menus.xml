@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_care_root" name="Conciergerie" sequence="56"
+              web_icon="megga_care,static/description/icon.png"
+              groups="megga_care.group_care_assistance"/>
+
+    <menuitem id="menu_care_mandates" name="Mandats"
+              parent="menu_care_root" action="action_care_mandate"
+              sequence="10"
+              groups="megga_care.group_care_assistance"/>
+    <menuitem id="menu_care_patients" name="Clients"
+              parent="menu_care_root" action="action_care_patient"
+              sequence="20"
+              groups="megga_care.group_care_assistance"/>
+    <menuitem id="menu_care_events" name="Événements"
+              parent="menu_care_root" action="action_care_event"
+              sequence="30"
+              groups="megga_care.group_care_assistance"/>
+    <menuitem id="menu_care_stats" name="Statistiques"
+              parent="menu_care_root" action="action_care_stats"
+              sequence="40"
+              groups="megga_care.group_care_assistance"/>
+
+    <menuitem id="menu_care_config" name="Configuration"
+              parent="menu_care_root" sequence="90"
+              groups="base.group_system"/>
+    <menuitem id="menu_care_service_types" name="Types de prestation"
+              parent="menu_care_config" action="action_care_service_type"
+              sequence="10"/>
+</odoo>

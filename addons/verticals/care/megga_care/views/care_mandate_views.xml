@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_care_mandate_form" model="ir.ui.view">
+        <field name="name">megga.care.mandate.form</field>
+        <field name="model">megga.care.mandate</field>
+        <field name="arch" type="xml">
+            <form string="Mandat">
+                <header>
+                    <button name="action_confirm" type="object" string="Lancer"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Facturer au client" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_close" type="object" string="Clôturer"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="invoice_count == 0">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Factures"/>
+                        </button>
+                    </div>
+                    <!-- Le garde-fou « rien d'oublié », visible avant même
+                         de tenter la clôture. -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'confirmed' or (unbilled_event_count == 0 and uncovered_cost_count == 0)">
+                        <field name="unbilled_event_count"/> événement(s) à facturer au client —
+                        <field name="uncovered_cost_count"/> coût(s) sans pièce fournisseur.
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="kind" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Honoraires de coordination">
+                        <group>
+                            <field name="fee_mode" widget="radio"/>
+                            <field name="fee_flat"
+                                   invisible="fee_mode != 'forfait'"/>
+                            <field name="fee_hourly_rate"
+                                   invisible="fee_mode != 'horaire'"/>
+                            <field name="fee_hours"
+                                   invisible="fee_mode != 'horaire'"/>
+                        </group>
+                        <group>
+                            <field name="fee_total"/>
+                            <field name="fee_invoice_line_id"
+                                   invisible="not fee_invoice_line_id"/>
+                        </group>
+                    </group>
+                    <field name="event_ids">
+                        <list editable="bottom">
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="service_type_id"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="provider_id"/>
+                            <field name="duration" optional="hide"/>
+                            <field name="price_client" sum="Total client"/>
+                            <field name="cost_price" sum="Total coûts"/>
+                            <field name="margin" sum="Marge"/>
+                            <field name="billing_state" widget="badge"
+                                   decoration-success="billing_state == 'invoiced'"
+                                   decoration-warning="billing_state == 'to_invoice'"/>
+                            <field name="cost_state" widget="badge" optional="show"
+                                   decoration-success="cost_state == 'covered'"
+                                   decoration-warning="cost_state == 'awaiting'"/>
+                            <field name="supplier_invoice_id" optional="hide"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_client"/>
+                        <field name="amount_cost"/>
+                        <field name="amount_margin" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_care_mandate_list" model="ir.ui.view">
+        <field name="name">megga.care.mandate.list</field>
+        <field name="model">megga.care.mandate</field>
+        <field name="arch" type="xml">
+            <list string="Mandats">
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="patient_id"/>
+                <field name="kind" optional="show"/>
+                <field name="amount_client" sum="Total client"/>
+                <field name="amount_margin" sum="Marge"/>
+                <field name="unbilled_event_count" string="À facturer"
+                       optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_care_mandate_search" model="ir.ui.view">
+        <field name="name">megga.care.mandate.search</field>
+        <field name="model">megga.care.mandate</field>
+        <field name="arch" type="xml">
+            <search string="Mandats">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <filter name="state_confirmed" string="En cours"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="a_facturer" string="À facturer"
+                        domain="[('unbilled_event_count', '>', 0)]"/>
+                <filter name="pieces_attendues" string="Pièces attendues"
+                        domain="[('uncovered_cost_count', '>', 0)]"/>
+                <separator/>
+                <filter name="state_done" string="Clôturés"
+                        domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_patient" string="Client"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_kind" string="Type de mandat"
+                            context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_care_mandate" model="ir.actions.act_window">
+        <field name="name">Mandats</field>
+        <field name="res_model">megga.care.mandate</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_state_confirmed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier mandat</p>
+            <p>Offre, événements à double prix (client / coût réel),
+               facturation au fil de l'eau — la clôture vérifie que rien
+               n'a été oublié.</p>
+        </field>
+    </record>
+</odoo>
