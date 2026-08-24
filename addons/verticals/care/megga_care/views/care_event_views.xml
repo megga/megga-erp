@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_care_event_form" model="ir.ui.view">
+        <field name="name">megga.care.event.form</field>
+        <field name="model">megga.care.event</field>
+        <field name="arch" type="xml">
+            <form string="Événement de mandat">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Petit laboratoire…"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="mandate_id"/>
+                            <field name="patient_id"/>
+                            <field name="service_type_id"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="provider_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="duration"/>
+                            <field name="calendar_event_id"
+                                   invisible="not calendar_event_id"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Double prix">
+                        <group>
+                            <field name="price_client"/>
+                            <field name="cost_price"/>
+                            <field name="margin"/>
+                            <field name="retrocession"/>
+                        </group>
+                        <group>
+                            <field name="billing_state" widget="badge"/>
+                            <field name="client_invoice_id"
+                                   invisible="not client_invoice_id"/>
+                            <field name="cost_state" widget="badge"/>
+                            <field name="supplier_invoice_id"/>
+                        </group>
+                    </group>
+                    <button name="action_open_calendar_event" type="object"
+                            string="Ouvrir dans l'agenda" icon="fa-calendar"
+                            class="btn-secondary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_care_event_list" model="ir.ui.view">
+        <field name="name">megga.care.event.list</field>
+        <field name="model">megga.care.event</field>
+        <field name="arch" type="xml">
+            <list string="Événements">
+                <field name="date"/>
+                <field name="mandate_id"/>
+                <field name="patient_id" optional="show"/>
+                <field name="name"/>
+                <field name="service_type_id"/>
+                <field name="provider_id"/>
+                <field name="price_client" sum="Total client"/>
+                <field name="cost_price" sum="Total coûts"/>
+                <field name="margin" sum="Marge"/>
+                <field name="billing_state" widget="badge"
+                       decoration-success="billing_state == 'invoiced'"
+                       decoration-warning="billing_state == 'to_invoice'"/>
+                <field name="cost_state" widget="badge" optional="hide"
+                       decoration-success="cost_state == 'covered'"
+                       decoration-warning="cost_state == 'awaiting'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_care_event_search" model="ir.ui.view">
+        <field name="name">megga.care.event.search</field>
+        <field name="model">megga.care.event</field>
+        <field name="arch" type="xml">
+            <search string="Événements">
+                <field name="name"/>
+                <field name="mandate_id"/>
+                <field name="patient_id"/>
+                <field name="provider_id"/>
+                <filter name="a_facturer" string="À facturer"
+                        domain="[('billing_state', '=', 'to_invoice')]"/>
+                <filter name="pieces_attendues" string="Pièces attendues"
+                        domain="[('cost_state', '=', 'awaiting')]"/>
+                <filter name="retrocessions" string="Rétrocessions"
+                        domain="[('retrocession', '=', True)]"/>
+                <group>
+                    <filter name="group_type" string="Type de prestation"
+                            context="{'group_by': 'service_type_id'}"/>
+                    <filter name="group_provider" string="Prestataire"
+                            context="{'group_by': 'provider_id'}"/>
+                    <filter name="group_mandate" string="Mandat"
+                            context="{'group_by': 'mandate_id'}"/>
+                    <filter name="group_patient" string="Client"
+                            context="{'group_by': 'patient_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Les statistiques demandées noir sur blanc : rentabilité par
+         mandat, par client, par type de prestation, par fournisseur.
+         L'événement porte les trois mesures (prix client, coût réel,
+         marge) et les quatre axes — le pivot fait le reste, y compris
+         le dossier de négociation des rétrocessions (volume par
+         fournisseur). -->
+    <record id="view_care_event_pivot" model="ir.ui.view">
+        <field name="name">megga.care.event.pivot</field>
+        <field name="model">megga.care.event</field>
+        <field name="arch" type="xml">
+            <pivot string="Rentabilité">
+                <field name="service_type_id" type="row"/>
+                <field name="price_client" type="measure"/>
+                <field name="cost_price" type="measure"/>
+                <field name="margin" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_care_event_graph" model="ir.ui.view">
+        <field name="name">megga.care.event.graph</field>
+        <field name="model">megga.care.event</field>
+        <field name="arch" type="xml">
+            <graph string="Rentabilité" type="bar">
+                <field name="service_type_id"/>
+                <field name="margin" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_care_event" model="ir.actions.act_window">
+        <field name="name">Événements</field>
+        <field name="res_model">megga.care.event</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun événement</p>
+            <p>Chaque prestation d'un mandat, avec son prix client, son
+               coût réel et sa pièce fournisseur.</p>
+        </field>
+    </record>
+
+    <record id="action_care_stats" model="ir.actions.act_window">
+        <field name="name">Statistiques</field>
+        <field name="res_model">megga.care.event</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Encore aucune donnée</p>
+            <p>Rentabilité par mandat, par client, par type de prestation
+               et par fournisseur — dès que les mandats vivent ici.</p>
+        </field>
+    </record>
+</odoo>

@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libldap2-dev libsasl2-dev \
         libjpeg-dev zlib1g-dev libffi-dev \
         wkhtmltopdf fonts-dejavu-core \
+        libzbar0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Le sous-module doit etre materialise avant le build :
@@ -23,7 +24,11 @@ COPY odoo/requirements.txt /tmp/requirements.txt
 # comptable suisse mais absent de requirements.txt — sans lui,
 # l'initialisation d'une base echoue a l'etape comptable (constate en
 # reel le 23/08/2026).
-RUN pip install --no-cache-dir -r /tmp/requirements.txt phonenumbers
+# pyzbar (et libzbar0 ci-dessus) : lecture des QR-factures dans les
+# images et les PDF recus par e-mail (megga_qr_import). OPTIONNEL dans
+# le code — sans lui le module lit encore les charges SPC en texte —
+# mais l'image de production doit savoir lire une vraie piece jointe.
+RUN pip install --no-cache-dir -r /tmp/requirements.txt phonenumbers pyzbar
 
 EXPOSE 8069
 CMD ["python3", "/opt/odoo/odoo-bin", "-c", "/etc/odoo/odoo.conf"]

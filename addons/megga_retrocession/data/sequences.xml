@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id explicitement vide : sans cela ir.sequence prend la
+             société courante par défaut et next_by_code ne trouve plus la
+             séquence depuis une autre société (multi-sociétés, tests). -->
+        <record id="seq_retrocession_settlement" model="ir.sequence">
+            <field name="name">Décomptes de rétrocession</field>
+            <field name="code">megga.retrocession.settlement</field>
+            <field name="prefix">RET/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

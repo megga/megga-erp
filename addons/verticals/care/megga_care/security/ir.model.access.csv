@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_care_service_type_assistance,care.service.type.assistance,model_megga_care_service_type,group_care_assistance,1,0,0,0
+access_care_service_type_coordination,care.service.type.coordination,model_megga_care_service_type,group_care_coordination,1,1,1,0
+access_care_service_type_system,care.service.type.system,model_megga_care_service_type,base.group_system,1,1,1,1
+access_care_patient_assistance,care.patient.assistance,model_megga_care_patient,group_care_assistance,1,1,1,0
+access_care_patient_coordination,care.patient.coordination,model_megga_care_patient,group_care_coordination,1,1,1,1
+access_care_mandate_assistance,care.mandate.assistance,model_megga_care_mandate,group_care_assistance,1,1,1,0
+access_care_mandate_coordination,care.mandate.coordination,model_megga_care_mandate,group_care_coordination,1,1,1,1
+access_care_event_assistance,care.event.assistance,model_megga_care_event,group_care_assistance,1,1,1,0
+access_care_event_coordination,care.event.coordination,model_megga_care_event,group_care_coordination,1,1,1,1

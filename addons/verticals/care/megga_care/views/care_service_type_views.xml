@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_care_service_type_list" model="ir.ui.view">
+        <field name="name">megga.care.service.type.list</field>
+        <field name="model">megga.care.service.type</field>
+        <field name="arch" type="xml">
+            <list string="Types de prestation" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="retrocession"/>
+                <field name="vat_exempt"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_care_service_type" model="ir.actions.act_window">
+        <field name="name">Types de prestation</field>
+        <field name="res_model">megga.care.service.type</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

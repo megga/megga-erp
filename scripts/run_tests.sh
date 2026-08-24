@@ -40,13 +40,13 @@ ODOO_BIN="$SUB/odoo-bin"
 [ -d "${PREFIXE}addons" ] || { echo "ERREUR: ${PREFIXE}addons introuvable"; exit 1; }
 
 BASE="${TEST_DB:-megga_ci_$$}"
-MODULES="${TEST_MODULES:-megga_base,megga_qr_export,megga_camt,megga_pain001,megga_tva_ch,megga_rdv,megga_dental,megga_dental_rdv,megga_resto,megga_resto_rdv,megga_resto_tva,megga_auto,megga_auto_rdv,megga_auto_occasion}"
-TAGS="${TEST_TAGS:-/megga_qr_export,/megga_camt,/megga_pain001,/megga_tva_ch,/megga_rdv,/megga_dental,/megga_dental_rdv,/megga_resto,/megga_resto_rdv,/megga_resto_tva,/megga_auto,/megga_auto_rdv,/megga_auto_occasion}"
-MIN="${TEST_MIN:-179}"
+MODULES="${TEST_MODULES:-megga_base,megga_qr_export,megga_camt,megga_pain001,megga_qr_import,megga_tva_ch,megga_rdv,megga_retrocession,megga_dental,megga_dental_rdv,megga_resto,megga_resto_rdv,megga_resto_tva,megga_auto,megga_auto_rdv,megga_auto_occasion,megga_care}"
+TAGS="${TEST_TAGS:-/megga_qr_export,/megga_camt,/megga_pain001,/megga_qr_import,/megga_tva_ch,/megga_rdv,/megga_retrocession,/megga_dental,/megga_dental_rdv,/megga_resto,/megga_resto_rdv,/megga_resto_tva,/megga_auto,/megga_auto_rdv,/megga_auto_occasion,/megga_care}"
+MIN="${TEST_MIN:-223}"
 # Chaque verticale (addons/verticals/<secteur>/) est un chemin d'addons
 # supplémentaire : le rituel teste ainsi le cœur + le socle + TOUTES les
 # verticales d'un coup à chaque bump.
-CHEMINS="$SUB/addons,${PREFIXE}addons,${PREFIXE}addons/verticals/dental,${PREFIXE}addons/verticals/resto,${PREFIXE}addons/verticals/auto,${PREFIXE}addons-oca${EXTRA_ADDONS:+,$EXTRA_ADDONS}"
+CHEMINS="$SUB/addons,${PREFIXE}addons,${PREFIXE}addons/verticals/dental,${PREFIXE}addons/verticals/resto,${PREFIXE}addons/verticals/auto,${PREFIXE}addons/verticals/care,${PREFIXE}addons-oca${EXTRA_ADDONS:+,$EXTRA_ADDONS}"
 
 echo "Base de test : $BASE"
 echo "Chemins      : $CHEMINS"

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Accords ============ -->
+    <record id="view_retrocession_agreement_form" model="ir.ui.view">
+        <field name="name">megga.retrocession.agreement.form</field>
+        <field name="model">megga.retrocession.agreement</field>
+        <field name="arch" type="xml">
+            <form string="Accord de rétrocession">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_settlements" type="object"
+                                class="oe_stat_button" icon="fa-calculator"
+                                invisible="settlement_count == 0">
+                            <field name="settlement_count" widget="statinfo"
+                                   string="Décomptes"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"
+                                   placeholder="Pharmacie X — 10 % du volume"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="partner_id"/>
+                            <field name="direction" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="rate"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="notes"
+                           placeholder="Termes négociés, paliers envisagés, contacts…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_retrocession_agreement_list" model="ir.ui.view">
+        <field name="name">megga.retrocession.agreement.list</field>
+        <field name="model">megga.retrocession.agreement</field>
+        <field name="arch" type="xml">
+            <list string="Accords">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="direction" widget="badge"
+                       decoration-success="direction == 'receivable'"
+                       decoration-info="direction == 'payable'"/>
+                <field name="rate"/>
+                <field name="settlement_count" string="Décomptes"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_retrocession_agreement_search" model="ir.ui.view">
+        <field name="name">megga.retrocession.agreement.search</field>
+        <field name="model">megga.retrocession.agreement</field>
+        <field name="arch" type="xml">
+            <search string="Accords">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="receivable" string="À encaisser"
+                        domain="[('direction', '=', 'receivable')]"/>
+                <filter name="payable" string="À verser"
+                        domain="[('direction', '=', 'payable')]"/>
+                <group>
+                    <filter name="group_partner" string="Partenaire"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_direction" string="Sens"
+                            context="{'group_by': 'direction'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_retrocession_agreement" model="ir.actions.act_window">
+        <field name="name">Accords de rétrocession</field>
+        <field name="res_model">megga.retrocession.agreement</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier accord</p>
+            <p>Le partenaire, le sens (à encaisser / à verser) et le taux.
+               Les décomptes périodiques font le reste.</p>
+        </field>
+    </record>
+
+    <!-- ============ Décomptes ============ -->
+    <record id="view_retrocession_settlement_form" model="ir.ui.view">
+        <field name="name">megga.retrocession.settlement.form</field>
+        <field name="model">megga.retrocession.settlement</field>
+        <field name="arch" type="xml">
+            <form string="Décompte de rétrocession">
+                <header>
+                    <button name="action_refresh" type="object"
+                            string="Recompter" invisible="state != 'draft'"/>
+                    <button name="action_confirm" type="object"
+                            string="Confirmer" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_invoice" type="object"
+                            string="Générer la pièce" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Remettre en brouillon"
+                            invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,invoiced"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="agreement_id"
+                                   options="{'no_quick_create': True}"/>
+                            <field name="partner_id"/>
+                            <field name="direction" widget="badge"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="rate" readonly="state != 'draft'"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="volume"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="invoice_id"
+                                   invisible="not invoice_id"/>
+                        </group>
+                    </group>
+                    <field name="move_ids">
+                        <list create="false" delete="false" edit="false">
+                            <field name="name"/>
+                            <field name="invoice_date"/>
+                            <field name="move_type"/>
+                            <field name="amount_untaxed" sum="Total HT"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_retrocession_settlement_list" model="ir.ui.view">
+        <field name="name">megga.retrocession.settlement.list</field>
+        <field name="model">megga.retrocession.settlement</field>
+        <field name="arch" type="xml">
+            <list string="Décomptes">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="volume" sum="Volume"/>
+                <field name="amount" sum="Rétrocessions"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'invoiced'"
+                       decoration-info="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_retrocession_settlement_search" model="ir.ui.view">
+        <field name="name">megga.retrocession.settlement.search</field>
+        <field name="model">megga.retrocession.settlement</field>
+        <field name="arch" type="xml">
+            <search string="Décomptes">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="partner_id"/>
+                <filter name="draft" string="Brouillons"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmés — à facturer"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <group>
+                    <filter name="group_agreement" string="Accord"
+                            context="{'group_by': 'agreement_id'}"/>
+                    <filter name="group_partner" string="Partenaire"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_retrocession_settlement" model="ir.actions.act_window">
+        <field name="name">Décomptes de rétrocession</field>
+        <field name="res_model">megga.retrocession.settlement</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Créer un premier décompte</p>
+            <p>Choisir l'accord et la période : le décompte compte les
+               factures validées, fige le taux et génère la pièce.</p>
+        </field>
+    </record>
+</odoo>

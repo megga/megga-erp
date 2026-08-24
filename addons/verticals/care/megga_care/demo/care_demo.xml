@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le check-up du transcript fondateur, à l'identique : généraliste
+         800, laboratoire 500 facturés / 450 de coût (la rétrocession de
+         50), radiologie 1000, deux spécialistes à 500 — plus les
+         honoraires au forfait. -->
+    <record id="demo_provider_labo" model="res.partner">
+        <field name="name">Laboratoire Central Genève</field>
+        <field name="city">Genève</field>
+        <field name="country_id" ref="base.ch"/>
+    </record>
+    <record id="demo_provider_radiologie" model="res.partner">
+        <field name="name">Institut de Radiologie du Léman</field>
+        <field name="city">Genève</field>
+        <field name="country_id" ref="base.ch"/>
+    </record>
+    <record id="demo_provider_generaliste" model="res.partner">
+        <field name="name">Dr Anne Favre, médecine générale</field>
+        <field name="city">Genève</field>
+        <field name="country_id" ref="base.ch"/>
+    </record>
+
+    <record id="demo_patient_karim" model="megga.care.patient">
+        <field name="name">Karim Al-Mansouri</field>
+        <field name="country_id" ref="base.ae"/>
+        <field name="email">k.almansouri@exemple.ae</field>
+        <field name="lang" eval="False"/>
+    </record>
+
+    <record id="demo_mandate_checkup" model="megga.care.mandate">
+        <field name="patient_id" ref="demo_patient_karim"/>
+        <field name="kind">ambulatoire</field>
+        <field name="date_start" eval="(DateTime.today()).strftime('%Y-%m-%d')"/>
+        <field name="fee_mode">forfait</field>
+        <field name="fee_flat">1500.0</field>
+    </record>
+
+    <record id="demo_event_generaliste" model="megga.care.event">
+        <field name="mandate_id" ref="demo_mandate_checkup"/>
+        <field name="name">Consultation de médecine générale</field>
+        <field name="service_type_id" ref="service_type_consultation"/>
+        <field name="provider_id" ref="demo_provider_generaliste"/>
+        <field name="date" eval="(DateTime.today()).strftime('%Y-%m-%d 08:00:00')"/>
+        <field name="price_client">800.0</field>
+        <field name="cost_price">800.0</field>
+    </record>
+    <record id="demo_event_labo" model="megga.care.event">
+        <field name="mandate_id" ref="demo_mandate_checkup"/>
+        <field name="name">Petit laboratoire de check-up</field>
+        <field name="service_type_id" ref="service_type_laboratoire"/>
+        <field name="provider_id" ref="demo_provider_labo"/>
+        <field name="date" eval="(DateTime.today()).strftime('%Y-%m-%d 09:00:00')"/>
+        <field name="price_client">500.0</field>
+        <field name="cost_price">450.0</field>
+    </record>
+    <record id="demo_event_radiologie" model="megga.care.event">
+        <field name="mandate_id" ref="demo_mandate_checkup"/>
+        <field name="name">Trois examens de base</field>
+        <field name="service_type_id" ref="service_type_radiologie"/>
+        <field name="provider_id" ref="demo_provider_radiologie"/>
+        <field name="date" eval="(DateTime.today()).strftime('%Y-%m-%d 10:00:00')"/>
+        <field name="price_client">1000.0</field>
+        <field name="cost_price">1000.0</field>
+    </record>
+    <record id="demo_event_cardiologue" model="megga.care.event">
+        <field name="mandate_id" ref="demo_mandate_checkup"/>
+        <field name="name">Consultation de cardiologie</field>
+        <field name="service_type_id" ref="service_type_consultation"/>
+        <field name="date" eval="(DateTime.today()).strftime('%Y-%m-%d 11:00:00')"/>
+        <field name="price_client">500.0</field>
+        <field name="cost_price">500.0</field>
+    </record>
+    <record id="demo_event_gastro" model="megga.care.event">
+        <field name="mandate_id" ref="demo_mandate_checkup"/>
+        <field name="name">Consultation de gastro-entérologie</field>
+        <field name="service_type_id" ref="service_type_consultation"/>
+        <field name="date" eval="(DateTime.today()).strftime('%Y-%m-%d 14:00:00')"/>
+        <field name="price_client">500.0</field>
+        <field name="cost_price">500.0</field>
+    </record>
+</odoo>

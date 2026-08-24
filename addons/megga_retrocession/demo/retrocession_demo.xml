@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Les deux faces de la même pièce : la conciergerie encaisse de la
+         pharmacie ; le cabinet verse à l'apporteuse. -->
+    <record id="demo_partner_pharmacie" model="res.partner">
+        <field name="name">Pharmacie du Bourg-de-Four</field>
+        <field name="city">Genève</field>
+        <field name="country_id" ref="base.ch"/>
+    </record>
+    <record id="demo_partner_apporteuse" model="res.partner">
+        <field name="name">Luxury Cares Services</field>
+        <field name="city">Genève</field>
+        <field name="country_id" ref="base.ch"/>
+    </record>
+
+    <record id="demo_agreement_pharmacie" model="megga.retrocession.agreement">
+        <field name="name">Pharmacie du Bourg-de-Four — 10 % du volume</field>
+        <field name="partner_id" ref="demo_partner_pharmacie"/>
+        <field name="direction">receivable</field>
+        <field name="rate">10.0</field>
+    </record>
+    <record id="demo_agreement_apport" model="megga.retrocession.agreement">
+        <field name="name">Apport Luxury Cares — 8 % des patients amenés</field>
+        <field name="partner_id" ref="demo_partner_apporteuse"/>
+        <field name="direction">payable</field>
+        <field name="rate">8.0</field>
+    </record>
+</odoo>

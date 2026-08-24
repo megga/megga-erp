@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sous Comptabilité : les rétrocessions sont de la mécanique de
+         facturation, pas une application à part. -->
+    <menuitem id="menu_retrocession_root" name="Rétrocessions"
+              parent="account.menu_finance" sequence="22"
+              groups="account.group_account_invoice"/>
+    <menuitem id="menu_retrocession_settlements" name="Décomptes"
+              parent="menu_retrocession_root"
+              action="action_retrocession_settlement" sequence="10"/>
+    <menuitem id="menu_retrocession_agreements" name="Accords"
+              parent="menu_retrocession_root"
+              action="action_retrocession_agreement" sequence="20"/>
+</odoo>
