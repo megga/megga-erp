@@ -176,7 +176,52 @@ if not deja:
     print("Seance close : %s -> %s" % (
         seance.name, seance.supply_picking_id.name))
 
-# 5. Francais suisse : une demo de cabinet romand se lit en francais.
+# 5. Le reassort : un fournisseur, des minima, et une regle qui a
+#    deja de quoi commander (les compresses sont sous leur minimum
+#    apres la seance close a l'etape 4).
+fournisseur = env['res.partner'].search(
+    [('name', '=', "Dentaire Diffusion SA")], limit=1)
+if not fournisseur:
+    fournisseur = env['res.partner'].create({
+        'name': "Dentaire Diffusion SA",
+        'street': "Route de Chene 12",
+        'zip': "1208", 'city': "Geneve",
+        'country_id': env.ref('base.ch').id,
+        'supplier_rank': 1,
+    })
+MINIMA = [
+    ("Compresses steriles 5x5 cm", 60.0, 200.0),
+    ("Articaine 4% adrenaline 1:100'000", 100.0, 400.0),
+    ("Composite photopolymerisable A2", 10.0, 40.0),
+    ("Gants nitrile taille M", 20.0, 100.0),
+]
+entrepot = env['stock.warehouse'].search(
+    [('company_id', '=', env.company.id)], limit=1)
+for nom, mini, maxi in MINIMA:
+    produit = produits[nom]
+    if not produit.seller_ids:
+        env['product.supplierinfo'].create({
+            'partner_id': fournisseur.id,
+            'product_tmpl_id': produit.product_tmpl_id.id,
+            'price': produit.standard_price,
+            'delay': 4,
+        })
+    regle = env['stock.warehouse.orderpoint'].search(
+        [('product_id', '=', produit.id)], limit=1)
+    valeurs = {
+        'product_id': produit.id,
+        'location_id': entrepot.lot_stock_id.id,
+        'warehouse_id': entrepot.id,
+        'product_min_qty': mini,
+        'product_max_qty': maxi,
+        'trigger': 'auto',
+    }
+    if regle:
+        regle.write(valeurs)
+    else:
+        env['stock.warehouse.orderpoint'].create(valeurs)
+
+# 6. Francais suisse : une demo de cabinet romand se lit en francais.
 #    _activate_lang charge les traductions embarquees par le coeur.
 env['res.lang']._activate_lang('fr_CH')
 langue = env['res.lang'].search([('code', '=', 'fr_CH')], limit=1)
@@ -189,7 +234,7 @@ if langue:
         ._update_translations(filter_lang=[langue.code])
     env.ref('base.user_admin').lang = langue.code
 
-# 6. L'admin voit le magasin : sans les groupes stock, le menu du
+# 7. L'admin voit le magasin : sans les groupes stock, le menu du
 #    cabinet ne s'affiche pas (c'est la doctrine, pas un oubli).
 admin = env.ref('base.user_admin')
 admin.group_ids = [(4, env.ref('stock.group_stock_user').id),

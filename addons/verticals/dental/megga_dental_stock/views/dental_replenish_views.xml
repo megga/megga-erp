@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- La liste des consommables du cabinet, lue comme un état du
+         rayon : ce qu'il reste, ce qui est prévu, les minima réglés et
+         le fournisseur. Les champs de réappro du cœur sont des computes
+         NON stockés et SANS inverse : ils s'affichent, ils ne se
+         saisissent pas, et ils ne sont ni filtrables ni triables
+         (leçon ORM du dépôt) — d'où le `readonly` explicite et
+         l'absence de domaine sur eux. -->
+    <record id="view_dental_supply_product_list" model="ir.ui.view">
+        <field name="name">megga.dental.stock.product.list</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Consommables du cabinet" multi_edit="1">
+                <field name="name"/>
+                <field name="default_code" optional="show"/>
+                <field name="qty_available" string="En stock"/>
+                <field name="virtual_available" string="Prévu"
+                       optional="show"/>
+                <!-- Min et Max sont des computes du cœur SANS inverse :
+                     ils s'affichent, ils ne se saisissent pas. Le
+                     réglage passe par le bouton « Règles de réappro »
+                     de la fiche produit, ou par l'écran « À commander ».
+                     Les annoncer éditables serait mentir à l'écran. -->
+                <field name="reordering_min_qty" string="Min" readonly="1"/>
+                <field name="reordering_max_qty" string="Max" readonly="1"/>
+                <field name="nbr_reordering_rules" string="Règles"
+                       readonly="1" optional="hide"/>
+                <field name="standard_price" optional="show"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="seller_ids" widget="many2many_tags"
+                       string="Fournisseurs" optional="show" readonly="1"
+                       context="{'default_product_tmpl_id': id}"/>
+                <field name="categ_id" column_invisible="1"/>
+                <field name="type" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- L'écran de réapprovisionnement, borné au cabinet.
+
+         Une action FENÊTRE, et non l'écran de réapprovisionnement
+         complet du cœur : ce dernier (`_get_orderpoint_action`) sème
+         des règles manuelles pour TOUS les produits en manque de la
+         société — restaurant et garage compris. Le menu d'un cabinet
+         n'a pas à décider du réassort des autres verticales.
+
+         Et une action DÉCLARÉE, pas une action serveur : exécuter une
+         action serveur demande des droits que le magasinier n'a pas
+         (vérifié : « You don't have enough access rights to run this
+         action »), alors qu'il a bien le droit de LIRE les règles.
+         Le menu se serait affiché pour lui et aurait refusé de
+         s'ouvrir.
+
+         Les droits restent ceux du cœur : lecture pour le magasinier
+         (`stock.group_stock_user`), écriture pour le responsable
+         (`_manager`). Le module n'en invente aucun. -->
+    <record id="action_dental_replenishment" model="ir.actions.act_window">
+        <field name="name">À commander</field>
+        <field name="res_model">stock.warehouse.orderpoint</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id"
+               ref="stock.view_warehouse_orderpoint_tree_editable"/>
+        <field name="search_view_id" ref="stock.stock_reorder_report_search"/>
+        <field name="domain"
+               eval="[('product_id.categ_id', 'child_of',
+                       ref('product_category_dental_supplies'))]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune règle de réapprovisionnement
+            </p><p>
+                Réglez un minimum et un maximum par consommable : le
+                planificateur proposera de lui-même un bon de commande
+                chez le fournisseur du produit dès que le rayon passe
+                sous le minimum.
+            </p>
+        </field>
+    </record>
+
+    <!-- Le menuitem vit dans dental_stock_menus.xml, charge en dernier :
+         menu_dental_stock_root n'existe pas encore ici. Meme doctrine
+         que le menu des constats de megga_dental. -->
+</odoo>

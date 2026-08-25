@@ -42,8 +42,14 @@ Le stock ne bloque JAMAIS la clinique : rien en rayon, la consommation
 part quand meme (quantite en negatif), plus rien de servable, elle part
 sans lot — et une activite signale l'ecart au magasin. Le soin est
 fait ; le magasin constate.
+
+Reapprovisionnement : minimum et maximum par consommable, et le
+planificateur du coeur propose de lui-meme un bon de commande chez le
+fournisseur du produit des que le rayon passe sous le minimum. Aucun
+cron maison — le coeur en a deja un. La reception remet des lots dates
+en rayon, que le FEFO range a leur place.
 """,
-    'version': '19.0.1.1.0',
+    'version': '19.0.1.2.0',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
@@ -52,10 +58,15 @@ fait ; le magasin constate.
         'megga_dental',
         'stock',
         'product_expiry',
+        # Chantier 3 : le reassort passe par les bons de commande du
+        # coeur. purchase_stock tire purchase ET stock, et pose la
+        # route « Buy » sur l'entrepot.
+        'purchase_stock',
     ],
     'data': [
         'security/ir.model.access.csv',
         'data/dental_stock_data.xml',
+        'views/dental_replenish_views.xml',
         'views/dental_stock_views.xml',
         'views/dental_supply_views.xml',
         'views/dental_stock_menus.xml',
