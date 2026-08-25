@@ -36,6 +36,19 @@ class MeggaDentalTreatment(models.Model):
     date = fields.Date(
         "Date du traitement", required=True,
         default=fields.Date.context_today)
+    # Le creneau est FACULTATIF : un traitement se planifie tres bien
+    # au jour pres (comportement historique). Des que start_at est pose,
+    # les gardes de conflits s'appliquent — par fauteuil et par
+    # praticien — et la confirmation attribue un fauteuil libre.
+    start_at = fields.Datetime("Début")
+    duration = fields.Float(
+        "Durée (h)", default=1.0,
+        help="Temps au fauteuil prévu, en heures.")
+    stop_at = fields.Datetime(
+        "Fin", compute='_compute_stop_at', store=True)
+    chair_id = fields.Many2one(
+        'megga.dental.chair', string="Fauteuil", ondelete='restrict',
+        index=True)
     state = fields.Selection([
         ('draft', "Devis"),
         ('confirmed', "Planifié"),
@@ -94,6 +107,64 @@ class MeggaDentalTreatment(models.Model):
         for treatment in self:
             treatment.amount_total = sum(treatment.line_ids.mapped('subtotal'))
 
+    @api.depends('start_at', 'duration')
+    def _compute_stop_at(self):
+        for treatment in self:
+            treatment.stop_at = fields.Datetime.add(
+                treatment.start_at, hours=treatment.duration or 0.0) \
+                if treatment.start_at else False
+
+    def _conflicts(self, champ):
+        """Traitements CONFIRMÉS qui chevauchent le créneau de self sur
+        la même ressource (`champ` : chair_id ou dentist_id). Bords
+        adjacents permis : une séance peut commencer quand l'autre
+        finit."""
+        self.ensure_one()
+        if not self.start_at or not self[champ]:
+            return self.browse()
+        return self.search([
+            ('id', '!=', self.id),
+            ('state', '=', 'confirmed'),
+            (champ, '=', self[champ].id),
+            ('start_at', '!=', False),
+            ('start_at', '<', self.stop_at),
+            ('stop_at', '>', self.start_at),
+        ])
+
+    @api.constrains('start_at', 'stop_at', 'chair_id', 'dentist_id', 'state')
+    def _check_slot_conflicts(self):
+        for treatment in self:
+            if treatment.state != 'confirmed' or not treatment.start_at:
+                continue
+            pris = treatment._conflicts('chair_id')
+            if pris:
+                raise ValidationError(_(
+                    "Le fauteuil %(fauteuil)s est pris sur ce créneau "
+                    "par %(autre)s.") % {
+                        'fauteuil': treatment.chair_id.name,
+                        'autre': pris[0].name})
+            occupe = treatment._conflicts('dentist_id')
+            if occupe:
+                raise ValidationError(_(
+                    "%(praticien)s est déjà en séance sur ce créneau "
+                    "(%(autre)s).") % {
+                        'praticien': treatment.dentist_id.name,
+                        'autre': occupe[0].name})
+
+    def _assign_free_chair(self):
+        """Attribue le premier fauteuil libre (ordre de la liste) sur le
+        créneau. UserError si tout est pris — on ne confirme pas une
+        séance sans place."""
+        self.ensure_one()
+        for chair in self.env['megga.dental.chair'].search([]):
+            self.chair_id = chair
+            if not self._conflicts('chair_id'):
+                return
+        self.chair_id = False
+        raise UserError(_(
+            "Aucun fauteuil libre sur ce créneau — déplacez la séance "
+            "ou ajoutez un fauteuil (Configuration ▸ Fauteuils)."))
+
     def action_confirm(self):
         for treatment in self:
             if treatment.state != 'draft':
@@ -101,6 +172,9 @@ class MeggaDentalTreatment(models.Model):
             if not treatment.line_ids:
                 raise UserError(
                     _("Ajoutez au moins un acte avant de planifier."))
+            if treatment.start_at and not treatment.chair_id \
+                    and self.env['megga.dental.chair'].search_count([]):
+                treatment._assign_free_chair()
             treatment.state = 'confirmed'
 
     def action_done(self):

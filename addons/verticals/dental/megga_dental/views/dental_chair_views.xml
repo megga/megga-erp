@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_chair_list" model="ir.ui.view">
+        <field name="name">megga.dental.chair.list</field>
+        <field name="model">megga.dental.chair</field>
+        <field name="arch" type="xml">
+            <list string="Fauteuils" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="note"/>
+                <field name="active" widget="boolean_toggle"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dental_chair" model="ir.actions.act_window">
+        <field name="name">Fauteuils</field>
+        <field name="res_model">megga.dental.chair</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun fauteuil</p>
+            <p>La ressource que les séances se partagent : dès qu'un
+               traitement porte un créneau, le fauteuil s'attribue tout
+               seul à la planification et les conflits sont refusés.</p>
+        </field>
+    </record>
+
+    <record id="view_dental_treatment_calendar" model="ir.ui.view">
+        <field name="name">megga.dental.treatment.calendar</field>
+        <field name="model">megga.dental.treatment</field>
+        <field name="arch" type="xml">
+            <calendar string="Planning des séances"
+                      date_start="start_at" date_stop="stop_at"
+                      color="chair_id" event_open_popup="1"
+                      quick_create="0">
+                <field name="patient_id"/>
+                <field name="dentist_id" avatar_field="avatar_128"/>
+                <field name="chair_id" filters="1"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+</odoo>

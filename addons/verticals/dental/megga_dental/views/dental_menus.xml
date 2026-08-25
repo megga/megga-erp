@@ -72,6 +72,9 @@
     <menuitem id="menu_dental_medicaments" name="Médicaments"
               parent="menu_dental_config" action="action_dental_medicament"
               sequence="30"/>
+    <menuitem id="menu_dental_chairs" name="Fauteuils"
+              parent="menu_dental_config" action="action_dental_chair"
+              sequence="35"/>
     <menuitem id="menu_dental_questionnaire_templates"
               name="Gabarits de questionnaires"
               parent="menu_dental_config"

@@ -111,7 +111,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée) | 101 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier) | 111 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
@@ -220,6 +220,17 @@ corrigée). Un dossier qui porte des notes ne se supprime plus
 premier jour. Onglet « Journal » du dossier + vue transverse, réservés
 aux Soins. C'est la doctrine « signé = figé » des ordonnances et
 questionnaires, poussée au cran au-dessus : figé dès la naissance.
+
+Les **fauteuils et créneaux** posent le planning sur la ressource
+réelle : un référentiel de fauteuils (ou salles), et dès qu'une séance
+porte un créneau (début + durée, fin calculée), les conflits sont
+**refusés par le modèle** — par fauteuil *et* par praticien, confirmés
+seulement, bords adjacents permis (une séance peut commencer quand
+l'autre finit) ; la planification **attribue toute seule** le premier
+fauteuil libre et refuse de confirmer sans place. Vue calendrier
+colorée par fauteuil. Sans créneau saisi, rien ne change : le
+comportement historique au jour près reste tel quel — c'est le patron
+des tables du restaurant, appliqué au cabinet.
 
 Côté resto, les fiches techniques convertissent les unités : chaque
 ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl

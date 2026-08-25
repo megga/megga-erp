@@ -23,7 +23,9 @@ questionnaires et consentements (gabarits du cabinet, signature qui
 fige, anamnèse à péremption avec indicateur au dossier, impression),
 imagerie au dossier (clichés typés par dent, galerie, pièce jointe),
 journal clinique immuable (notes au stylo : horodatage et auteur du
-serveur, ni modification ni suppression, rectification chaînée).
+serveur, ni modification ni suppression, rectification chaînée),
+fauteuils et créneaux (conflits refusés par fauteuil et par
+praticien, attribution automatique, calendrier des séances).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -59,6 +61,7 @@ serveur, ni modification ni suppression, rectification chaînée).
         'views/dental_questionnaire_views.xml',
         'views/dental_imaging_views.xml',
         'views/dental_clinical_note_views.xml',
+        'views/dental_chair_views.xml',
         'report/prescription_report.xml',
         'report/questionnaire_report.xml',
         'views/dental_menus.xml',

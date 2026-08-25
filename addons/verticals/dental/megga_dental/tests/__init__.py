@@ -10,3 +10,4 @@ from . import test_prescription
 from . import test_questionnaire
 from . import test_imaging
 from . import test_clinical_note
+from . import test_chair

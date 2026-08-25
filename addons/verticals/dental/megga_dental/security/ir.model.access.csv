@@ -34,3 +34,6 @@ access_dental_imaging_praticien,dental.imaging.praticien,model_megga_dental_imag
 access_dental_imaging_system,dental.imaging.system,model_megga_dental_imaging,base.group_system,1,1,1,1
 access_dental_clinical_note_praticien,dental.clinical.note.praticien,model_megga_dental_clinical_note,group_dental_praticien,1,1,1,0
 access_dental_clinical_note_system,dental.clinical.note.system,model_megga_dental_clinical_note,base.group_system,1,1,1,0
+access_dental_chair_reception,dental.chair.reception,model_megga_dental_chair,group_dental_reception,1,0,0,0
+access_dental_chair_praticien,dental.chair.praticien,model_megga_dental_chair,group_dental_praticien,1,1,1,1
+access_dental_chair_system,dental.chair.system,model_megga_dental_chair,base.group_system,1,1,1,1
