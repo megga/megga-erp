@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_balance_agee" model="ir.actions.report">
+        <field name="name">Balance âgée</field>
+        <field name="model">res.company</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_pilotage.report_balance_agee</field>
+        <field name="report_file">megga_pilotage.report_balance_agee</field>
+        <field name="print_report_name">'Balance agee - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_balance_agee">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- div.h2 : les mises en page du coeur s'approprient
+                         les h2 du corps (lecon des rapports dentaires). -->
+                    <div class="h2">Balance âgée</div>
+                    <p class="text-muted">
+                        Poste clients au <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d.%m.%Y')"/>,
+                        en <span t-esc="devise.name"/>.
+                    </p>
+
+                    <p t-if="not balance">Aucune facture client ouverte.</p>
+                    <table t-else="" class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th t-foreach="tranches" t-as="tranche"
+                                    class="text-end">
+                                    <span t-esc="libelles[tranche]"/>
+                                </th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="balance" t-as="ligne">
+                                <td t-esc="ligne['partner'].display_name"/>
+                                <td t-foreach="tranches" t-as="tranche"
+                                    class="text-end">
+                                    <span t-esc="ligne['tranches'][tranche]"
+                                          t-options="{'widget': 'monetary', 'display_currency': devise}"/>
+                                </td>
+                                <td class="text-end">
+                                    <strong t-esc="ligne['total']"
+                                            t-options="{'widget': 'monetary', 'display_currency': devise}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td t-foreach="tranches" t-as="tranche"
+                                    class="text-end">
+                                    <strong t-esc="totaux[tranche]"
+                                            t-options="{'widget': 'monetary', 'display_currency': devise}"/>
+                                </td>
+                                <td class="text-end">
+                                    <strong t-esc="total_general"
+                                            t-options="{'widget': 'monetary', 'display_currency': devise}"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pilotage_age_list" model="ir.ui.view">
+        <field name="name">megga.pilotage.age.list</field>
+        <field name="model">megga.pilotage.age</field>
+        <field name="arch" type="xml">
+            <list string="Balance âgée" create="false" default_order="days_overdue desc">
+                <field name="partner_id"/>
+                <field name="move_id"/>
+                <field name="invoice_date_due"/>
+                <field name="days_overdue"/>
+                <field name="bucket" widget="badge"
+                       decoration-success="bucket == 'not_due'"
+                       decoration-warning="bucket in ('b30', 'b60')"
+                       decoration-danger="bucket in ('b90', 'b90p')"/>
+                <field name="relance_niveau_id" optional="show"/>
+                <field name="amount_residual" sum="Total dû"/>
+                <field name="company_currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pilotage_age_pivot" model="ir.ui.view">
+        <field name="name">megga.pilotage.age.pivot</field>
+        <field name="model">megga.pilotage.age</field>
+        <field name="arch" type="xml">
+            <pivot string="Balance âgée">
+                <field name="partner_id" type="row"/>
+                <field name="bucket" type="col"/>
+                <field name="amount_residual" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_pilotage_age_graph" model="ir.ui.view">
+        <field name="name">megga.pilotage.age.graph</field>
+        <field name="model">megga.pilotage.age</field>
+        <field name="arch" type="xml">
+            <graph string="Balance âgée" type="bar">
+                <field name="bucket"/>
+                <field name="amount_residual" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_pilotage_age_search" model="ir.ui.view">
+        <field name="name">megga.pilotage.age.search</field>
+        <field name="model">megga.pilotage.age</field>
+        <field name="arch" type="xml">
+            <search string="Balance âgée">
+                <field name="partner_id"/>
+                <field name="move_id"/>
+                <filter name="filter_echu" string="Échu"
+                        domain="[('bucket', '!=', 'not_due')]"/>
+                <filter name="filter_vieux" string="Plus de 90 jours"
+                        domain="[('bucket', '=', 'b90p')]"/>
+                <separator/>
+                <filter name="filter_jamais_relance" string="Jamais rappelé"
+                        domain="[('relance_niveau_id', '=', False)]"/>
+                <group>
+                    <filter name="group_partner" string="Client" domain="[]"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_bucket" string="Tranche" domain="[]"
+                            context="{'group_by': 'bucket'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pilotage_age" model="ir.actions.act_window">
+        <field name="name">Balance âgée</field>
+        <field name="res_model">megga.pilotage.age</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="search_view_id" ref="view_pilotage_age_search"/>
+        <field name="context">{'search_default_group_bucket': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune facture client ouverte</p>
+            <p>Qui doit quoi, et depuis combien de temps. Le rapport
+               imprimable, celui de la fiduciaire, se tire depuis la
+               fiche Société.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pilotage_age" name="Balance âgée"
+              parent="account.menu_finance_receivables"
+              action="action_pilotage_age" sequence="36"/>
+</odoo>

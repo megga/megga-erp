@@ -96,6 +96,7 @@ Décidé le 23/08/2026. Préfixe de tous les modules : `megga_`.
 | [`megga_pain001`](addons/megga_pain001/) | Paiements fournisseurs pain.001.001.09.ch.03 | 5 |
 | [`megga_tva_ch`](addons/megga_tva_ch/) | Décompte TVA AFC (rendu du rapport l10n_ch) | 4 |
 | [`megga_relances`](addons/megga_relances/) | Rappels de factures impayées (`account_followup` est Enterprise) : niveaux réglables, proposition quotidienne en brouillon, envoi tracé au chatter, un même cran ne repart jamais deux fois | 35 |
+| [`megga_pilotage`](addons/megga_pilotage/) | Balance âgée du poste clients (`account_reports` est Enterprise) : vue d'analyse liste/pivot/graphe par tranche d'âge, rapport imprimable pour la fiduciaire | 18 |
 
 Validation groupée (socle + verticales) : `bash scripts/run_tests.sh`.
 
@@ -144,6 +145,25 @@ courrier part dans la **langue du client**, montants et dates
 formatés. Un client sans adresse de courriel ne fait pas
 semblant d'être relancé : l'envoi refuse, et un bouton « remis hors
 courriel » trace la remise postale.
+
+La **balance âgée** (`megga_pilotage`) répond à la question que le
+patron pose le lundi matin : *qui me doit quoi, et depuis combien de
+temps ?* Elle manque aussi à Community — les rapports comptables
+(`account_reports`) sont Enterprise. Chaque facture ouverte est rangée
+par âge de créance (non échu, 1-30, 31-60, 61-90, plus de 90 jours),
+en **liste, pivot et graphe**, avec le cran de rappel déjà servi en
+regard : la balance et les rappels se lisent ensemble. Un **rapport
+imprimable** par client — celui que réclame la fiduciaire — sort le
+même tableau ventilé, la plus grosse dette en tête.
+
+Deux partis pris : les montants sont exprimés en **devise de la
+société** (un tableau de bord additionne, et on n'additionne pas des
+francs avec des euros — le détail en devise d'origine reste sur la
+facture) ; et le débiteur est l'**entité commerciale**, donc les
+services d'un même client comptent pour un seul. La vue classe en SQL
+pour que le pivot travaille en base, le rapport classe en Python : un
+test compare les deux verdicts sur toute la plage, pour qu'écran et
+papier ne divergent jamais en silence.
 
 ## Verticales métier (`addons/verticals/`)
 
