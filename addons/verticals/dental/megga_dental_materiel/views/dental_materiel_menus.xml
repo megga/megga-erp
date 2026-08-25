@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le registre sous le menu du cabinet : le praticien qui constate
+         une panne au fauteuil ne devrait pas avoir à traverser l'app
+         Maintenance pour la signaler.
+
+         Les groupes suivent les DROITS RÉELS du cœur, qui ne sont pas
+         ceux qu'on croit. L'ACL donne bien la lecture des équipements à
+         tout employé — mais une règle d'enregistrement
+         (`maintenance.equipment_rule_user`) la borne aux équipements
+         dont il est SUIVEUR : c'est le modèle « mon ordinateur
+         portable », pas « le registre de la maison ». Un praticien
+         ordinaire aurait donc vu un menu « Appareils » vide.
+
+         D'où le partage : le registre complet au gestionnaire
+         d'équipements, et « Entretiens » à tout employé — signaler une
+         panne, suivre la sienne, c'est le geste du fauteuil et le cœur
+         l'ouvre à tous. Le menu racine du dentaire, lui, reste gardé
+         par les groupes LPD : seule l'équipe du cabinet voit ce
+         raccourci.
+
+         Séquence 45 : après « Stock du cabinet » (40), avant
+         « Configuration » (90) — le magasin compte, le registre
+         entretient. -->
+    <menuitem id="menu_dental_materiel_root" name="Matériel"
+              parent="megga_dental.menu_dental_root" sequence="45"
+              groups="maintenance.group_equipment_manager,base.group_user"/>
+
+    <menuitem id="menu_dental_materiel_equipment" name="Appareils"
+              parent="menu_dental_materiel_root"
+              action="action_dental_equipment" sequence="10"
+              groups="maintenance.group_equipment_manager"/>
+
+    <menuitem id="menu_dental_materiel_requests" name="Entretiens"
+              parent="menu_dental_materiel_root"
+              action="action_dental_maintenance_request" sequence="20"
+              groups="maintenance.group_equipment_manager,base.group_user"/>
+</odoo>

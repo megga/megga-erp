@@ -389,13 +389,36 @@ class TestDentalReplenish(TransactionCase):
             lambda l: l.product_id == self.compresse)
         self.assertEqual(ligne.product_qty, 22.0)
 
-    def test_menu_a_commander_garde_par_les_groupes_stock(self):
+    def test_le_menu_a_commander_ouvre_bien_l_ecran_du_cabinet(self):
         """Comme tout le magasin : un raccourci, pas une porte
-        dérobée — et le MÊME groupe que le menu équivalent du cœur."""
+        dérobée — et le MÊME groupe que le menu équivalent du cœur.
+
+        Le test suit le fil ENTIER, du menu jusqu'au périmètre :
+        vérifier les groupes d'un côté et le domaine de l'action de
+        l'autre laisserait le câblage du milieu sans témoin. On
+        pourrait alors repointer ce menu sur l'écran de réappro complet
+        du cœur — celui qui sème des règles pour toute la société — sans
+        qu'un seul test ne morde."""
         menu = self.env.ref(
             'megga_dental_stock.menu_dental_stock_replenish')
         self.assertEqual(menu.group_ids,
                          self.env.ref('stock.group_stock_manager'))
+        self.assertEqual(
+            menu.action,
+            self.env.ref('megga_dental_stock.action_dental_replenishment'),
+            "Le menu du cabinet ouvre l'action du cabinet, pas celle "
+            "du cœur.")
+        self.assertEqual(
+            menu.action.view_id,
+            self.env.ref('megga_dental_stock.view_dental_orderpoint_list'),
+            "…et il l'ouvre sur la vue SANS le js_class semeur.")
+        self.assertEqual(
+            menu.action.search_view_id,
+            self.env.ref('stock.stock_reorder_report_search'))
+        regle_cabinet = self._regle(self.compresse, 10.0, 40.0)
+        depuis_le_menu = self.env['stock.warehouse.orderpoint'].search(
+            safe_eval(menu.action.domain))
+        self.assertIn(regle_cabinet, depuis_le_menu)
         self.assertEqual(
             menu.group_ids,
             self.env.ref('stock.menu_reordering_rules_replenish').group_ids,

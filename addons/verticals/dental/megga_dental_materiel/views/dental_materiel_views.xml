@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le fauteuil n'avait qu'une liste éditable : montrer son
+         matériel demande une fiche. Le module apporte donc le
+         formulaire qui lui manquait, et ouvre l'action existante
+         dessus — le fauteuil et ce qui l'entoure au même endroit. -->
+    <!-- Le compteur et l'onglet sont gardés par le gestionnaire
+         d'équipements, et non par `base.group_user`, pour la même
+         raison que le menu « Appareils » : la règle du cœur
+         (`maintenance.equipment_rule_user`) ne montre à un employé
+         ordinaire que les équipements dont il est SUIVEUR. Le
+         compteur, lui, se calcule en `sudo`. Sans cette garde, le
+         praticien lisait « 1 appareil » sur un onglet vide —
+         vérifié par un test avant d'être corrigé. -->
+    <record id="view_dental_chair_form" model="ir.ui.view">
+        <field name="name">megga.dental.chair.form.materiel</field>
+        <field name="model">megga.dental.chair</field>
+        <field name="arch" type="xml">
+            <form string="Fauteuil">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_megga_open_equipment"
+                                type="object" class="oe_stat_button"
+                                icon="fa-wrench"
+                                groups="maintenance.group_equipment_manager">
+                            <field name="equipment_count" widget="statinfo"
+                                   string="Appareils"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Fauteuil"/>
+                        <h1><field name="name" placeholder="Fauteuil 1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="note"
+                                   placeholder="Étage, équipement particulier…"/>
+                        </group>
+                    </group>
+                    <notebook groups="maintenance.group_equipment_manager">
+                        <page string="Matériel" name="equipment">
+                            <field name="equipment_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="category_id"/>
+                                    <field name="serial_no" optional="show"/>
+                                    <field name="technician_user_id"
+                                           optional="show"/>
+                                    <field name="warranty_date"
+                                           optional="show"/>
+                                    <field name="maintenance_open_count"
+                                           string="Entretiens en cours"/>
+                                </list>
+                            </field>
+                            <p class="text-muted">
+                                Ce qui est installé autour de ce
+                                fauteuil. Un fauteuil qui porte du
+                                matériel ne se supprime plus : il
+                                s'archive.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="megga_dental.action_dental_chair" model="ir.actions.act_window">
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Le fauteuil sur la fiche de l'appareil : un champ, pas un
+         écran. Le reste du formulaire du cœur ne bouge pas. -->
+    <record id="view_equipment_form_dental" model="ir.ui.view">
+        <field name="name">maintenance.equipment.form.dental</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="chair_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Les équipements du cabinet, groupés par fauteuil : la question
+         que le cabinet se pose vraiment (« qu'est-ce qui s'arrête si
+         cet appareil part en réparation ? »). -->
+    <record id="view_dental_equipment_list" model="ir.ui.view">
+        <field name="name">megga.dental.materiel.equipment.list</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="arch" type="xml">
+            <list string="Matériel du cabinet" multi_edit="1">
+                <field name="name"/>
+                <field name="chair_id"/>
+                <field name="category_id"/>
+                <field name="serial_no" optional="show"/>
+                <field name="technician_user_id" optional="show"
+                       widget="many2one_avatar_user"/>
+                <field name="assign_date" optional="hide"/>
+                <field name="warranty_date" optional="show"/>
+                <field name="maintenance_open_count"
+                       string="Entretiens en cours"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_equipment_search" model="ir.ui.view">
+        <field name="name">megga.dental.materiel.equipment.search</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="arch" type="xml">
+            <search string="Matériel du cabinet">
+                <field name="name"/>
+                <field name="serial_no"/>
+                <field name="chair_id"/>
+                <field name="category_id"/>
+                <filter name="au_fauteuil" string="Rattaché à un fauteuil"
+                        domain="[('chair_id', '!=', False)]"/>
+                <filter name="hors_fauteuil" string="Local technique"
+                        domain="[('chair_id', '=', False)]"/>
+                <separator/>
+                <filter name="sous_garantie" string="Sous garantie"
+                        domain="[('warranty_date', '&gt;=', 'today')]"/>
+                <group>
+                    <filter name="group_chair" string="Fauteuil"
+                            domain="[]" context="{'group_by': 'chair_id'}"/>
+                    <filter name="group_category" string="Famille"
+                            domain="[]" context="{'group_by': 'category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_equipment" model="ir.actions.act_window">
+        <field name="name">Matériel</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="view_id" ref="view_dental_equipment_list"/>
+        <field name="search_view_id" ref="view_dental_equipment_search"/>
+        <field name="context">{'search_default_group_chair': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun appareil au registre
+            </p><p>
+                Autoclave, compresseur, générateur de rayons X, unit :
+                inscrivez ce qui se révise et se prouve, et rattachez-le
+                au fauteuil qu'il sert.
+            </p>
+        </field>
+    </record>
+
+    <!-- Les demandes d'entretien : l'écran du cœur, borné au matériel
+         qui porte un fauteuil OU qui appartient à l'équipe du cabinet.
+         Aucun modèle de plus, aucun cycle de plus. -->
+    <record id="action_dental_maintenance_request" model="ir.actions.act_window">
+        <field name="name">Entretiens</field>
+        <field name="res_model">maintenance.request</field>
+        <field name="view_mode">kanban,list,form,calendar,activity</field>
+        <field name="view_id" ref="maintenance.hr_equipment_request_view_kanban"/>
+        <!-- Idiome du cœur : on écarte les demandes annulées et on
+             pré-remplit le demandeur. `search_default_group_equipment`
+             n'existe PAS dans la vue de recherche du cœur — un contexte
+             sans effet aurait donné l'illusion d'un regroupement. -->
+        <field name="context">{'search_default_active': True,
+                               'default_user_id': uid}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune demande d'entretien
+            </p><p>
+                Une panne se signale ici, et un entretien périodique
+                (validation d'autoclave, révision du compresseur) se
+                règle en demande <b>récurrente</b> : clore celle du
+                trimestre engendre celle du suivant.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- L'équipe qui reçoit les demandes du cabinet. Une seule
+             suffit à une structure de cette taille : le dentiste
+             signale, le responsable technique intervient ou appelle le
+             fournisseur. Sans société : partagée, comme les emplacements
+             virtuels du magasin — un cabinet à deux sociétés ne veut pas
+             deux équipes techniques. -->
+        <record id="maintenance_team_dental" model="maintenance.team">
+            <field name="name">Cabinet</field>
+            <field name="company_id"></field>
+        </record>
+
+        <!-- Les familles d'appareils qu'un cabinet dentaire possède
+             toutes. Elles ne sont PAS du matériel semé (le matériel est
+             de la donnée client) : ce sont des rubriques de classement,
+             et elles portent le rythme d'entretien attendu par la
+             pratique — l'autoclave se valide plus souvent que le
+             fauteuil. -->
+        <record id="equipment_category_sterilisation" model="maintenance.equipment.category">
+            <field name="name">Stérilisation</field>
+            <field name="note" type="html">
+                <p>Autoclaves, thermosoudeuses, bacs à ultrasons. La
+                validation périodique d'un autoclave se prouve : gardez
+                les rapports de cycle en pièce jointe de la demande
+                d'entretien.</p>
+            </field>
+        </record>
+        <record id="equipment_category_imagerie" model="maintenance.equipment.category">
+            <field name="name">Imagerie</field>
+            <field name="note" type="html">
+                <p>Générateurs de rayons X, capteurs, panoramiques.
+                Soumis au contrôle périodique de radioprotection.</p>
+            </field>
+        </record>
+        <record id="equipment_category_fauteuil" model="maintenance.equipment.category">
+            <field name="name">Unit et fauteuil</field>
+        </record>
+        <record id="equipment_category_technique" model="maintenance.equipment.category">
+            <field name="name">Local technique</field>
+            <field name="note" type="html">
+                <p>Compresseur, pompe à salive, aspiration, adoucisseur —
+                ce qui sert tous les fauteuils à la fois, et dont la
+                panne arrête le cabinet entier.</p>
+            </field>
+        </record>
+    </data>
+</odoo>
