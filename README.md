@@ -111,7 +111,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier) | 111 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier), tiers payant d'assurance (dossiers AA/AI/AM/LAMal/LCA, garanties de prise en charge, facture à l'assureur avec référence du sinistre) | 126 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
@@ -232,6 +232,26 @@ fauteuil libre et refuse de confirmer sans place. Vue calendrier
 colorée par fauteuil. Sans créneau saisi, rien ne change : le
 comportement historique au jour près reste tel quel — c'est le patron
 des tables du restaurant, appliqué au cabinet.
+
+Le **tiers payant d'assurance** ferme la boucle financière : quand un
+assureur doit payer, c'est lui que le cabinet facture — directement.
+Un référentiel d'assureurs (délégués `res.partner`, donc facturables
+tels quels) et des **dossiers de prise en charge** par patient :
+sinistre accident (LAA), décision AI/AM, garantie LAMal (art. 31) ou
+complémentaire LCA. Le droit est dans les gardes : un dossier
+AA/AI/AM ne se confirme pas sans **numéro de sinistre** et impose le
+**tarif conventionnel** (valeur du point de la convention) ; en
+LAMal/LCA, « pas de garantie écrite, pas de tiers payant » — montant
+et date de la garantie exigés, sinon le dossier reste en tiers garant
+et le patient avance les frais comme toujours. Rattaché à un dossier
+tiers payant **confirmé**, le traitement se facture à l'assureur, la
+référence du sinistre et le nom du patient en clair sur la facture
+(l'assureur ne rapproche rien sans eux) ; les plans propagent le
+dossier à toutes leurs phases. La chaîne du socle suit sans pont :
+QR-facture à l'assureur, encaissement camt. Suivi par dossier
+(traitements, total facturé) ; un dossier porteur ne se supprime pas,
+il se clôt. L'administratif de facturation appartient à la réception
+— les dossiers d'assurance lui sont ouverts, le clinique reste fermé.
 
 Le **portail patient** (`megga_dental_portal`) ouvre une fenêtre — pas
 une porte. Module **séparé, jamais auto-installé** : ouvrir des données

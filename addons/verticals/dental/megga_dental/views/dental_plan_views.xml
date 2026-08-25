@@ -26,6 +26,9 @@
                                    widget="many2one_avatar_user"/>
                             <field name="date"/>
                             <field name="tariff_kind"/>
+                            <field name="insurance_case_id"
+                                   domain="[('patient_id', '=', patient_id)]"
+                                   context="{'default_patient_id': patient_id}"/>
                         </group>
                         <group>
                             <field name="amount_total"/>

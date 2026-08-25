@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_insurer_list" model="ir.ui.view">
+        <field name="name">megga.dental.insurer.list</field>
+        <field name="model">megga.dental.insurer</field>
+        <field name="arch" type="xml">
+            <list string="Assureurs">
+                <field name="name"/>
+                <field name="city"/>
+                <field name="phone"/>
+                <field name="email"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_insurer_form" model="ir.ui.view">
+        <field name="name">megga.dental.insurer.form</field>
+        <field name="model">megga.dental.insurer</field>
+        <field name="arch" type="xml">
+            <form string="Assureur">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"
+                                   placeholder="Nom de l'assureur"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="street" placeholder="Rue"/>
+                            <field name="zip" placeholder="NPA"/>
+                            <field name="city" placeholder="Localité"/>
+                        </group>
+                        <group>
+                            <field name="phone"/>
+                            <field name="email"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="note"
+                           placeholder="Remarques (guichet, personne de contact...)"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_dental_insurer" model="ir.actions.act_window">
+        <field name="name">Assureurs</field>
+        <field name="res_model">megga.dental.insurer</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun assureur</p>
+            <p>Le référentiel des assureurs à qui le cabinet facture en
+               tiers payant : SUVA et assureurs LAA, offices AI,
+               assurance militaire, caisses-maladie et complémentaires.</p>
+        </field>
+    </record>
+
+    <record id="view_dental_insurance_case_list" model="ir.ui.view">
+        <field name="name">megga.dental.insurance.case.list</field>
+        <field name="model">megga.dental.insurance.case</field>
+        <field name="arch" type="xml">
+            <list string="Dossiers d'assurance">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="insurer_id"/>
+                <field name="regime"/>
+                <field name="payment_mode"/>
+                <field name="claim_number" optional="show"/>
+                <field name="amount_invoiced" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'active'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_insurance_case_form" model="ir.ui.view">
+        <field name="name">megga.dental.insurance.case.form</field>
+        <field name="model">megga.dental.insurance.case</field>
+        <field name="arch" type="xml">
+            <form string="Dossier d'assurance">
+                <header>
+                    <button name="action_activate" type="object"
+                            string="Confirmer la prise en charge"
+                            class="btn-primary"
+                            invisible="state == 'active'"/>
+                    <button name="action_close" type="object"
+                            string="Clore"
+                            invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Prise en charge">
+                            <field name="patient_id"/>
+                            <field name="insurer_id"/>
+                            <field name="regime" widget="radio"/>
+                            <field name="payment_mode" widget="radio"/>
+                        </group>
+                        <group string="Références">
+                            <field name="claim_number"/>
+                            <field name="event_date"/>
+                            <field name="guarantee_amount"
+                                   invisible="regime in ('aa', 'ai', 'am')"/>
+                            <field name="guarantee_date"
+                                   invisible="regime in ('aa', 'ai', 'am')"/>
+                            <field name="amount_invoiced"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Traitements" name="treatments">
+                            <field name="treatment_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="state"/>
+                                    <field name="amount_total"/>
+                                    <field name="invoice_id"/>
+                                    <field name="currency_id"
+                                           column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Remarques" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_insurance_case_search" model="ir.ui.view">
+        <field name="name">megga.dental.insurance.case.search</field>
+        <field name="model">megga.dental.insurance.case</field>
+        <field name="arch" type="xml">
+            <search string="Dossiers d'assurance">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="insurer_id"/>
+                <field name="claim_number"/>
+                <filter name="filter_active" string="En cours"
+                        domain="[('state', '=', 'active')]"/>
+                <filter name="filter_payant" string="Tiers payant"
+                        domain="[('payment_mode', '=', 'payant')]"/>
+                <group>
+                    <filter name="group_insurer" string="Assureur"
+                            domain="[]"
+                            context="{'group_by': 'insurer_id'}"/>
+                    <filter name="group_regime" string="Régime"
+                            domain="[]"
+                            context="{'group_by': 'regime'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_insurance_case" model="ir.actions.act_window">
+        <field name="name">Dossiers d'assurance</field>
+        <field name="res_model">megga.dental.insurance.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_dental_insurance_case_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun dossier d'assurance</p>
+            <p>Un dossier par prise en charge : sinistre accident (LAA),
+               décision AI/AM, garantie LAMal ou complémentaire. En tiers
+               payant, les factures des traitements rattachés partent
+               directement chez l'assureur, référence comprise.</p>
+        </field>
+    </record>
+</odoo>

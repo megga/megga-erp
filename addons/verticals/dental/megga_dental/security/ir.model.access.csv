@@ -37,3 +37,9 @@ access_dental_clinical_note_system,dental.clinical.note.system,model_megga_denta
 access_dental_chair_reception,dental.chair.reception,model_megga_dental_chair,group_dental_reception,1,0,0,0
 access_dental_chair_praticien,dental.chair.praticien,model_megga_dental_chair,group_dental_praticien,1,1,1,1
 access_dental_chair_system,dental.chair.system,model_megga_dental_chair,base.group_system,1,1,1,1
+access_dental_insurer_reception,dental.insurer.reception,model_megga_dental_insurer,group_dental_reception,1,1,1,0
+access_dental_insurer_praticien,dental.insurer.praticien,model_megga_dental_insurer,group_dental_praticien,1,1,1,1
+access_dental_insurer_system,dental.insurer.system,model_megga_dental_insurer,base.group_system,1,1,1,1
+access_dental_insurance_case_reception,dental.insurance.case.reception,model_megga_dental_insurance_case,group_dental_reception,1,1,1,0
+access_dental_insurance_case_praticien,dental.insurance.case.praticien,model_megga_dental_insurance_case,group_dental_praticien,1,1,1,1
+access_dental_insurance_case_system,dental.insurance.case.system,model_megga_dental_insurance_case,base.group_system,1,1,1,1

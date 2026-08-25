@@ -40,6 +40,9 @@
                         <group>
                             <field name="tariff_kind" widget="radio"/>
                             <field name="point_value"/>
+                            <field name="insurance_case_id"
+                                   domain="[('patient_id', '=', patient_id)]"
+                                   context="{'default_patient_id': patient_id}"/>
                             <field name="invoice_id" invisible="not invoice_id"/>
                             <field name="company_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>

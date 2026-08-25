@@ -21,6 +21,12 @@
                             <field name="plan_count" widget="statinfo"
                                    string="Plans"/>
                         </button>
+                        <button name="action_view_insurance_cases"
+                                type="object"
+                                class="oe_stat_button" icon="fa-shield">
+                            <field name="insurance_case_count"
+                                   widget="statinfo" string="Assurances"/>
+                        </button>
                         <button name="action_view_prescriptions" type="object"
                                 class="oe_stat_button" icon="fa-file-text-o"
                                 groups="megga_dental.group_dental_praticien">

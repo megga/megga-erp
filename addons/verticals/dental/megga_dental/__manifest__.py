@@ -62,6 +62,7 @@ praticien, attribution automatique, calendrier des séances).
         'views/dental_imaging_views.xml',
         'views/dental_clinical_note_views.xml',
         'views/dental_chair_views.xml',
+        'views/dental_insurance_views.xml',
         'report/prescription_report.xml',
         'report/questionnaire_report.xml',
         'views/dental_menus.xml',

@@ -13,6 +13,12 @@
               sequence="20"
               groups="megga_dental.group_dental_reception"/>
 
+    <menuitem id="menu_dental_insurance_cases" name="Assurances"
+              parent="menu_dental_root"
+              action="action_dental_insurance_case"
+              sequence="22"
+              groups="megga_dental.group_dental_reception"/>
+
     <menuitem id="menu_dental_plans" name="Plans de traitement"
               parent="menu_dental_root" action="action_dental_plan"
               sequence="25"
@@ -75,6 +81,9 @@
     <menuitem id="menu_dental_chairs" name="Fauteuils"
               parent="menu_dental_config" action="action_dental_chair"
               sequence="35"/>
+    <menuitem id="menu_dental_insurers" name="Assureurs"
+              parent="menu_dental_config" action="action_dental_insurer"
+              sequence="37"/>
     <menuitem id="menu_dental_questionnaire_templates"
               name="Gabarits de questionnaires"
               parent="menu_dental_config"

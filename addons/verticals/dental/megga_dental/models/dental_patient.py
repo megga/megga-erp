@@ -66,6 +66,13 @@ class MeggaDentalPatient(models.Model):
     plan_ids = fields.One2many(
         'megga.dental.plan', 'patient_id', string="Plans de traitement")
     plan_count = fields.Integer(compute='_compute_plan_count')
+    # Les dossiers d'assurance sont de l'administratif de facturation :
+    # la réception les suit (pas de groups=), le clinique n'y figure pas.
+    insurance_case_ids = fields.One2many(
+        'megga.dental.insurance.case', 'patient_id',
+        string="Dossiers d'assurance")
+    insurance_case_count = fields.Integer(
+        compute='_compute_insurance_case_count')
     prescription_ids = fields.One2many(
         'megga.dental.prescription', 'patient_id', string="Ordonnances",
         groups="megga_dental.group_dental_praticien")
@@ -169,6 +176,11 @@ class MeggaDentalPatient(models.Model):
         for patient in self:
             patient.plan_count = len(patient.plan_ids)
 
+    @api.depends('insurance_case_ids')
+    def _compute_insurance_case_count(self):
+        for patient in self:
+            patient.insurance_case_count = len(patient.insurance_case_ids)
+
     @api.depends('prescription_ids')
     def _compute_prescription_count(self):
         for patient in self:
@@ -255,6 +267,17 @@ class MeggaDentalPatient(models.Model):
             'type': 'ir.actions.act_window',
             'name': _("Plans de traitement"),
             'res_model': 'megga.dental.plan',
+            'view_mode': 'list,form',
+            'domain': [('patient_id', '=', self.id)],
+            'context': {'default_patient_id': self.id},
+        }
+
+    def action_view_insurance_cases(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Dossiers d'assurance"),
+            'res_model': 'megga.dental.insurance.case',
             'view_mode': 'list,form',
             'domain': [('patient_id', '=', self.id)],
             'context': {'default_patient_id': self.id},

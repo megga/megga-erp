@@ -44,6 +44,32 @@ class MeggaDentalPlan(models.Model):
         ('prive', "Privé"),
         ('social', "Assurances sociales (AA/AI/AM)"),
     ], string="Tarif", default='prive', required=True)
+    insurance_case_id = fields.Many2one(
+        'megga.dental.insurance.case', string="Dossier d'assurance",
+        ondelete='restrict', index=True,
+        help="Propagé aux traitements des phases : tout le plan se "
+             "facture sur le même dossier de prise en charge.")
+
+    @api.constrains('insurance_case_id', 'patient_id', 'tariff_kind')
+    def _check_insurance_case(self):
+        for plan in self:
+            case = plan.insurance_case_id
+            if not case:
+                continue
+            if case.patient_id != plan.patient_id:
+                raise ValidationError(_(
+                    "Le dossier d'assurance %(dossier)s appartient à "
+                    "%(titulaire)s, pas à %(patient)s.") % {
+                        'dossier': case.name,
+                        'titulaire': case.patient_id.display_name,
+                        'patient': plan.patient_id.display_name})
+            if case.regime in ('aa', 'ai', 'am') \
+                    and plan.tariff_kind != 'social':
+                raise ValidationError(_(
+                    "Un dossier %s se chiffre au tarif des assurances "
+                    "sociales — passez le plan au tarif conventionnel.")
+                    % case.name)
+
     # Pourquoi ce plan : donnée clinique (art. 5 nLPD) — réservé aux
     # Soins, comme les notes cliniques du traitement. La réception voit
     # le plan, ses montants et son avancement : elle encaisse.
@@ -175,6 +201,8 @@ class MeggaDentalPlanPhase(models.Model):
                     'dentist_id': phase.plan_id.dentist_id.id,
                     'company_id': phase.plan_id.company_id.id,
                     'tariff_kind': phase.plan_id.tariff_kind,
+                    'insurance_case_id':
+                        phase.plan_id.insurance_case_id.id,
                 })
         return phases
 

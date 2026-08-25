@@ -72,6 +72,11 @@ class MeggaDentalTreatment(models.Model):
         ('prive', "Privé"),
         ('social', "Assurances sociales (AA/AI/AM)"),
     ], string="Tarif", default='prive', required=True)
+    insurance_case_id = fields.Many2one(
+        'megga.dental.insurance.case', string="Dossier d'assurance",
+        ondelete='restrict', index=True,
+        help="En tiers payant, la facture du traitement part chez "
+             "l'assureur du dossier, référence du sinistre comprise.")
     # La valeur du point est FIGÉE sur le traitement (elle ne dépend pas
     # de la valeur du cabinet au moment où on relit le devis) : seule le
     # changement de tarif la recalcule.
@@ -83,6 +88,32 @@ class MeggaDentalTreatment(models.Model):
     # restent visibles de la réception — ils figurent sur la facture.
     notes = fields.Text(
         "Notes cliniques", groups="megga_dental.group_dental_praticien")
+
+    @api.constrains('insurance_case_id', 'patient_id', 'tariff_kind')
+    def _check_insurance_case(self):
+        for treatment in self:
+            case = treatment.insurance_case_id
+            if not case:
+                continue
+            if case.patient_id != treatment.patient_id:
+                raise ValidationError(_(
+                    "Le dossier d'assurance %(dossier)s appartient à "
+                    "%(titulaire)s, pas à %(patient)s.") % {
+                        'dossier': case.name,
+                        'titulaire': case.patient_id.display_name,
+                        'patient': treatment.patient_id.display_name})
+            if case.regime in ('aa', 'ai', 'am') \
+                    and treatment.tariff_kind != 'social':
+                raise ValidationError(_(
+                    "Un dossier %s se facture au tarif des assurances "
+                    "sociales — passez le traitement au tarif "
+                    "conventionnel.") % case.name)
+
+    @api.onchange('insurance_case_id')
+    def _onchange_insurance_case_id(self):
+        for treatment in self:
+            if treatment.insurance_case_id.regime in ('aa', 'ai', 'am'):
+                treatment.tariff_kind = 'social'
 
     @api.depends('tariff_kind')
     def _compute_point_value(self):
@@ -255,6 +286,29 @@ class MeggaDentalTreatment(models.Model):
             },
         }
 
+    def _invoice_partner_and_ref(self):
+        """Destinataire et référence de la facture. Tiers payant : la
+        facture part chez l'ASSUREUR, référence du sinistre et nom du
+        patient en clair — l'assureur ne rapproche rien sans eux (et il
+        instruit déjà le dossier : la LPD n'interdit pas de nommer le
+        patient à qui la prise en charge appartient). Tiers garant ou
+        sans dossier : le patient, comme toujours."""
+        self.ensure_one()
+        case = self.insurance_case_id
+        if not case or case.payment_mode != 'payant':
+            return self.partner_id, False
+        if case.state != 'active':
+            raise UserError(_(
+                "Le dossier d'assurance %(dossier)s n'est pas en prise "
+                "en charge confirmée (état : %(etat)s) — confirmez-le, "
+                "ou détachez-le du traitement, avant de facturer.") % {
+                    'dossier': case.name,
+                    'etat': dict(case._fields['state']._description_selection(
+                        self.env))[case.state]})
+        ref = " — ".join(filter(None, [
+            case.claim_number or case.name, self.patient_id.display_name]))
+        return case.insurer_id.partner_id, ref
+
     def action_create_invoice(self):
         self.ensure_one()
         if self.state != 'done':
@@ -263,9 +317,11 @@ class MeggaDentalTreatment(models.Model):
             raise UserError(
                 _("Ce traitement est déjà facturé (%s).")
                 % self.invoice_id.display_name)
+        partner, ref = self._invoice_partner_and_ref()
         move = self.env['account.move'].with_company(self.company_id).create({
             'move_type': 'out_invoice',
-            'partner_id': self.partner_id.id,
+            'partner_id': partner.id,
+            'ref': ref,
             'invoice_date': fields.Date.context_today(self),
             'invoice_origin': self.name,
             'invoice_line_ids': [Command.create({

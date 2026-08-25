@@ -25,6 +25,13 @@
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
+        <record id="seq_dental_insurance_case" model="ir.sequence">
+            <field name="name">Dossiers d'assurance</field>
+            <field name="code">megga.dental.insurance.case</field>
+            <field name="prefix">CAS/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
         <record id="seq_dental_prescription" model="ir.sequence">
             <field name="name">Ordonnances</field>
             <field name="code">megga.dental.prescription</field>
