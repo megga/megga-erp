@@ -2,6 +2,28 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
+class ReportPrescription(models.AbstractModel):
+    """Rendu du rapport d'ordonnance. Ce modele existe pour UNE chose :
+    injecter din5008_document_title dans le contexte GLOBAL du rendu —
+    la mise en page DIN imprime son titre AVANT le corps du gabarit
+    (corps paresseux : un t-set dans le corps arrive trop tard), et sa
+    CSS masque tout titre pose dans le corps. Les autres mises en page
+    ignorent la variable et laissent le div.h2 du corps faire le
+    titre."""
+    _name = 'report.megga_dental.report_prescription'
+    _description = "Rendu de l'ordonnance"
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        return {
+            'doc_ids': docids,
+            'doc_model': 'megga.dental.prescription',
+            'docs': self.env['megga.dental.prescription'].browse(docids),
+            'din5008_document_title': _("Ordonnance"),
+        }
+
+
+
 class MeggaDentalMedicament(models.Model):
     """Référentiel de médicaments DU CABINET, pour l'autocomplétion des
     ordonnances. Comme le catalogue des positions tarifaires (œuvre
