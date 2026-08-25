@@ -179,7 +179,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 44 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
-| [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur | 19 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; **kits de consommables par position tarifaire** décomptés à la clôture de séance (zéro ressaisie au fauteuil, besoins agrégés, effet système en sudo) — et le stock ne bloque **jamais** la clinique : rien en rayon, la sortie part en négatif, plus rien de servable, elle part sans lot, avec une activité au magasin dans les deux cas ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur | 47 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
@@ -371,6 +371,52 @@ lot, sa date et le bon geste. Le refus ne vise **que** la destination
 soins, sa descendance comprise : le **rebut reste permis** — sans quoi
 un lot périmé s'immobiliserait en rayon pour toujours — comme les
 retours fournisseur et les ajustements d'inventaire.
+
+Le **pont acte → consommation** ferme la boucle : ce que le cabinet
+consomme se déduit de ce qu'il soigne. Chaque **position tarifaire**
+porte son kit (« une obturation composite : deux compresses, une paire
+de gants »), et **clore la séance décompte le magasin toute seule** —
+zéro ressaisie au fauteuil. Les besoins sont **agrégés** : deux actes
+d'une même séance qui partagent un produit font une seule ligne de
+mouvement, dans l'ordre des actes (logique pure, testée sans ORM, même
+patron que la liste de courses du restaurant). Le kit se saisit dans
+**son** unité — 500 g d'un article acheté au kilo — et la conversion se
+fait sans arrondi par ligne.
+
+Le décompte est un **effet système** du flux, en `sudo`, exactement
+comme les constats d'odontogramme : la réception peut clore une séance
+sans détenir le moindre droit sur le magasin, et elle n'en gagne aucun
+pour autant. Quatre règles le tiennent, chacune avec son test :
+
+- **Jamais deux fois.** La garde d'état de la clôture donne
+  l'idempotence de premier rang ; le lien vers le transfert engendré est
+  la ceinture, pour l'appel direct. Marquage par **identité**, pas par
+  valeur.
+- **Le stock ne bloque jamais la clinique.** Rien en rayon ? La
+  consommation part quand même — le quant passe en négatif — et une
+  **activité** signale l'écart. Elle vit sur le *transfert*, pas sur la
+  séance : c'est le magasin qui doit réagir, et le magasinier n'a aucun
+  accès au dentaire.
+- **Le périmé ne sort pas, et n'arrête rien.** Le cœur écarte déjà de la
+  réservation les lots dont la date de retrait est passée — mais
+  **seulement** si le produit coche « utiliser la date de péremption » ;
+  décochez-la après coup et un lot daté redevient réservable. Le pont le
+  retire donc en ceinture, sans quoi la garde du magasin refuserait la
+  sortie et la séance planterait. Plus rien de servable → la ligne part
+  **sans lot** : traçabilité dégradée, choisie, signalée, jamais
+  bloquante. C'est pourquoi le module se crée un **type d'opération
+  dédié** (« Consommation en soins », les deux cases de lots décochées) :
+  la seule configuration où le cœur laisse valider un produit tracé sans
+  lot.
+- **Rien ne revient tout seul.** Une séance clôturée puis annulée ne
+  ré-intègre aucun stock : une compresse sortie ne se remet pas en
+  boîte. Le geste inverse est un ajustement d'inventaire, tracé.
+
+Et la nLPD tient jusqu'au magasin : le mouvement porte la **référence**
+de la séance, jamais le diagnostic, jamais le détail des actes, jamais
+le nom du patient (pas de `partner_id` sur le transfert — ce serait le
+nommer). Un magasinier qui lit les mouvements ne lit pas le dossier
+médical. Test dédié, et prouvé par mutation.
 
 Deux points d'administration assumés, documentés ici parce qu'ils ne
 s'inventent pas : le module **ne crée aucun groupe de droits** et ne

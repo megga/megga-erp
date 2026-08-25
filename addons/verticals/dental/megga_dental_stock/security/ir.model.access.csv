@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dental_position_supply_reception,dental.position.supply.reception,model_megga_dental_position_supply,megga_dental.group_dental_reception,1,0,0,0
+access_dental_position_supply_praticien,dental.position.supply.praticien,model_megga_dental_position_supply,megga_dental.group_dental_praticien,1,1,1,1
+access_dental_position_supply_system,dental.position.supply.system,model_megga_dental_position_supply,base.group_system,1,1,1,1

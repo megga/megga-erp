@@ -120,7 +120,63 @@ for nom, reference, jours, quantite in LOTS:
         env['stock.quant']._update_available_quantity(
             produit, stock, manquant, lot_id=lot)
 
-# 3. Francais suisse : une demo de cabinet romand se lit en francais.
+# 3. Les kits : c'est l'ACTE qui sait ce qu'il consomme. Deux
+#    positions tarifaires outillees — l'obturation et le detartrage
+#    partagent les compresses, ce qui montre l'agregation.
+POSITIONS = [
+    ("4.0100", "Obturation composite une face", 40.0, [
+        ("Compresses steriles 5x5 cm", 2.0),
+        ("Composite photopolymerisable A2", 1.0),
+        ("Gants nitrile taille M", 1.0),
+    ]),
+    ("4.0200", "Detartrage complet", 25.0, [
+        ("Compresses steriles 5x5 cm", 3.0),
+        ("Gants nitrile taille M", 1.0),
+    ]),
+    ("4.0300", "Anesthesie locale", 12.0, [
+        ("Articaine 4% adrenaline 1:100'000", 2.0),
+        ("Gants nitrile taille M", 1.0),
+    ]),
+]
+for code, libelle, points, kit in POSITIONS:
+    position = env['megga.dental.position'].search(
+        [('code', '=', code)], limit=1)
+    if not position:
+        position = env['megga.dental.position'].create({
+            'code': code, 'name': libelle, 'points': points})
+    else:
+        position.write({'name': libelle, 'points': points})
+    position.supply_ids.unlink()
+    position.supply_ids = [(0, 0, {
+        'product_id': produits[nom].id, 'quantity': quantite,
+    }) for nom, quantite in kit]
+
+# 4. Une seance close : la consommation est deja partie, le transfert
+#    « Consommation en soins » se lit dans le magasin.
+patient = env['megga.dental.patient'].search(
+    [('name', '=', "Camille Rochat")], limit=1)
+if not patient:
+    patient = env['megga.dental.patient'].create({'name': "Camille Rochat"})
+obturation = env['megga.dental.position'].search(
+    [('code', '=', "4.0100")], limit=1)
+anesthesie = env['megga.dental.position'].search(
+    [('code', '=', "4.0300")], limit=1)
+deja = env['megga.dental.treatment'].search(
+    [('patient_id', '=', patient.id), ('state', '=', 'done')], limit=1)
+if not deja:
+    seance = env['megga.dental.treatment'].create({
+        'patient_id': patient.id,
+        'line_ids': [
+            (0, 0, {'position_id': anesthesie.id, 'quantity': 1.0}),
+            (0, 0, {'position_id': obturation.id, 'quantity': 2.0}),
+        ],
+    })
+    seance.action_confirm()
+    seance.action_done()
+    print("Seance close : %s -> %s" % (
+        seance.name, seance.supply_picking_id.name))
+
+# 5. Francais suisse : une demo de cabinet romand se lit en francais.
 #    _activate_lang charge les traductions embarquees par le coeur.
 env['res.lang']._activate_lang('fr_CH')
 langue = env['res.lang'].search([('code', '=', 'fr_CH')], limit=1)
@@ -133,7 +189,7 @@ if langue:
         ._update_translations(filter_lang=[langue.code])
     env.ref('base.user_admin').lang = langue.code
 
-# 4. L'admin voit le magasin : sans les groupes stock, le menu du
+# 6. L'admin voit le magasin : sans les groupes stock, le menu du
 #    cabinet ne s'affiche pas (c'est la doctrine, pas un oubli).
 admin = env.ref('base.user_admin')
 admin.group_ids = [(4, env.ref('stock.group_stock_user').id),

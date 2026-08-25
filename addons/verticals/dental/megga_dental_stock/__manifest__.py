@@ -12,7 +12,7 @@
 {
     'name': "Megga Dentaire — Stock du cabinet",
     'summary': "Consommables traces par lots et peremption, sortie FEFO, "
-               "le perime ne part jamais en soins",
+               "kits par acte decomptes a la cloture de seance",
     'description': """
 Magasin du cabinet dentaire.
 
@@ -33,8 +33,17 @@ perime doit pouvoir etre detruit proprement.
 Menu « Stock du cabinet » : produits du cabinet, quantites en stock,
 lots par urgence de peremption. Des raccourcis filtres vers les vues du
 coeur, pas un doublon de l'app Inventaire.
+
+Kits par position tarifaire : c'est l'ACTE qui sait ce qu'il consomme.
+Clore une seance decompte le magasin toute seule — zero ressaisie au
+fauteuil, deux actes qui partagent un produit font un seul mouvement.
+
+Le stock ne bloque JAMAIS la clinique : rien en rayon, la consommation
+part quand meme (quantite en negatif), plus rien de servable, elle part
+sans lot — et une activite signale l'ecart au magasin. Le soin est
+fait ; le magasin constate.
 """,
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
@@ -45,8 +54,10 @@ coeur, pas un doublon de l'app Inventaire.
         'product_expiry',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'data/dental_stock_data.xml',
         'views/dental_stock_views.xml',
+        'views/dental_supply_views.xml',
         'views/dental_stock_menus.xml',
     ],
 }
