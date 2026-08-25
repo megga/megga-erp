@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- La carte d'accueil du portail. -->
+    <template id="portal_my_home_dental" name="Portail : dossier dentaire"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/portal/static/src/img/portal-addresses.svg'"/>
+                <t t-set="title">Mon dossier dentaire</t>
+                <t t-set="text">Traitements, ordonnances émises et questionnaires signés</t>
+                <t t-set="url" t-value="'/my/traitements'"/>
+                <t t-set="placeholder_count" t-value="'dental_treatment_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- Fil d'Ariane. -->
+    <template id="portal_breadcrumbs_dental" name="Portail : fil dentaire"
+              inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'dental_treatments'"
+                class="breadcrumb-item active">Mes traitements</li>
+            <li t-if="page_name == 'dental_prescriptions'"
+                class="breadcrumb-item active">Mes ordonnances</li>
+            <li t-if="page_name == 'dental_questionnaires'"
+                class="breadcrumb-item active">Mes questionnaires</li>
+        </xpath>
+    </template>
+
+    <!-- Les onglets communs des trois pages. -->
+    <template id="portal_dental_tabs">
+        <div class="mb-3">
+            <a href="/my/traitements" t-attf-class="btn btn-sm me-1 #{'btn-primary' if page_name == 'dental_treatments' else 'btn-outline-secondary'}">Traitements</a>
+            <a href="/my/ordonnances" t-attf-class="btn btn-sm me-1 #{'btn-primary' if page_name == 'dental_prescriptions' else 'btn-outline-secondary'}">Ordonnances</a>
+            <a href="/my/questionnaires" t-attf-class="btn btn-sm #{'btn-primary' if page_name == 'dental_questionnaires' else 'btn-outline-secondary'}">Questionnaires</a>
+        </div>
+    </template>
+
+    <template id="portal_my_dental_treatments" name="Mes traitements">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <h3 class="mb-3">Mes traitements</h3>
+            <t t-call="megga_dental_portal.portal_dental_tabs"/>
+            <p t-if="not treatments">Aucun traitement dans votre dossier.</p>
+            <div t-else="" class="table-responsive">
+                <table class="table table-sm o_portal_my_doc_table">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Date</th>
+                            <th>État</th>
+                            <th class="text-end">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="treatments" t-as="treatment">
+                            <td t-esc="treatment.name"/>
+                            <td><span t-field="treatment.date"/></td>
+                            <td><span t-field="treatment.state"/></td>
+                            <td class="text-end">
+                                <span t-field="treatment.amount_total"
+                                      t-options="{'widget': 'monetary', 'display_currency': treatment.currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_prescriptions" name="Mes ordonnances">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Mes ordonnances</h3>
+            <t t-call="megga_dental_portal.portal_dental_tabs"/>
+            <p t-if="not prescriptions">Aucune ordonnance émise.</p>
+            <div t-else="" class="table-responsive">
+                <table class="table table-sm o_portal_my_doc_table">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Émise le</th>
+                            <th>Médicaments</th>
+                            <th class="text-end">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="prescriptions" t-as="prescription">
+                            <td t-esc="prescription.name"/>
+                            <td><span t-field="prescription.date_issued"/></td>
+                            <td t-esc="', '.join(prescription.line_ids.mapped('name'))"/>
+                            <td class="text-end">
+                                <a t-attf-href="/my/ordonnances/#{prescription.id}/pdf"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa fa-download"/> PDF
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_my_questionnaires" name="Mes questionnaires">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Mes questionnaires</h3>
+            <t t-call="megga_dental_portal.portal_dental_tabs"/>
+            <p t-if="not answers">Aucun questionnaire signé.</p>
+            <div t-else="" class="table-responsive">
+                <table class="table table-sm o_portal_my_doc_table">
+                    <thead>
+                        <tr>
+                            <th>Questionnaire</th>
+                            <th>Signé le</th>
+                            <th class="text-end">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="answers" t-as="answer">
+                            <td t-esc="answer.questionnaire_id.name"/>
+                            <td><span t-field="answer.signed_on"/></td>
+                            <td class="text-end">
+                                <a t-attf-href="/my/questionnaires/#{answer.id}/pdf"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa fa-download"/> PDF
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

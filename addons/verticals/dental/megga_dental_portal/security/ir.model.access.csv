@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_dental_treatment,portal.dental.treatment,megga_dental.model_megga_dental_treatment,base.group_portal,1,0,0,0
+access_portal_dental_treatment_line,portal.dental.treatment.line,megga_dental.model_megga_dental_treatment_line,base.group_portal,1,0,0,0
+access_portal_dental_prescription,portal.dental.prescription,megga_dental.model_megga_dental_prescription,base.group_portal,1,0,0,0
+access_portal_dental_prescription_line,portal.dental.prescription.line,megga_dental.model_megga_dental_prescription_line,base.group_portal,1,0,0,0
+access_portal_dental_answer,portal.dental.answer,megga_dental.model_megga_dental_questionnaire_answer,base.group_portal,1,0,0,0
+access_portal_dental_answer_line,portal.dental.answer.line,megga_dental.model_megga_dental_questionnaire_answer_line,base.group_portal,1,0,0,0
+access_portal_dental_questionnaire,portal.dental.questionnaire,megga_dental.model_megga_dental_questionnaire,base.group_portal,1,0,0,0

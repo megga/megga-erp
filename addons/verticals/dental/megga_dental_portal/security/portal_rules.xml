@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- L'etancheite du portail : le patient connecte ne voit que les
+         enregistrements de SON dossier (partner du user), et jamais un
+         brouillon — une ordonnance n'existe pour lui qu'emise, un
+         questionnaire que signe. Ces regles ne touchent que le groupe
+         portail : Reception et Soins gardent exactement leurs droits. -->
+
+    <record id="rule_portal_treatment" model="ir.rule">
+        <field name="name">Portail : ses traitements</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_treatment"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('patient_id.partner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_portal_treatment_line" model="ir.rule">
+        <field name="name">Portail : les actes de ses traitements</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_treatment_line"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('treatment_id.patient_id.partner_id', '=', user.partner_id.id)]</field>
+    </record>
+
+    <record id="rule_portal_prescription" model="ir.rule">
+        <field name="name">Portail : ses ordonnances émises</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_prescription"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('patient_id.partner_id', '=', user.partner_id.id), ('state', '=', 'issued')]</field>
+    </record>
+
+    <record id="rule_portal_prescription_line" model="ir.rule">
+        <field name="name">Portail : les lignes de ses ordonnances émises</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_prescription_line"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('prescription_id.patient_id.partner_id', '=', user.partner_id.id), ('prescription_id.state', '=', 'issued')]</field>
+    </record>
+
+    <record id="rule_portal_answer" model="ir.rule">
+        <field name="name">Portail : ses questionnaires signés</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_questionnaire_answer"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('patient_id.partner_id', '=', user.partner_id.id), ('state', '=', 'signed')]</field>
+    </record>
+
+    <record id="rule_portal_answer_line" model="ir.rule">
+        <field name="name">Portail : les réponses de ses questionnaires signés</field>
+        <field name="model_id" ref="megga_dental.model_megga_dental_questionnaire_answer_line"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('answer_id.patient_id.partner_id', '=', user.partner_id.id), ('answer_id.state', '=', 'signed')]</field>
+    </record>
+</odoo>

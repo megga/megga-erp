@@ -115,6 +115,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
@@ -231,6 +232,26 @@ fauteuil libre et refuse de confirmer sans place. Vue calendrier
 colorée par fauteuil. Sans créneau saisi, rien ne change : le
 comportement historique au jour près reste tel quel — c'est le patron
 des tables du restaurant, appliqué au cabinet.
+
+Le **portail patient** (`megga_dental_portal`) ouvre une fenêtre — pas
+une porte. Module **séparé, jamais auto-installé** : ouvrir des données
+de santé sur Internet est une décision du cabinet, pas un défaut
+d'installation. Le patient connecté trouve « Mon dossier dentaire » sur
+son portail : ses traitements (actes et montants), ses ordonnances,
+ses questionnaires — **le sien et rien que le sien** (`ir.rule` sur
+`user.partner_id`, éprouvée par les tests d'étanchéité : le dossier du
+voisin lève `AccessError`). Jamais un document en travail : seules les
+ordonnances **émises** et les questionnaires **signés** paraissent —
+un brouillon n'existe pas pour le patient. Tout est **lecture seule**
+(aucun droit d'écriture, de création ni de suppression), et le
+téléchargement PDF passe par `_document_check_access` **avant** tout
+rendu — le rendu portail d'Odoo travaille en sudo, le contrôle d'accès
+doit donc précéder l'appel, jamais s'y fier. Le clinique profond reste
+fermé : constats, imagerie, notes de journal, diagnostic et dossier
+médical n'ont **aucune** ACL portail — le patient a droit à ses
+documents remis, pas aux notes de travail du praticien (la nLPD donne
+un droit d'accès *sur demande*, art. 25 — le portail n'est pas tenu de
+tout montrer en libre-service).
 
 Côté resto, les fiches techniques convertissent les unités : chaque
 ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl
