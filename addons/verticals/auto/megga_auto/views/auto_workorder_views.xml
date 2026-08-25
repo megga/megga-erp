@@ -36,6 +36,20 @@
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
+                    <group invisible="state not in ('draft', 'confirmed')">
+                        <group>
+                            <label for="package_to_add_id"/>
+                            <div class="o_row">
+                                <field name="package_to_add_id"
+                                       options="{'no_create': True}"/>
+                                <button name="action_add_package"
+                                        type="object" class="btn-link"
+                                        string="Poser le forfait"
+                                        icon="fa-plus-square"
+                                        invisible="not package_to_add_id"/>
+                            </div>
+                        </group>
+                    </group>
                     <field name="line_ids">
                         <list editable="bottom">
                             <field name="sequence" widget="handle"/>

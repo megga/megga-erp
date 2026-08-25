@@ -16,5 +16,13 @@
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
         </record>
+        <!-- Le support de facturation de la main-d'oeuvre des forfaits :
+             un service, prix pose au taux horaire de la societe au moment
+             de l'application (list_price sans objet ici). -->
+        <record id="product_labor" model="product.product">
+            <field name="name">Main-d'œuvre atelier</field>
+            <field name="type">service</field>
+            <field name="list_price">0.0</field>
+        </record>
     </data>
 </odoo>

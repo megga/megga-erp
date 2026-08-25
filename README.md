@@ -113,7 +113,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier), tiers payant d'assurance (dossiers AA/AI/AM/LAMal/LCA, garanties de prise en charge, facture à l'assureur avec référence du sinistre) | 126 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) ; productions de cuisine (banquet, service : plats × portions) avec liste de courses agrégée multi-plats, convertie dans l'unité de l'économat, coût prévisionnel et impression pour le marché | 44 |
-| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 42 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
@@ -301,6 +301,21 @@ jour. Gardes : pas de production sans plat, pas de plat sans fiche
 (refus nominatif), pas de recalcul quand la production est soldée —
 le marché est fait. La liste s'imprime (QWeb) : c'est le papier que
 le chef emporte au marché ou envoie au fournisseur.
+
+Les **forfaits d'atelier** outillent le quotidien du garage : les
+prestations types — vidange, service annuel, roues été/hiver — se
+décrivent une fois (heures de main-d'œuvre + pièces) et se posent sur
+l'ordre de réparation **en un clic**, au prix du jour : la
+main-d'œuvre au **taux horaire du garage** (fiche Société, même patron
+que la valeur du point dentaire), les pièces à leur prix de vente
+courant — et le prix se **fige sur la ligne** à la pose (le taux peut
+changer demain, pas le devis remis). La copie reste librement
+modifiable : le gabarit aide, il n'enferme pas — la doctrine du
+référentiel de médicaments du dentaire. Gardes : pas de main-d'œuvre
+sans taux horaire renseigné (refus explicite), pas de forfait sur un
+ordre terminé ou annulé. La facturation existante suit sans rien
+changer : la main-d'œuvre s'appuie sur un article de service livré
+par le module.
 
 Côté auto, le commerce d'occasion est livré (`megga_auto_occasion`,
 auto-installé avec la localisation suisse) : la reprise à un particulier

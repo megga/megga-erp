@@ -43,6 +43,7 @@ journal de compteur, facture en un clic.
         'report/carnet_report.xml',
         'views/fleet_vehicle_views.xml',
         'views/auto_workorder_views.xml',
+        'views/auto_package_views.xml',
         'views/auto_menus.xml',
     ],
     'demo': [

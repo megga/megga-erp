@@ -13,6 +13,9 @@
     <menuitem id="menu_auto_config" name="Configuration"
               parent="menu_auto_root" sequence="90"
               groups="base.group_system"/>
+    <menuitem id="menu_auto_packages" name="Forfaits d'atelier"
+              parent="menu_auto_config" action="action_auto_package"
+              sequence="5"/>
     <menuitem id="menu_auto_models" name="Modèles de véhicules"
               parent="menu_auto_config" action="fleet.fleet_vehicle_model_action"
               sequence="10"/>

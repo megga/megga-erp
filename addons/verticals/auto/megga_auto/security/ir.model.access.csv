@@ -5,3 +5,5 @@ access_fleet_vehicle_interne,fleet.vehicle.interne,fleet.model_fleet_vehicle,bas
 access_fleet_vehicle_odometer_interne,fleet.vehicle.odometer.interne,fleet.model_fleet_vehicle_odometer,base.group_user,1,1,1,0
 access_fleet_vehicle_model_interne,fleet.vehicle.model.interne,fleet.model_fleet_vehicle_model,base.group_user,1,0,0,0
 access_fleet_vehicle_model_brand_interne,fleet.vehicle.model.brand.interne,fleet.model_fleet_vehicle_model_brand,base.group_user,1,0,0,0
+access_auto_package_user,auto.package.user,model_megga_auto_package,base.group_user,1,1,1,1
+access_auto_package_line_user,auto.package.line.user,model_megga_auto_package_line,base.group_user,1,1,1,1
