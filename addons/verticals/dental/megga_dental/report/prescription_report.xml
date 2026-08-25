@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- L'ordonnance imprimee : le papier remis au patient. Pas de prix,
+         pas d'etat interne — le nom du cabinet (en-tete standard), le
+         patient, le prescripteur, les medicaments et leur posologie. -->
+    <record id="action_report_prescription" model="ir.actions.report">
+        <field name="name">Ordonnance</field>
+        <field name="model">megga.dental.prescription</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_dental.report_prescription</field>
+        <field name="report_file">megga_dental.report_prescription</field>
+        <field name="print_report_name">'%s - %s' % (object.name, object.patient_id.name)</field>
+        <field name="binding_model_id" ref="model_megga_dental_prescription"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_prescription">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="prescription">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Ordonnance
+                            <small t-esc="prescription.name"/></h2>
+
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong>Patient</strong>
+                                <div t-esc="prescription.patient_id.name"/>
+                                <div t-if="prescription.patient_id.birthdate">
+                                    Né(e) le
+                                    <span t-field="prescription.patient_id.birthdate"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <strong>Prescripteur</strong>
+                                <div t-esc="prescription.dentist_id.name"/>
+                                <div>Le <span t-field="prescription.date"/></div>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Médicament</th>
+                                    <th>Posologie</th>
+                                    <th class="text-end">Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="prescription.line_ids" t-as="line">
+                                    <td>
+                                        <span t-esc="line.name"/>
+                                        <div t-if="line.note" class="text-muted">
+                                            <small t-esc="line.note"/>
+                                        </div>
+                                    </td>
+                                    <td t-esc="line.posology"/>
+                                    <td class="text-end" t-esc="line.quantity"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p t-if="prescription.note" class="mt-3">
+                            <strong>Remarque : </strong>
+                            <span t-esc="prescription.note"/>
+                        </p>
+
+                        <div class="row mt-5">
+                            <div class="col-6"/>
+                            <div class="col-6 text-center">
+                                <div>Signature et timbre</div>
+                                <div style="height: 60px;"/>
+                                <div style="border-top: 1px solid #000;"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

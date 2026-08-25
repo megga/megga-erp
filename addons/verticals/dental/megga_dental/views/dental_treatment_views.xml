@@ -15,6 +15,9 @@
                             invisible="state != 'done' or invoice_id"/>
                     <button name="action_cancel" type="object" string="Annuler"
                             invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_new_prescription" type="object"
+                            string="Prescrire"
+                            groups="megga_dental.group_dental_praticien"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,confirmed,done"/>
                 </header>

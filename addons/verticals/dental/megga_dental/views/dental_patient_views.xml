@@ -21,6 +21,12 @@
                             <field name="plan_count" widget="statinfo"
                                    string="Plans"/>
                         </button>
+                        <button name="action_view_prescriptions" type="object"
+                                class="oe_stat_button" icon="fa-file-text-o"
+                                groups="megga_dental.group_dental_praticien">
+                            <field name="prescription_count" widget="statinfo"
+                                   string="Ordonnances"/>
+                        </button>
                     </div>
                     <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger"
                             invisible="active"/>

@@ -16,7 +16,9 @@ référentiel des 52 dents en notation FDI / ISO 3950,
 odontogramme interactif (constats par dent et par surface, alimenté
 automatiquement par les actes, réservé au groupe Soins — nLPD),
 plans de traitement par phases (ordre clinique garanti, devis
-d'ensemble, avancement, achèvement automatique).
+d'ensemble, avancement, achèvement automatique),
+ordonnances (émission qui fige, renouvellement chaîné, impression,
+référentiel de médicaments du cabinet — réservées au groupe Soins).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -47,6 +49,8 @@ d'ensemble, avancement, achèvement automatique).
         'views/dental_position_views.xml',
         'views/dental_tooth_record_views.xml',
         'views/dental_plan_views.xml',
+        'views/dental_prescription_views.xml',
+        'report/prescription_report.xml',
         'views/dental_menus.xml',
     ],
     'assets': {

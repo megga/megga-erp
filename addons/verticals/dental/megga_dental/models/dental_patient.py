@@ -66,6 +66,12 @@ class MeggaDentalPatient(models.Model):
     plan_ids = fields.One2many(
         'megga.dental.plan', 'patient_id', string="Plans de traitement")
     plan_count = fields.Integer(compute='_compute_plan_count')
+    prescription_ids = fields.One2many(
+        'megga.dental.prescription', 'patient_id', string="Ordonnances",
+        groups="megga_dental.group_dental_praticien")
+    prescription_count = fields.Integer(
+        compute='_compute_prescription_count',
+        groups="megga_dental.group_dental_praticien")
 
     _code_uniq = models.Constraint(
         'unique(code)', "Ce numéro de patient existe déjà.")
@@ -134,6 +140,22 @@ class MeggaDentalPatient(models.Model):
     def _compute_plan_count(self):
         for patient in self:
             patient.plan_count = len(patient.plan_ids)
+
+    @api.depends('prescription_ids')
+    def _compute_prescription_count(self):
+        for patient in self:
+            patient.prescription_count = len(patient.prescription_ids)
+
+    def action_view_prescriptions(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Ordonnances"),
+            'res_model': 'megga.dental.prescription',
+            'view_mode': 'list,form',
+            'domain': [('patient_id', '=', self.id)],
+            'context': {'default_patient_id': self.id},
+        }
 
     def action_view_plans(self):
         self.ensure_one()

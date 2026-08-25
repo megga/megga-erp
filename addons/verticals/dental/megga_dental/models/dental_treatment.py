@@ -165,6 +165,22 @@ class MeggaDentalTreatment(models.Model):
             [('treatment_id', 'in', self.ids)])
         phases.plan_id._refresh_state()
 
+    def action_new_prescription(self):
+        """Ouvre une ordonnance pre-remplie depuis la seance — le geste
+        clinique naturel (bouton reserve au groupe Soins dans la vue ;
+        le modele des ordonnances est de toute facon ferme aux autres)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'megga.dental.prescription',
+            'view_mode': 'form',
+            'context': {
+                'default_patient_id': self.patient_id.id,
+                'default_dentist_id': self.dentist_id.id,
+                'default_treatment_id': self.id,
+            },
+        }
+
     def action_create_invoice(self):
         self.ensure_one()
         if self.state != 'done':

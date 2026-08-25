@@ -16,3 +16,9 @@ access_dental_plan_reception,dental.plan.reception,model_megga_dental_plan,group
 access_dental_plan_praticien,dental.plan.praticien,model_megga_dental_plan,group_dental_praticien,1,1,1,1
 access_dental_plan_phase_reception,dental.plan.phase.reception,model_megga_dental_plan_phase,group_dental_reception,1,1,1,0
 access_dental_plan_phase_praticien,dental.plan.phase.praticien,model_megga_dental_plan_phase,group_dental_praticien,1,1,1,1
+access_dental_medicament_praticien,dental.medicament.praticien,model_megga_dental_medicament,group_dental_praticien,1,1,1,1
+access_dental_medicament_system,dental.medicament.system,model_megga_dental_medicament,base.group_system,1,1,1,1
+access_dental_prescription_praticien,dental.prescription.praticien,model_megga_dental_prescription,group_dental_praticien,1,1,1,1
+access_dental_prescription_system,dental.prescription.system,model_megga_dental_prescription,base.group_system,1,1,1,1
+access_dental_prescription_line_praticien,dental.prescription.line.praticien,model_megga_dental_prescription_line,group_dental_praticien,1,1,1,1
+access_dental_prescription_line_system,dental.prescription.line.system,model_megga_dental_prescription_line,base.group_system,1,1,1,1

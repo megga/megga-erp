@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_prescription_form" model="ir.ui.view">
+        <field name="name">megga.dental.prescription.form</field>
+        <field name="model">megga.dental.prescription</field>
+        <field name="arch" type="xml">
+            <form string="Ordonnance">
+                <header>
+                    <button name="action_issue" type="object"
+                            string="Émettre" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_renew" type="object"
+                            string="Renouveler"
+                            invisible="state != 'issued'"/>
+                    <button name="action_cancel" type="object"
+                            string="Annuler"
+                            invisible="state == 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_renewals" type="object"
+                                class="oe_stat_button" icon="fa-refresh"
+                                invisible="not renewal_count">
+                            <field name="renewal_count" widget="statinfo"
+                                   string="Renouvellements"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="dentist_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="date_issued"/>
+                            <field name="treatment_id"/>
+                            <field name="renewal_of_id"
+                                   invisible="not renewal_of_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="medicament_id"/>
+                            <field name="name"/>
+                            <field name="posology"/>
+                            <field name="quantity"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_prescription_list" model="ir.ui.view">
+        <field name="name">megga.dental.prescription.list</field>
+        <field name="model">megga.dental.prescription</field>
+        <field name="arch" type="xml">
+            <list string="Ordonnances">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="patient_id"/>
+                <field name="dentist_id" widget="many2one_avatar_user"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'issued'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_prescription_search" model="ir.ui.view">
+        <field name="name">megga.dental.prescription.search</field>
+        <field name="model">megga.dental.prescription</field>
+        <field name="arch" type="xml">
+            <search string="Ordonnances">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <filter name="issued" string="Émises"
+                        domain="[('state', '=', 'issued')]"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_prescription" model="ir.actions.act_window">
+        <field name="name">Ordonnances</field>
+        <field name="res_model">megga.dental.prescription</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune ordonnance</p>
+            <p>Une ordonnance émise ne se modifie plus : elle se
+               renouvelle (copie chaînée) ou s'annule. L'impression passe
+               par le menu Imprimer.</p>
+        </field>
+    </record>
+
+    <record id="view_dental_medicament_list" model="ir.ui.view">
+        <field name="name">megga.dental.medicament.list</field>
+        <field name="model">megga.dental.medicament</field>
+        <field name="arch" type="xml">
+            <list string="Médicaments" editable="bottom">
+                <field name="name"/>
+                <field name="dosage"/>
+                <field name="form"/>
+                <field name="default_posology"/>
+                <field name="active" widget="boolean_toggle"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dental_medicament" model="ir.actions.act_window">
+        <field name="name">Médicaments</field>
+        <field name="res_model">megga.dental.medicament</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun médicament</p>
+            <p>Le référentiel du cabinet, pour l'autocomplétion des
+               ordonnances — le compendium officiel est sous licence et
+               n'est pas embarqué. Les lignes libres restent possibles.</p>
+        </field>
+    </record>
+</odoo>
