@@ -19,8 +19,14 @@
             <t t-foreach="docs" t-as="prescription">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <h2>Ordonnance
-                            <small t-esc="prescription.name"/></h2>
+                        <!-- Titre et reference en noeuds SEPARES : un
+                             texte statique melange a un t-esc inline
+                             partage le meme terme traduisible, et la
+                             traduction du bloc avale le texte au rendu
+                             (constate : le mot Ordonnance disparaissait
+                             du papier). -->
+                        <h2>Ordonnance</h2>
+                        <div class="text-muted mb-2" t-esc="prescription.name"/>
 
                         <div class="row mt-4 mb-4">
                             <div class="col-6">

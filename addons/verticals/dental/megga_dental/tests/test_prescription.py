@@ -173,3 +173,7 @@ class TestPrescription(TransactionCase):
         self.assertIn(b"Amoxicilline 750 mg", html)
         self.assertIn("3 × par jour pendant 5 jours".encode(), html)
         self.assertIn(b"Signature et timbre", html)
+        # Le mot lui-meme : un papier medical doit dire ce qu'il est
+        # (regression attrapee en demo : la traduction du bloc avalait
+        # le titre statique melange au t-esc inline).
+        self.assertIn(b">Ordonnance</h2>", html)
