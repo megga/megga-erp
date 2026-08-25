@@ -120,7 +120,20 @@ for nom, reference, jours, quantite in LOTS:
         env['stock.quant']._update_available_quantity(
             produit, stock, manquant, lot_id=lot)
 
-# 3. L'admin voit le magasin : sans les groupes stock, le menu du
+# 3. Francais suisse : une demo de cabinet romand se lit en francais.
+#    _activate_lang charge les traductions embarquees par le coeur.
+env['res.lang']._activate_lang('fr_CH')
+langue = env['res.lang'].search([('code', '=', 'fr_CH')], limit=1)
+if langue:
+    # _activate_lang ouvre la langue ; il ne recharge PAS les
+    # traductions des modules deja installes — sans cet appel, les
+    # entetes du coeur (Expiration Date, Lot/Serial Number) restent en
+    # anglais au milieu d'un ecran francais.
+    env['ir.module.module'].search([('state', '=', 'installed')]) \
+        ._update_translations(filter_lang=[langue.code])
+    env.ref('base.user_admin').lang = langue.code
+
+# 4. L'admin voit le magasin : sans les groupes stock, le menu du
 #    cabinet ne s'affiche pas (c'est la doctrine, pas un oubli).
 admin = env.ref('base.user_admin')
 admin.group_ids = [(4, env.ref('stock.group_stock_user').id),
