@@ -25,6 +25,9 @@ class MeggaDentalImaging(models.Model):
     ordonnances et questionnaires."""
     _name = 'megga.dental.imaging'
     _description = "Imagerie dentaire"
+    # mail.thread : le fil de discussion du cliche (la vue porte un
+    # chatter — sans cet heritage, le chargement des messages echoue).
+    _inherit = ['mail.thread']
     _order = 'date desc, id desc'
 
     patient_id = fields.Many2one(
