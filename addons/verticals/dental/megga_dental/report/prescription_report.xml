@@ -19,14 +19,15 @@
             <t t-foreach="docs" t-as="prescription">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <!-- Titre et reference en noeuds SEPARES : un
-                             texte statique melange a un t-esc inline
-                             partage le meme terme traduisible, et la
-                             traduction du bloc avale le texte au rendu
-                             (constate : le mot Ordonnance disparaissait
-                             du papier). -->
-                        <h2>Ordonnance</h2>
-                        <div class="text-muted mb-2" t-esc="prescription.name"/>
+                        <!-- Titre en div.h2, PAS en element h2 : les
+                             mises en page du coeur s'approprient les h2 du
+                             corps (la DIN les masque, d'autres impriment
+                             o.name a la place) et le crochet
+                             layout_document_title n'existe pas dans toutes
+                             les variantes. Le div.h2 rend pareil et
+                             n'appartient qu'a nous — constate en demo. -->
+                        <div class="h2">Ordonnance</div>
+                        <div class="text-muted mb-3" t-esc="prescription.name"/>
 
                         <div class="row mt-4 mb-4">
                             <div class="col-6">

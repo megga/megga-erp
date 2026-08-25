@@ -20,7 +20,10 @@
             <t t-foreach="docs" t-as="vehicle">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <h2>Carnet d'entretien</h2>
+                        <!-- Titre en div.h2, pas en element h2 : les mises
+                             en page du coeur s'approprient les h2 du corps
+                             (voir le rapport d'ordonnance de megga_dental). -->
+                        <div class="h2">Carnet d'entretien</div>
 
                         <div class="row mt-4 mb-4">
                             <div class="col-6">
