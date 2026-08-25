@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_resto_production_list" model="ir.ui.view">
+        <field name="name">megga.resto.production.list</field>
+        <field name="model">megga.resto.production</field>
+        <field name="arch" type="xml">
+            <list string="Productions">
+                <field name="name"/>
+                <field name="label"/>
+                <field name="date"/>
+                <field name="cost_total" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'confirmed'"
+                       decoration-success="state == 'done'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_resto_production_form" model="ir.ui.view">
+        <field name="name">megga.resto.production.form</field>
+        <field name="model">megga.resto.production</field>
+        <field name="arch" type="xml">
+            <form string="Production de cuisine">
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirmer" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_refresh_shopping" type="object"
+                            string="Recalculer les courses"
+                            invisible="state not in ('draft', 'confirmed')"/>
+                    <button name="action_done" type="object"
+                            string="Produite"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" type="object"
+                            string="Annuler"
+                            invisible="state not in ('draft', 'confirmed')"/>
+                    <button name="action_draft" type="object"
+                            string="Remettre en brouillon"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="label"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="cost_total"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Plats" name="lines">
+                            <field name="line_ids"
+                                   readonly="state in ('done', 'cancelled')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="recipe_id"/>
+                                    <field name="portions"/>
+                                    <field name="cost_portion"/>
+                                    <field name="subtotal"/>
+                                    <field name="currency_id"
+                                           column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Liste de courses" name="shopping">
+                            <field name="shopping_ids">
+                                <list>
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="cost" sum="Total"/>
+                                    <field name="currency_id"
+                                           column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_resto_production" model="ir.actions.act_window">
+        <field name="name">Productions</field>
+        <field name="res_model">megga.resto.production</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune production</p>
+            <p>Un banquet, un service, une semaine : des plats à fiche
+               technique multipliés par des portions — la liste de
+               courses agrégée en découle, convertie dans les unités de
+               l'économat, prête à imprimer pour le marché.</p>
+        </field>
+    </record>
+</odoo>

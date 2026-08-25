@@ -11,5 +11,12 @@
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
+        <record id="seq_resto_production" model="ir.sequence">
+            <field name="name">Productions de cuisine</field>
+            <field name="code">megga.resto.production</field>
+            <field name="prefix">PROD/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
     </data>
 </odoo>

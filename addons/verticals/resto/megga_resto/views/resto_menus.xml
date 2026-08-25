@@ -6,6 +6,9 @@
     <menuitem id="menu_resto_reservations" name="Réservations"
               parent="menu_resto_root" action="action_resto_reservation"
               sequence="10"/>
+    <menuitem id="menu_resto_productions" name="Productions"
+              parent="menu_resto_root" action="action_resto_production"
+              sequence="15"/>
     <menuitem id="menu_resto_recipes" name="Fiches techniques"
               parent="menu_resto_root" action="action_resto_recipe"
               sequence="20"/>

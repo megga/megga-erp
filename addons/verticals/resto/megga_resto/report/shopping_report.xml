@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- La liste de courses : ce que le chef emporte au marché ou envoie
+         au fournisseur. Quantités dans l'unité de l'économat, coût
+         prévisionnel par ingrédient et total. -->
+    <record id="action_report_shopping" model="ir.actions.report">
+        <field name="name">Liste de courses</field>
+        <field name="model">megga.resto.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_resto.report_shopping</field>
+        <field name="report_file">megga_resto.report_shopping</field>
+        <field name="print_report_name">'Courses - %s' % (object.label or object.name)</field>
+        <field name="binding_model_id" ref="model_megga_resto_production"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_shopping">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="production">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Titre en div.h2, pas en element h2 : les mises
+                             en page du coeur s'approprient les h2 du corps
+                             (leçon du rapport d'ordonnance dentaire). -->
+                        <div class="h2">Liste de courses</div>
+
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong t-esc="production.label"/>
+                                <div>Référence :
+                                    <span t-esc="production.name"/></div>
+                            </div>
+                            <div class="col-6">
+                                <div>Date de production :
+                                    <span t-field="production.date"/></div>
+                                <div>Plats :
+                                    <span t-esc="len(production.line_ids)"/>
+                                    · Portions :
+                                    <span t-esc="int(sum(production.line_ids.mapped('portions')))"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Ingrédient</th>
+                                    <th class="text-end">Quantité</th>
+                                    <th>Unité</th>
+                                    <th class="text-end">Coût prévu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="production.shopping_ids"
+                                    t-as="ligne">
+                                    <td t-esc="ligne.product_id.display_name"/>
+                                    <td class="text-end"
+                                        t-esc="'%.3f' % ligne.quantity"/>
+                                    <td t-esc="ligne.uom_id.name"/>
+                                    <td class="text-end">
+                                        <span t-field="ligne.cost"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end">
+                                        <strong>Total prévu</strong></td>
+                                    <td class="text-end">
+                                        <strong t-field="production.cost_total"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

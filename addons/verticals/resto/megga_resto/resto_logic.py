@@ -50,3 +50,20 @@ def margin_pct(cost, price):
     if price <= 0:
         return None
     return (price - cost) / price * 100.0
+
+
+def merge_needs(needs):
+    """Agrège des besoins (clé, quantité) par clé — le beurre du plat 1
+    et celui du plat 3 font UNE ligne de courses. L'ordre de première
+    apparition est préservé (la liste se lit dans l'ordre du menu, pas
+    dans un ordre de hasard). Les quantités s'additionnent telles
+    quelles : à l'appelant de les avoir converties dans la même unité
+    d'abord."""
+    totals = {}
+    order = []
+    for key, qty in needs:
+        if key not in totals:
+            totals[key] = 0.0
+            order.append(key)
+        totals[key] += qty
+    return [(key, totals[key]) for key in order]

@@ -112,7 +112,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier), tiers payant d'assurance (dossiers AA/AI/AM/LAMal/LCA, garanties de prise en charge, facture à l'assureur avec référence du sinistre) | 126 |
-| [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) ; productions de cuisine (banquet, service : plats × portions) avec liste de courses agrégée multi-plats, convertie dans l'unité de l'économat, coût prévisionnel et impression pour le marché | 44 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
@@ -288,8 +288,19 @@ la caisse encaisse au bon taux en choisissant le mode de la commande
 décompte AFC, et les tickets distincts par mode constituent les
 « mesures organisationnelles » qu'exige le taux réduit (Info TVA 08).
 Une société qui reçoit son plan comptable après coup relance le
-câblage via Restaurant ▸ Configuration ▸ TVA à l'emporter (CH). Le
-tableau resto est vide — plus de chantier ouvert.
+câblage via Restaurant ▸ Configuration ▸ TVA à l'emporter (CH).
+
+L'**outillage de production** prolonge les fiches techniques : une
+*production* — un banquet, un service, une semaine — aligne des plats
+à fiche technique et leurs portions, et la **liste de courses** en
+découle : chaque ingrédient de chaque fiche, converti dans l'unité de
+l'économat (celle de l'article — la fiche pèse en grammes, la liste
+parle en kilos), **agrégé multi-plats** (le beurre de l'entrecôte et
+celui de la purée font une seule ligne), coûté au prix de revient du
+jour. Gardes : pas de production sans plat, pas de plat sans fiche
+(refus nominatif), pas de recalcul quand la production est soldée —
+le marché est fait. La liste s'imprime (QWeb) : c'est le papier que
+le chef emporte au marché ou envoie au fournisseur.
 
 Côté auto, le commerce d'occasion est livré (`megga_auto_occasion`,
 auto-installé avec la localisation suisse) : la reprise à un particulier

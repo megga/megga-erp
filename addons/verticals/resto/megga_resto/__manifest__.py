@@ -39,6 +39,8 @@ matière, marge brute et report du coût sur l'article vendu.
         'data/resto_data.xml',
         'views/resto_reservation_views.xml',
         'views/resto_recipe_views.xml',
+        'views/resto_production_views.xml',
+        'report/shopping_report.xml',
         'views/resto_menus.xml',
     ],
     'demo': [
