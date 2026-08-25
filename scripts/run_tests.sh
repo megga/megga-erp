@@ -12,7 +12,14 @@
 #     rencontre le 23/08/2026.
 #
 # Surcharges (diagnostic) : TEST_DB, TEST_MODULES, TEST_TAGS, EXTRA_ADDONS,
-#                           TEST_MIN (nombre minimal de tests attendus)
+#                           TEST_MIN (nombre minimal de tests attendus),
+#                           TEST_HTTP_PORT (defaut 8199)
+#
+# Le serveur HTTP des tests (indispensable aux HttpCase de megga_rdv)
+# ecoute sur 127.0.0.1:8199 : SANS ce reglage, odoo-bin prend 8069 et
+# entre en collision avec une production locale sur le meme hote —
+# constate le 25/08/2026 (la prod dentaire ne pouvait plus se relancer
+# tant que la suite tournait).
 #
 # NOTE : --log-handler=odoo.tests.result:INFO est INDISPENSABLE. A
 # --log-level=warn seul, la ligne de resultat d'un run REUSSI est de
@@ -20,6 +27,14 @@
 # declarerait un echec sur une suite pourtant verte (piege rencontre
 # le 23/08/2026).
 set -euo pipefail
+
+# Tout le corps vit dans un bloc { } : bash parse un bloc ENTIER avant
+# d'en executer la premiere ligne, au lieu de relire le fichier au fil
+# de l'eau. Sans lui, editer ce script pendant qu'un run tourne decale
+# les octets sous le lecteur : bash reprend au milieu d'une ligne et
+# execute du charabia (constate le 25/08/2026 : un second odoo-bin
+# mutile, « 0 of 0 tests », garde-fou n°2 declenche a tort).
+{
 
 ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
 SUB="$(git -C "$ROOT" config -f "$ROOT/.gitmodules" --get-regexp '^submodule\..*\.path$' | awk 'NR==1{print $2}')"
@@ -59,6 +74,7 @@ python3 "$ODOO_BIN" -d "$BASE" \
     --addons-path="$CHEMINS" \
     -i "$MODULES" \
     --test-enable --test-tags "$TAGS" \
+    --http-interface=127.0.0.1 --http-port="${TEST_HTTP_PORT:-8199}" \
     --without-demo=all --stop-after-init --max-cron-threads=0 \
     --log-level=warn --log-handler=odoo.tests.result:INFO 2>&1 | tee "$JOURNAL"
 CODE=${PIPESTATUS[0]}
@@ -79,3 +95,5 @@ if [ "${EXECUTES:-0}" -lt "$MIN" ]; then
     exit 1
 fi
 echo "TESTS VERTS (${EXECUTES} tests executes)."
+exit 0
+}
