@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- La catégorie porte la stratégie de sortie : c'est ELLE qui
+             rend le FEFO effectif (stock_quant._get_removal_strategy
+             interroge d'abord categ_id.removal_strategy_id, avant
+             l'emplacement). Le lot dont la date de retrait est la plus
+             proche part le premier — sans quoi le fond du tiroir périme
+             pendant qu'on entame la boîte du dessus.
+
+             Catégorie de premier niveau, PAS un enfant de « Soins
+             dentaires » : le catalogue des actes est filtré en
+             `child_of` sur cette dernière, et des compresses n'ont rien
+             à faire dans un catalogue d'actes facturables. -->
+        <record id="product_category_dental_supplies" model="product.category">
+            <field name="name">Consommables du cabinet</field>
+            <field name="removal_strategy_id" ref="product_expiry.removal_fefo"/>
+        </record>
+
+        <!-- Destination unique de tout ce qui part au fauteuil.
+             usage='customer' : la quantité sort DÉFINITIVEMENT du stock
+             (elle n'est ni en transit ni récupérable), la valorisation
+             suit, et l'histoire du magasin reste lisible — un seul
+             endroit à regarder pour savoir ce que les soins ont mangé.
+
+             Sans société ni parent : patron exact des emplacements
+             virtuels du cœur (stock.stock_location_customers). Un
+             emplacement rattaché à une société casserait en
+             multi-cabinets (check_company sur location_id). -->
+        <record id="stock_location_dental_care" model="stock.location">
+            <field name="name">Consommé en soins</field>
+            <field name="usage">customer</field>
+            <field name="company_id"></field>
+        </record>
+    </data>
+
+    <data>
+        <!-- Sans la fonctionnalité « lots », rien de ce module ne
+             fonctionne : pas de date de péremption, pas de FEFO, pas de
+             traçabilité. Ce n'est PAS un élargissement de droits — le
+             groupe ne donne accès à aucun modèle de plus, il révèle les
+             champs de lot dans les vues du magasin. L'attribution des
+             droits stock eux-mêmes reste un geste d'administration
+             (voir le README) : ce module ne câble aucun implied_ids
+             depuis les groupes dentaires. -->
+        <record id="stock.group_stock_user" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('stock.group_production_lot'))]"/>
+        </record>
+    </data>
+</odoo>

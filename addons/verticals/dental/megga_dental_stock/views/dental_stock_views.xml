@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue des lots du cabinet : la question du magasinier dentaire
+         n'est pas « quel lot ai-je ? » mais « qu'est-ce qui périme
+         bientôt ? ». Tri par date de péremption croissante, décor
+         d'alerte dès l'alert_date atteinte, décor de danger sur le
+         périmé. Les décors lisent des champs du cœur — pas un calcul
+         de plus à maintenir. -->
+    <record id="view_dental_lot_list" model="ir.ui.view">
+        <field name="name">megga.dental.stock.lot.list</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <list string="Lots du cabinet" default_order="expiration_date asc, name asc"
+                  decoration-danger="expiration_date &lt; context_today().strftime('%Y-%m-%d')"
+                  decoration-warning="expiration_date &gt;= context_today().strftime('%Y-%m-%d') and alert_date &lt;= context_today().strftime('%Y-%m-%d')"
+                  create="0">
+                <field name="name" decoration-bf="1"/>
+                <field name="product_id"/>
+                <field name="product_qty" string="En stock"/>
+                <field name="expiration_date"/>
+                <field name="alert_date" optional="show"/>
+                <field name="removal_date" optional="hide"/>
+                <field name="product_expiry_alert" string="Périmé"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_lot_search" model="ir.ui.view">
+        <field name="name">megga.dental.stock.lot.search</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <search string="Lots du cabinet">
+                <field name="name" string="Lot"/>
+                <field name="product_id"/>
+                <!-- Domaines sur les dates STOCKÉES : product_expiry_alert
+                     est un compute non stocké — affichable, jamais
+                     filtrable (leçon ORM du dépôt). Idiome du cœur
+                     (product_expiry) : comparaison à 'now'. -->
+                <filter name="perimes" string="Périmés"
+                        domain="[('expiration_date', '&lt;=', 'now')]"/>
+                <filter name="alerte" string="Péremption proche"
+                        domain="[('alert_date', '&lt;=', 'now'),
+                                 ('expiration_date', '&gt;', 'now')]"/>
+                <filter name="en_stock" string="En stock"
+                        domain="[('product_qty', '&gt;', 0)]"/>
+                <group>
+                    <filter name="group_by_product" string="Produit"
+                            domain="[]" context="{'group_by': 'product_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_stock_lot" model="ir.actions.act_window">
+        <field name="name">Lots et péremption</field>
+        <field name="res_model">stock.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_dental_lot_list"/>
+        <field name="search_view_id" ref="view_dental_lot_search"/>
+        <field name="domain"
+               eval="[('product_id.categ_id', 'child_of',
+                       ref('product_category_dental_supplies'))]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun lot de consommable pour l'instant
+            </p><p>
+                Les lots naissent à la réception d'une commande
+                fournisseur, avec leur date de péremption. Le cabinet
+                sert ensuite le lot le plus proche de sa date (FEFO).
+            </p>
+        </field>
+    </record>
+
+    <!-- Les produits du cabinet : liste filtrée sur la catégorie, avec
+         les valeurs par défaut du magasin dentaire au create. Un
+         consommable se tient par LOT et porte une péremption — le
+         contexte évite trois clics de réglage à chaque nouvelle
+         référence, sans imposer d'override global sur product.template. -->
+    <record id="action_dental_stock_product" model="ir.actions.act_window">
+        <field name="name">Consommables du cabinet</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain"
+               eval="[('categ_id', 'child_of',
+                       ref('product_category_dental_supplies'))]"/>
+        <field name="context"
+               eval="{'default_categ_id': ref('product_category_dental_supplies'),
+                      'default_type': 'consu',
+                      'default_is_storable': True,
+                      'default_tracking': 'lot',
+                      'default_use_expiration_date': True}"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Référencez votre premier consommable
+            </p><p>
+                Compresses, anesthésiques, composites, gants : ce que le
+                cabinet consomme au fauteuil. Suivi par lot et par date
+                de péremption.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_dental_stock_quant" model="ir.actions.act_window">
+        <field name="name">Quantités en stock</field>
+        <field name="res_model">stock.quant</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain"
+               eval="[('product_id.categ_id', 'child_of',
+                       ref('product_category_dental_supplies'))]"/>
+        <field name="context">{'search_default_internal_loc': 1, 'inventory_mode': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Rien en rayon pour l'instant
+            </p><p>
+                Les quantités arrivent par les réceptions fournisseur et
+                partent à la clôture des séances.
+            </p>
+        </field>
+    </record>
+</odoo>

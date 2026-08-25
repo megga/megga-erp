@@ -1,0 +1,52 @@
+# Le magasin du cabinet. Ce module CONFIGURE le coeur bien plus qu'il ne
+# modelise : le stock, les lots, la peremption et la sortie FEFO sont
+# entierement dans Odoo Community (stock + product_expiry). Ce qu'on
+# ajoute, c'est le metier du cabinet — une categorie outillee, un
+# emplacement « Consomme en soins », un menu qui evite d'envoyer la
+# receptionniste dans l'app Inventaire, et LA garde qui compte :
+# un lot perime ne part jamais en soins.
+#
+# Module SEPARE de megga_dental, jamais auto_install : un cabinet peut
+# vouloir le metier sans le magasin (petite structure, consommables
+# gores a la main).
+{
+    'name': "Megga Dentaire — Stock du cabinet",
+    'summary': "Consommables traces par lots et peremption, sortie FEFO, "
+               "le perime ne part jamais en soins",
+    'description': """
+Magasin du cabinet dentaire.
+
+Categorie « Consommables du cabinet » outillee pour la sortie FEFO
+(First Expiry First Out) : a quantites reservees, le coeur sert le lot
+dont la date de retrait est la plus proche — le fond de stock ne perime
+plus au fond du tiroir.
+
+Emplacement virtuel « Consomme en soins » : tout ce qui part au fauteuil
+va au meme endroit, les quantites sortent definitivement et la
+valorisation suit.
+
+Garde metier : un lot perime ne part JAMAIS vers les soins. Le refus
+nomme le lot, sa date et le bon geste. Le rebut, les retours
+fournisseur et les ajustements d'inventaire restent permis — un lot
+perime doit pouvoir etre detruit proprement.
+
+Menu « Stock du cabinet » : produits du cabinet, quantites en stock,
+lots par urgence de peremption. Des raccourcis filtres vers les vues du
+coeur, pas un doublon de l'app Inventaire.
+""",
+    'version': '19.0.1.0.0',
+    'category': 'Industries',
+    'author': "Megga",
+    'website': "https://github.com/megga/megga-erp",
+    'license': 'Other proprietary',
+    'depends': [
+        'megga_dental',
+        'stock',
+        'product_expiry',
+    ],
+    'data': [
+        'data/dental_stock_data.xml',
+        'views/dental_stock_views.xml',
+        'views/dental_stock_menus.xml',
+    ],
+}

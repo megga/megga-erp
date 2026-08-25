@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le magasin sous le menu du cabinet : la réception et l'aide
+         dentaire ne devraient pas avoir à traverser l'app Inventaire
+         pour savoir s'il reste des compresses. Ce sont des RACCOURCIS
+         vers des vues filtrées, pas un contournement d'ACL : les
+         groupes du cœur (stock.group_stock_user / _manager) gardent
+         chaque écran, et sans eux le menu ne s'affiche pas.
+
+         Séquence 40 : entre « Constats » (30) et « Configuration » (90). -->
+    <menuitem id="menu_dental_stock_root" name="Stock du cabinet"
+              parent="megga_dental.menu_dental_root" sequence="40"
+              groups="stock.group_stock_user"/>
+
+    <menuitem id="menu_dental_stock_products" name="Consommables"
+              parent="menu_dental_stock_root"
+              action="action_dental_stock_product" sequence="10"
+              groups="stock.group_stock_user"/>
+
+    <menuitem id="menu_dental_stock_quants" name="Quantités en stock"
+              parent="menu_dental_stock_root"
+              action="action_dental_stock_quant" sequence="20"
+              groups="stock.group_stock_user"/>
+
+    <menuitem id="menu_dental_stock_lots" name="Lots et péremption"
+              parent="menu_dental_stock_root"
+              action="action_dental_stock_lot" sequence="30"
+              groups="stock.group_stock_user"/>
+</odoo>

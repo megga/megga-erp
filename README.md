@@ -179,6 +179,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 44 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur | 19 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
@@ -337,6 +338,51 @@ médical n'ont **aucune** ACL portail — le patient a droit à ses
 documents remis, pas aux notes de travail du praticien (la nLPD donne
 un droit d'accès *sur demande*, art. 25 — le portail n'est pas tenu de
 tout montrer en libre-service).
+
+Le **magasin du cabinet** (`megga_dental_stock`) donne enfin au
+dentaire ce qui lui manquait : de quoi compter les compresses et
+surveiller les dates. Module **séparé, jamais auto-installé** — un
+cabinet peut vouloir le métier sans le magasin (petite structure,
+consommables gérés à la main). Il **configure le cœur** bien plus qu'il
+ne modélise : le stock, les lots, la péremption et la sortie FEFO sont
+entièrement dans Community (`stock` + `product_expiry`), et rien n'est
+réinventé.
+
+Ce que le module apporte tient en trois gestes. Une **catégorie
+« Consommables du cabinet »** qui porte la stratégie de sortie
+**FEFO** — c'est ELLE qui la rend effective (`_get_removal_strategy`
+interroge la catégorie avant l'emplacement), et sans quoi le fond du
+tiroir périme pendant qu'on entame la boîte du dessus. Un **emplacement
+virtuel « Consommé en soins »** (`usage='customer'`, sans société ni
+parent : patron exact des emplacements virtuels du cœur) : tout ce qui
+part au fauteuil va au même endroit, les quantités sortent
+définitivement, la valorisation suit. Et un **menu « Stock du
+cabinet »** sous le menu dentaire — consommables, quantités, lots par
+urgence de péremption : des **raccourcis filtrés**, pas un doublon de
+l'app Inventaire.
+
+La garde qui fait la valeur : **un lot périmé ne part jamais vers les
+soins**. Le cœur, lui, se contente d'*avertir* — un wizard de
+confirmation qui se contourne d'un clic. La règle du cabinet, elle,
+**refuse** : le contrôle vit dans `stock.move.line._action_done` (le
+modèle, jamais la vue — un bouton masqué n'est pas une garde, et un lot
+périme à minuit quand la séance se clôt à 8h05), et le message nomme le
+lot, sa date et le bon geste. Le refus ne vise **que** la destination
+soins, sa descendance comprise : le **rebut reste permis** — sans quoi
+un lot périmé s'immobiliserait en rayon pour toujours — comme les
+retours fournisseur et les ajustements d'inventaire.
+
+Deux points d'administration assumés, documentés ici parce qu'ils ne
+s'inventent pas : le module **ne crée aucun groupe de droits** et ne
+câble **aucun `implied_ids` depuis les groupes dentaires** — ce serait
+ouvrir l'app Inventaire entière à toute la réception. L'attribution des
+droits stock (`stock.group_stock_user` / `_manager`) reste un geste
+d'administration délibéré, et sans eux le menu du cabinet ne s'affiche
+pas. En revanche le module **active la fonctionnalité « lots »**
+(`stock.group_production_lot` impliqué par le groupe stock du cœur) :
+sans elle, ni date de péremption, ni FEFO, ni traçabilité — le module
+entier serait inopérant. Cette activation ne donne accès à aucun modèle
+supplémentaire, elle révèle des champs.
 
 Le **portail client du garage** (`megga_auto_portal`) est le pendant du
 portail patient, côté atelier — même doctrine, même patron. Module
