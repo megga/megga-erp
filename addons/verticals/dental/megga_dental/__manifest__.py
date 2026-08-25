@@ -14,7 +14,9 @@ plans de traitement avec actes, dents FDI et facturation en un clic,
 rappels de contrôle périodiques automatiques (activité au praticien),
 référentiel des 52 dents en notation FDI / ISO 3950,
 odontogramme interactif (constats par dent et par surface, alimenté
-automatiquement par les actes, réservé au groupe Soins — nLPD).
+automatiquement par les actes, réservé au groupe Soins — nLPD),
+plans de traitement par phases (ordre clinique garanti, devis
+d'ensemble, avancement, achèvement automatique).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -44,6 +46,7 @@ automatiquement par les actes, réservé au groupe Soins — nLPD).
         'views/dental_treatment_views.xml',
         'views/dental_position_views.xml',
         'views/dental_tooth_record_views.xml',
+        'views/dental_plan_views.xml',
         'views/dental_menus.xml',
     ],
     'assets': {

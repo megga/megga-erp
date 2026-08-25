@@ -51,6 +51,10 @@ class MeggaDentalTreatment(models.Model):
         currency_field='currency_id')
     invoice_id = fields.Many2one(
         'account.move', string="Facture", readonly=True, copy=False)
+    plan_id = fields.Many2one(
+        'megga.dental.plan', string="Plan de traitement",
+        compute='_compute_plan_id',
+        help="Renseigné quand ce traitement est la phase d'un plan.")
     tariff_kind = fields.Selection([
         ('prive', "Privé"),
         ('social', "Assurances sociales (AA/AI/AM)"),
@@ -107,6 +111,7 @@ class MeggaDentalTreatment(models.Model):
                     _("Seul un traitement planifié peut être terminé."))
             treatment.state = 'done'
             treatment._create_tooth_records()
+            treatment._refresh_plan()
             patient = treatment.patient_id
             patient.write({
                 'last_visit_date': treatment.date,
@@ -143,6 +148,22 @@ class MeggaDentalTreatment(models.Model):
                     _("Annulez d'abord la facture %s.")
                     % treatment.invoice_id.display_name)
             treatment.state = 'cancelled'
+            treatment._refresh_plan()
+
+    def _compute_plan_id(self):
+        phases = self.env['megga.dental.plan.phase'].search(
+            [('treatment_id', 'in', self.ids)])
+        par_traitement = {
+            phase.treatment_id.id: phase.plan_id.id for phase in phases}
+        for treatment in self:
+            treatment.plan_id = par_traitement.get(treatment.id, False)
+
+    def _refresh_plan(self):
+        """Si ce traitement est la phase d'un plan, le plan reevalue son
+        etat (achevement automatique quand tout est solde)."""
+        phases = self.env['megga.dental.plan.phase'].search(
+            [('treatment_id', 'in', self.ids)])
+        phases.plan_id._refresh_state()
 
     def action_create_invoice(self):
         self.ensure_one()

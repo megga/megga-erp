@@ -18,5 +18,12 @@
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
+        <record id="seq_dental_plan" model="ir.sequence">
+            <field name="name">Plans de traitement</field>
+            <field name="code">megga.dental.plan</field>
+            <field name="prefix">PLAN/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
     </data>
 </odoo>

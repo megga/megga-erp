@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_plan_form" model="ir.ui.view">
+        <field name="name">megga.dental.plan.form</field>
+        <field name="model">megga.dental.plan</field>
+        <field name="arch" type="xml">
+            <form string="Plan de traitement">
+                <header>
+                    <button name="action_accept" type="object"
+                            string="Accepter" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object"
+                            string="Abandonner"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,accepted,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="dentist_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                            <field name="tariff_kind"/>
+                        </group>
+                        <group>
+                            <field name="amount_total"/>
+                            <field name="progress" widget="progressbar"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Phases" name="phases">
+                            <field name="phase_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="treatment_id"/>
+                                    <field name="amount"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'done'"
+                                           decoration-info="state == 'confirmed'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <button name="action_start" type="object"
+                                            icon="fa-play" title="Lancer la phase"
+                                            invisible="state != 'draft'"/>
+                                    <button name="action_open_treatment"
+                                            type="object" icon="fa-external-link"
+                                            title="Ouvrir le traitement"
+                                            invisible="not treatment_id"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Diagnostic" name="diagnosis"
+                              groups="megga_dental.group_dental_praticien">
+                            <field name="diagnosis"
+                                   placeholder="Pourquoi ce plan, et vers quoi il mène."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_plan_list" model="ir.ui.view">
+        <field name="name">megga.dental.plan.list</field>
+        <field name="model">megga.dental.plan</field>
+        <field name="arch" type="xml">
+            <list string="Plans de traitement">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="date"/>
+                <field name="dentist_id" widget="many2one_avatar_user"
+                       optional="show"/>
+                <field name="amount_total"/>
+                <field name="progress" widget="progressbar" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'accepted'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_plan_search" model="ir.ui.view">
+        <field name="name">megga.dental.plan.search</field>
+        <field name="model">megga.dental.plan</field>
+        <field name="arch" type="xml">
+            <search string="Plans de traitement">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <filter name="draft" string="Proposés"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="accepted" string="En cours"
+                        domain="[('state', '=', 'accepted')]"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_plan" model="ir.actions.act_window">
+        <field name="name">Plans de traitement</field>
+        <field name="res_model">megga.dental.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun plan</p>
+            <p>Un plan ordonne les traitements en phases : chaque phase
+               porte son devis au tarif par points, et ne se lance que
+               quand les précédentes sont soldées.</p>
+        </field>
+    </record>
+</odoo>
