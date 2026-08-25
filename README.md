@@ -179,7 +179,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 44 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
-| [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; **kits de consommables par position tarifaire** décomptés à la clôture de séance (zéro ressaisie au fauteuil, besoins agrégés, effet système en sudo) — et le stock ne bloque **jamais** la clinique : rien en rayon, la sortie part en négatif, plus rien de servable, elle part sans lot, avec une activité au magasin dans les deux cas ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur ; **réapprovisionnement** mini/maxi et bons de commande proposés par le planificateur du cœur | 58 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; **kits de consommables par position tarifaire** décomptés à la clôture de séance (zéro ressaisie au fauteuil, besoins agrégés, effet système en sudo) — et le stock ne bloque **jamais** la clinique : rien en rayon, la sortie part en négatif, plus rien de servable, elle part sans lot, avec une activité au magasin dans les deux cas ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur ; **réapprovisionnement** mini/maxi et bons de commande proposés par le planificateur du cœur | 59 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
@@ -422,11 +422,29 @@ Le **réapprovisionnement** ferme le cycle : le magasin se remplit tout
 seul. Un **minimum et un maximum** par consommable, et le **planificateur du
 cœur** propose de lui-même un bon de commande en brouillon chez le
 fournisseur du produit dès que le rayon passe sous le minimum. Le menu
-« À commander » réunit les règles des consommables du cabinet — on y
-voit ce qu'il reste à commander, et on y pose les règles manquantes ;
-la liste des consommables, elle, rappelle les minima en regard du
-stock (les champs `reordering_min_qty` du cœur sont des computes sans
-inverse : ils s'affichent, ils ne se saisissent pas).
+« À commander » réunit les règles des consommables du cabinet et ce
+qu'il reste à commander. Les droits sont ceux du cœur, sans un de
+plus, et le menu porte **le même groupe que le menu équivalent
+d'Odoo** : `stock.group_stock_manager`. L'écran des règles est
+éditable, et l'ACL du cœur n'en donne l'écriture qu'au responsable —
+l'ouvrir au magasinier simple lui montrerait une liste qu'il ne peut
+pas remplir. Les autres écrans du magasin, eux, restent au groupe
+`stock.group_stock_user` : ils se lisent. La liste des
+consommables rappelle les minima en regard du stock — à titre
+indicatif : ces champs du cœur sont des computes **sans inverse** (ils
+s'affichent, ils ne se saisissent pas) et ils **somment** les règles de
+tous les emplacements, ce qui se voit dès qu'un cabinet tient deux
+dépôts.
+
+Un détail d'intégration qui a coûté une revue : la vue des règles est
+reprise du cœur **sans son `js_class`**. Celui-ci attache un panneau
+« Horizon » qui appelle `action_open_orderpoints` — lequel sème des
+règles manuelles pour *tous* les produits en manque de la société,
+restaurant et garage compris. Le prix de ce retrait est modeste et
+vérifié à l'écran : les boutons de ligne (« Commander »,
+« Automatiser », « Reporter ») vivent dans la vue elle-même et
+restent — commander à la demande se fait d'un clic. Seuls disparaissent
+le panneau « Horizon » et les actions groupées sur sélection multiple.
 
 Rien n'est réinventé, et c'est le propos : les règles
 (`stock.warehouse.orderpoint`), le planificateur et la génération des
@@ -439,7 +457,13 @@ fournisseur sans un geste du cabinet.
 Deux comportements valent d'être connus. Un consommable **sans
 fournisseur** ne fait pas tomber le planificateur : le cœur pose une
 activité d'avertissement sur la fiche produit et poursuit avec les
-autres règles — le magasin signale, il ne s'arrête pas. Et la
+autres règles — le magasin signale, il ne s'arrête pas. Et cela vaut
+jusqu'au fauteuil : valider la consommation d'une séance déclenche, en
+synchrone, le réassort des règles automatiques touchées
+(`stock.move._trigger_scheduler`). Le cœur y passe
+`raise_user_error=False`, donc un réassort impossible devient une
+activité et non une exception : **la séance se clôt quand même**. Un
+test dédié tient cette promesse, au croisement des deux chantiers. Et la
 **réception** remet en rayon des lots datés (le délai de péremption du
 produit fixe la date), que le FEFO range aussitôt à leur place : le lot
 neuf part *après* celui qui expire avant lui.

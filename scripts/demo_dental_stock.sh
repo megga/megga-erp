@@ -189,11 +189,13 @@ if not fournisseur:
         'country_id': env.ref('base.ch').id,
         'supplier_rank': 1,
     })
+# Les gants sont DELIBEREMENT sous leur minimum apres la seance close :
+# une demo du reassort qui n'a rien a commander ne montre rien.
 MINIMA = [
     ("Compresses steriles 5x5 cm", 60.0, 200.0),
     ("Articaine 4% adrenaline 1:100'000", 100.0, 400.0),
     ("Composite photopolymerisable A2", 10.0, 40.0),
-    ("Gants nitrile taille M", 20.0, 100.0),
+    ("Gants nitrile taille M", 40.0, 120.0),
 ]
 entrepot = env['stock.warehouse'].search(
     [('company_id', '=', env.company.id)], limit=1)

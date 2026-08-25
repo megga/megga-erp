@@ -17,10 +17,16 @@
               action="action_dental_stock_product" sequence="10"
               groups="stock.group_stock_user"/>
 
+    <!-- « À commander » suit le cœur, qui garde son propre menu
+         « Replenishment » par stock.group_stock_manager : la vue est
+         éditable et l'ACL du cœur ne donne l'écriture sur les règles
+         qu'au responsable. L'ouvrir au magasinier simple lui montrerait
+         une liste qu'il ne peut pas remplir. Les autres écrans du
+         magasin, eux, restent à group_stock_user : ils se lisent. -->
     <menuitem id="menu_dental_stock_replenish" name="À commander"
               parent="menu_dental_stock_root"
               action="action_dental_replenishment" sequence="15"
-              groups="stock.group_stock_user"/>
+              groups="stock.group_stock_manager"/>
 
     <menuitem id="menu_dental_stock_quants" name="Quantités en stock"
               parent="menu_dental_stock_root"

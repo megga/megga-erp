@@ -237,6 +237,49 @@ class TestDentalReplenish(TransactionCase):
         lignes = seance.supply_picking_id.move_ids.move_line_ids
         self.assertEqual(lignes.lot_id, vieux)
 
+    def test_cloture_avec_reassort_impossible_ne_bloque_pas(self):
+        """Le croisement des deux chantiers, et le principe cardinal.
+
+        Clore une séance valide un transfert ; `action_confirm` du cœur
+        déclenche alors le réassort des règles automatiques touchées
+        (`stock.move._trigger_scheduler`), EN SYNCHRONE, dans la même
+        transaction que la clôture clinique. Si ce réassort explosait,
+        la séance ne se clôturerait plus — le magasin bloquerait la
+        clinique, ce que le produit refuse.
+
+        Le cœur passe `raise_user_error=False` : les échecs de
+        procurement deviennent des activités, pas des exceptions. Ce
+        test tient cette promesse pour le pire cas du cabinet : un
+        consommable sous son minimum, avec une règle automatique, et
+        SANS fournisseur chez qui commander."""
+        orphelin = self._consommable("Ciment provisoire", fournisseur=False)
+        self._en_stock(orphelin, 6)
+        self._regle(orphelin, 20.0, 50.0)
+        position = self.env['megga.dental.position'].create({
+            'code': "4.9200", 'name': "Scellement provisoire",
+            'points': 18.0,
+            'supply_ids': [Command.create({
+                'product_id': orphelin.id, 'quantity': 2.0})],
+        })
+        seance = self.env['megga.dental.treatment'].create({
+            'patient_id': self.patient.id,
+            'line_ids': [Command.create({
+                'position_id': position.id, 'quantity': 1.0})],
+        })
+        seance.action_confirm()
+
+        seance.action_done()
+
+        self.assertEqual(seance.state, 'done',
+                         "La séance se clôt : le soin est fait.")
+        self.assertEqual(seance.supply_picking_id.state, 'done')
+        self.assertEqual(self._disponible(orphelin), 4.0)
+        self.assertFalse(self._commandes(orphelin),
+                         "Sans fournisseur, rien n'est commandé…")
+        self.assertTrue(
+            orphelin.product_tmpl_id.activity_ids,
+            "…mais le cœur pose une activité sur la fiche produit.")
+
     # ------------------------------------------------------------------
     # Le raccourci du cabinet
     # ------------------------------------------------------------------
@@ -256,16 +299,29 @@ class TestDentalReplenish(TransactionCase):
         self.assertIn(regle_cabinet, visibles)
         self.assertNotIn(regle_autre, visibles)
 
-    def test_le_magasinier_ouvre_vraiment_l_ecran(self):
+    def test_l_ecran_suit_les_droits_du_coeur(self):
         """Le menu ne doit pas s'afficher pour refuser de s'ouvrir.
 
-        Le magasinier (`stock.group_stock_user`) a le droit de LIRE les
-        règles — pas de les écrire, c'est la doctrine du cœur. Une
-        action serveur, elle, lui aurait été refusée à l'exécution :
-        menu visible, écran fermé. Ce test tient la porte ouverte."""
+        L'écran des règles est ÉDITABLE, et l'ACL du cœur ne donne
+        l'écriture qu'au responsable (`stock.group_stock_manager`) — le
+        cœur garde d'ailleurs son propre menu « Replenishment » par ce
+        groupe. Le module suit : le responsable voit le menu et ouvre
+        l'écran ; le magasinier simple ne le voit pas, et garde les
+        autres écrans du magasin, qui se lisent.
+
+        Une action serveur, elle, aurait été refusée à l'exécution même
+        au responsable : menu visible, écran fermé. Ce test tient la
+        porte ouverte."""
+        responsable = self.env['res.users'].create({
+            'name': "Responsable réassort", 'login': "reassort_manager",
+            'email': "reassort@exemple.ch",
+            'group_ids': [(4, self.env.ref('stock.group_stock_manager').id),
+                          (4, self.env.ref(
+                              'megga_dental.group_dental_reception').id)],
+        })
         magasinier = self.env['res.users'].create({
             'name': "Magasinier réassort", 'login': "reassort_user",
-            'email': "reassort@exemple.ch",
+            'email': "magasin.reassort@exemple.ch",
             'group_ids': [(4, self.env.ref('stock.group_stock_user').id),
                           (4, self.env.ref(
                               'megga_dental.group_dental_reception').id)],
@@ -277,15 +333,40 @@ class TestDentalReplenish(TransactionCase):
         # L'action est une action FENÊTRE : elle s'ouvre par une simple
         # lecture, sans droit d'exécution particulier.
         self.assertEqual(action._name, 'ir.actions.act_window')
+        # Et sa vue ne porte PAS le js_class du cœur : ce panneau
+        # « Horizon » appelle action_open_orderpoints, qui sème des
+        # règles manuelles pour toute la société — restaurant compris.
+        # On lit l'arch COMBINÉE (héritage résolu) : l'arch stockée ne
+        # contient que le xpath, le test ne mordrait pas.
+        vue = self.env.ref('megga_dental_stock.view_dental_orderpoint_list')
+        combinee = vue.get_combined_arch()
+        self.assertNotIn('stock_orderpoint_list', combinee)
+        self.assertIn(
+            'stock_orderpoint_list',
+            self.env.ref(
+                'stock.view_warehouse_orderpoint_tree_editable'
+            ).get_combined_arch(),
+            "Le cœur porte bien ce js_class : sans quoi le test "
+            "ci-dessus ne prouverait rien.")
         lues = self.env['stock.warehouse.orderpoint'].with_user(
-            magasinier).search(safe_eval(action.domain))
+            responsable).search(safe_eval(action.domain))
         self.assertIn(regle, lues)
+        # Et il peut vraiment écrire : l'écran est éditable.
+        regle.with_user(responsable).write({'product_min_qty': 12.0})
 
         menu = self.env.ref(
             'megga_dental_stock.menu_dental_stock_replenish')
+        Menu = self.env['ir.ui.menu']
+        self.assertIn(menu.id,
+                      Menu.with_user(responsable)._visible_menu_ids())
+        self.assertNotIn(
+            menu.id, Menu.with_user(magasinier)._visible_menu_ids(),
+            "Le magasinier ne voit pas un écran qu'il ne peut pas "
+            "remplir…")
         self.assertIn(
-            menu.id,
-            self.env['ir.ui.menu'].with_user(magasinier)._visible_menu_ids())
+            self.env.ref('megga_dental_stock.menu_dental_stock_lots').id,
+            Menu.with_user(magasinier)._visible_menu_ids(),
+            "…mais il garde les écrans du magasin qui se lisent.")
 
     def test_commander_a_la_demande_depuis_l_ecran(self):
         """L'écran du cabinet n'est pas qu'un tableau : le bouton
@@ -310,11 +391,15 @@ class TestDentalReplenish(TransactionCase):
 
     def test_menu_a_commander_garde_par_les_groupes_stock(self):
         """Comme tout le magasin : un raccourci, pas une porte
-        dérobée."""
+        dérobée — et le MÊME groupe que le menu équivalent du cœur."""
         menu = self.env.ref(
             'megga_dental_stock.menu_dental_stock_replenish')
         self.assertEqual(menu.group_ids,
-                         self.env.ref('stock.group_stock_user'))
+                         self.env.ref('stock.group_stock_manager'))
+        self.assertEqual(
+            menu.group_ids,
+            self.env.ref('stock.menu_reordering_rules_replenish').group_ids,
+            "Le cabinet ne diverge pas du cœur sur les droits.")
         self.assertEqual(
             menu.parent_id,
             self.env.ref('megga_dental_stock.menu_dental_stock_root'))

@@ -37,15 +37,42 @@
         </field>
     </record>
 
+    <!-- La liste des règles, SANS le js_class du cœur.
+
+         La vue `stock.view_warehouse_orderpoint_tree_editable` porte un
+         `js_class="stock_orderpoint_list"` qui attache un panneau de
+         recherche « Horizon ». Ce panneau appelle
+         `action_open_orderpoints`, c'est-à-dire `_get_orderpoint_action`
+         du cœur — lequel SÈME des règles manuelles pour TOUS les
+         produits en manque de la société, restaurant et garage compris.
+         Notre domaine les cacherait de cet écran, mais elles existeraient
+         quand même : le menu d'un cabinet n'a pas à décider du réassort
+         des autres verticales.
+
+         On retire donc le js_class par héritage primaire. Le prix est
+         connu, et il est modeste : les boutons de LIGNE (« Commander »,
+         « Automatiser », « Reporter ») vivent dans l'arch de la vue et
+         restent — vérifié à l'écran. Ce qui disparaît, c'est le panneau
+         « Horizon » et les actions groupées sur une sélection multiple.
+         Commander à la demande reste donc possible d'un clic, ligne par
+         ligne ; et le planificateur, lui, tourne toutes les nuits. -->
+    <record id="view_dental_orderpoint_list" model="ir.ui.view">
+        <field name="name">megga.dental.stock.orderpoint.list</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id"
+               ref="stock.view_warehouse_orderpoint_tree_editable"/>
+        <field name="mode">primary</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- L'écran de réapprovisionnement, borné au cabinet.
 
-         Une action FENÊTRE, et non l'écran de réapprovisionnement
-         complet du cœur : ce dernier (`_get_orderpoint_action`) sème
-         des règles manuelles pour TOUS les produits en manque de la
-         société — restaurant et garage compris. Le menu d'un cabinet
-         n'a pas à décider du réassort des autres verticales.
-
-         Et une action DÉCLARÉE, pas une action serveur : exécuter une
+         Une action DÉCLARÉE, pas une action serveur : exécuter une
          action serveur demande des droits que le magasinier n'a pas
          (vérifié : « You don't have enough access rights to run this
          action »), alors qu'il a bien le droit de LIRE les règles.
@@ -54,14 +81,17 @@
 
          Les droits restent ceux du cœur : lecture pour le magasinier
          (`stock.group_stock_user`), écriture pour le responsable
-         (`_manager`). Le module n'en invente aucun. -->
+         (`_manager`). Le module n'en invente aucun — c'est donc le
+         responsable qui pose et modifie les règles. -->
     <record id="action_dental_replenishment" model="ir.actions.act_window">
         <field name="name">À commander</field>
         <field name="res_model">stock.warehouse.orderpoint</field>
         <field name="view_mode">list,form</field>
-        <field name="view_id"
-               ref="stock.view_warehouse_orderpoint_tree_editable"/>
+        <field name="view_id" ref="view_dental_orderpoint_list"/>
         <field name="search_view_id" ref="stock.stock_reorder_report_search"/>
+        <!-- Une règle mise en veille est une décision du magasin : elle
+             ne réapparaît pas d'elle-même dans l'écran. Idiome du cœur. -->
+        <field name="context">{'search_default_filter_not_snoozed': 1}</field>
         <field name="domain"
                eval="[('product_id.categ_id', 'child_of',
                        ref('product_category_dental_supplies'))]"/>
