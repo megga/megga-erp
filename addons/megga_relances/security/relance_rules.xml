@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Multi-societe : les impayes d'une societe ne se lisent pas
+         depuis l'autre. Sans ces regles, un groupe a deux entites
+         verrait les rappels croises. -->
+    <record id="rule_relance_company" model="ir.rule">
+        <field name="name">Rappels : société courante</field>
+        <field name="model_id" ref="model_megga_relance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_relance_niveau_company" model="ir.rule">
+        <field name="name">Niveaux de rappel : société courante</field>
+        <field name="model_id" ref="model_megga_relance_niveau"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

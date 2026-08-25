@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_relance_niveau_list" model="ir.ui.view">
+        <field name="name">megga.relance.niveau.list</field>
+        <field name="model">megga.relance.niveau</field>
+        <field name="arch" type="xml">
+            <!-- Pas d'edition en ligne : le texte du rappel est requis
+                 et ne tient pas dans une colonne — on passe par la fiche. -->
+            <list string="Niveaux de rappel">
+                <field name="delay_days"/>
+                <field name="name"/>
+                <field name="subject"/>
+                <field name="fees"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_relance_niveau_form" model="ir.ui.view">
+        <field name="name">megga.relance.niveau.form</field>
+        <field name="model">megga.relance.niveau</field>
+        <field name="arch" type="xml">
+            <form string="Niveau de rappel">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"
+                                   placeholder="1er rappel, 2e rappel, mise en demeure…"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="delay_days"/>
+                            <field name="fees"/>
+                            <field name="active" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="subject"/>
+                        </group>
+                    </group>
+                    <field name="body"
+                           placeholder="Le texte envoyé au client à ce niveau…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_relance_niveau" model="ir.actions.act_window">
+        <field name="name">Niveaux de rappel</field>
+        <field name="res_model">megga.relance.niveau</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun niveau de rappel</p>
+            <p>Réglez vos crans : par exemple un 1er rappel à 10 jours,
+               un 2e à 30, une mise en demeure à 45. La proposition
+               quotidienne s'appuie dessus.</p>
+        </field>
+    </record>
+
+    <record id="view_relance_list" model="ir.ui.view">
+        <field name="name">megga.relance.list</field>
+        <field name="model">megga.relance</field>
+        <field name="arch" type="xml">
+            <list string="Rappels">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="niveau_id"/>
+                <field name="amount_due" sum="Total dû"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'sent'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_relance_form" model="ir.ui.view">
+        <field name="name">megga.relance.form</field>
+        <field name="model">megga.relance</field>
+        <field name="arch" type="xml">
+            <form string="Rappel">
+                <header>
+                    <button name="action_send" type="object"
+                            string="Envoyer le rappel" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_sent" type="object"
+                            string="Remis hors courriel"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object"
+                            string="Abandonner"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,sent"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="niveau_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="amount_due"/>
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                            <field name="sent_on" invisible="not sent_on"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="move_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="invoice_date"/>
+                            <field name="invoice_date_due"/>
+                            <field name="amount_total"/>
+                            <field name="amount_residual" sum="Reste dû"/>
+                            <field name="megga_relance_niveau_id"
+                                   optional="show"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_relance_search" model="ir.ui.view">
+        <field name="name">megga.relance.search</field>
+        <field name="model">megga.relance</field>
+        <field name="arch" type="xml">
+            <search string="Rappels">
+                <field name="partner_id"/>
+                <field name="name"/>
+                <filter name="filter_draft" string="À envoyer"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_sent" string="Envoyés"
+                        domain="[('state', '=', 'sent')]"/>
+                <group>
+                    <filter name="group_partner" string="Client"
+                            domain="[]"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_niveau" string="Niveau"
+                            domain="[]"
+                            context="{'group_by': 'niveau_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_relance" model="ir.actions.act_window">
+        <field name="name">Rappels de factures</field>
+        <field name="res_model">megga.relance</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_relance_search"/>
+        <field name="context">{'search_default_filter_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun rappel à envoyer</p>
+            <p>La proposition tourne chaque nuit : elle prépare un
+               rappel par client dont le retard atteint un cran non
+               encore servi — et n'envoie rien toute seule.</p>
+        </field>
+    </record>
+
+    <!-- La case sur la facture : sortir un impayé du circuit doit se
+         faire la ou on le constate, pas dans un ecran de reglages. -->
+    <record id="view_move_form_relance" model="ir.ui.view">
+        <field name="name">account.move.form.relance</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='due_date']" position="after">
+                <label for="megga_relance_exclue" string="Hors rappels"
+                       invisible="move_type != 'out_invoice'"/>
+                <div invisible="move_type != 'out_invoice'">
+                    <field name="megga_relance_exclue" nolabel="1"/>
+                    <field name="megga_relance_date" readonly="1"
+                           invisible="not megga_relance_date"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_relance_root" name="Rappels"
+              parent="account.menu_finance_receivables"
+              action="action_relance" sequence="35"/>
+    <menuitem id="menu_relance_niveaux" name="Niveaux de rappel"
+              parent="account.account_account_menu"
+              action="action_relance_niveau" sequence="80"/>
+</odoo>

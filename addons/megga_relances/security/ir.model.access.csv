@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_relance_niveau_user,relance.niveau.user,model_megga_relance_niveau,account.group_account_invoice,1,0,0,0
+access_relance_niveau_manager,relance.niveau.manager,model_megga_relance_niveau,account.group_account_manager,1,1,1,1
+access_relance_user,relance.user,model_megga_relance,account.group_account_invoice,1,1,1,0
+access_relance_manager,relance.manager,model_megga_relance,account.group_account_manager,1,1,1,1

@@ -95,12 +95,55 @@ Décidé le 23/08/2026. Préfixe de tous les modules : `megga_`.
 | [`megga_camt`](addons/megga_camt/) | Import camt.053/054 — encaissements QRR, rapprochement | 5 |
 | [`megga_pain001`](addons/megga_pain001/) | Paiements fournisseurs pain.001.001.09.ch.03 | 5 |
 | [`megga_tva_ch`](addons/megga_tva_ch/) | Décompte TVA AFC (rendu du rapport l10n_ch) | 4 |
+| [`megga_relances`](addons/megga_relances/) | Rappels de factures impayées (`account_followup` est Enterprise) : niveaux réglables, proposition quotidienne en brouillon, envoi tracé au chatter, un même cran ne repart jamais deux fois | 35 |
 
 Validation groupée (socle + verticales) : `bash scripts/run_tests.sh`.
 
 La paie reste hors périmètre code (voie connecteur/fiduciaire — volet 3 de
 l'audit) ; la Phase 5 (bump mensuel du sous-module, migration annuelle) est
 le régime permanent.
+
+Les **rappels de factures impayées** (`megga_relances`) comblent une
+absence nette du dépôt Community : `account_followup` est un module
+Enterprise — le cœur n'en garde que le champ `no_followup`, un crochet
+vers un module qui n'existe pas ici. L'entreprise règle ses crans (par
+exemple 1er rappel à 10 jours, 2e à 30 avec frais annoncés, mise en
+demeure à 45), et un cron quotidien **propose** un rappel en brouillon
+par client concerné. Il n'envoie **jamais** tout seul : une relance
+part sous la signature de la maison. Trois principes tiennent le
+module :
+
+- **Un client, un courrier.** Trois factures échues font un rappel qui
+  les porte toutes, pas trois rappels.
+- **Le cran le plus élevé gagne.** Un client à 47 jours reçoit la mise
+  en demeure, pas le premier rappel qu'il a déjà eu.
+- **Un même cran ne repart jamais deux fois.** Le cran servi est
+  marqué sur chaque *facture* (pas sur le client : deux factures du
+  même client peuvent être à des stades différents), par son
+  **identité** et non par son délai — un délai se re-règle, et
+  comparer des nombres mutables ferait repartir des crans déjà
+  servis. L'envoi passe par le chatter : un rappel sans trace est un
+  rappel qu'on ne peut pas prouver.
+- **Une devise, un courrier.** On n'additionne pas des francs et des
+  euros sous un même total, et le débiteur est l'entité commerciale —
+  deux services du même client ne reçoivent pas deux lettres.
+- **Le monde bouge entre la nuit et le geste.** L'envoi revérifie :
+  une facture réglée, annulée ou mise en litige entre-temps sort du
+  courrier, et s'il ne reste rien, l'envoi refuse. Le brouillon en
+  attente est *mis à jour* par le cron suivant, jamais empilé ni
+  jeté — il porte peut-être déjà des notes.
+
+Les **frais de rappel** sont *annoncés* dans le texte, jamais ajoutés
+d'office à la facture : des frais se contestent, ils s'ajoutent en
+conscience sur une note de débit. Ne sont jamais rappelés : une
+facture payée ou en cours d'encaissement, un brouillon, une facture
+en **litige** (`payment_state` *blocked*, le vrai crochet du cœur),
+une facture sortie du circuit par la case « Hors rappels », ni un
+client dont les **avoirs ouverts couvrent** la dette échue. Le
+courrier part dans la **langue du client**, montants et dates
+formatés. Un client sans adresse de courriel ne fait pas
+semblant d'être relancé : l'envoi refuse, et un bouton « remis hors
+courriel » trace la remise postale.
 
 ## Verticales métier (`addons/verticals/`)
 

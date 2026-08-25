@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id vide : lecon des verticales, sans cela
+             next_by_code echoue depuis une autre societe. -->
+        <record id="seq_relance" model="ir.sequence">
+            <field name="name">Rappels de factures</field>
+            <field name="code">megga.relance</field>
+            <field name="prefix">RAP/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="ir_cron_megga_relances" model="ir.cron">
+            <field name="name">Rappels : proposer les relances du jour</field>
+            <field name="model_id" ref="model_megga_relance"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_megga_relances()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>
