@@ -33,6 +33,11 @@
               sequence="29"
               groups="megga_dental.group_dental_praticien"/>
 
+    <menuitem id="menu_dental_clinical_notes" name="Notes cliniques"
+              parent="menu_dental_root" action="action_dental_clinical_note"
+              sequence="26"
+              groups="megga_dental.group_dental_praticien"/>
+
     <!-- Le menu des constats vit ici (et non dans le fichier de vues) :
          menu_dental_root n'existe qu'une fois dental_menus.xml charge —
          meme ordre de chargement que le menu du tarif par points. -->

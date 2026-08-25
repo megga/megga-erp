@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Journal clinique : creation permise, edition et suppression
+         interdites — l'immuabilite est portee par le SERVEUR (write et
+         unlink refuses), les vues ne font que l'honorer. -->
+    <record id="view_dental_clinical_note_form" model="ir.ui.view">
+        <field name="name">megga.dental.clinical.note.form</field>
+        <field name="model">megga.dental.clinical.note</field>
+        <field name="arch" type="xml">
+            <form string="Note clinique" duplicate="0">
+                <header>
+                    <button name="action_rectify" type="object"
+                            string="Rectifier" invisible="not id"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Rectifiée"
+                            bg_color="text-bg-warning"
+                            invisible="not rectified"/>
+                    <group>
+                        <group>
+                            <field name="rectified" invisible="1"/>
+                            <field name="patient_id" readonly="id"/>
+                            <field name="kind" readonly="id"/>
+                            <field name="tooth_ids" readonly="id"
+                                   widget="many2many_tags"/>
+                            <field name="treatment_id" readonly="id"/>
+                        </group>
+                        <group>
+                            <field name="date_time"/>
+                            <field name="author_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="rectifies_id"
+                                   invisible="not rectifies_id"/>
+                        </group>
+                    </group>
+                    <field name="body" readonly="id"
+                           placeholder="Ce qui a été constaté, fait, dit — au stylo : la note ne se modifiera plus."/>
+                    <field name="rectification_ids"
+                           invisible="not rectification_ids">
+                        <list>
+                            <field name="date_time"/>
+                            <field name="author_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="body"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_clinical_note_list" model="ir.ui.view">
+        <field name="name">megga.dental.clinical.note.list</field>
+        <field name="model">megga.dental.clinical.note</field>
+        <field name="arch" type="xml">
+            <list string="Journal clinique" edit="false" delete="false">
+                <field name="date_time"/>
+                <field name="patient_id"/>
+                <field name="author_id" widget="many2one_avatar_user"/>
+                <field name="kind"/>
+                <field name="body"/>
+                <field name="rectified" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_clinical_note_search" model="ir.ui.view">
+        <field name="name">megga.dental.clinical.note.search</field>
+        <field name="model">megga.dental.clinical.note</field>
+        <field name="arch" type="xml">
+            <search string="Journal clinique">
+                <field name="patient_id"/>
+                <field name="body"/>
+                <filter name="incidents" string="Incidents"
+                        domain="[('kind', '=', 'incident')]"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_author" string="Auteur"
+                            context="{'group_by': 'author_id'}"/>
+                    <filter name="group_kind" string="Type"
+                            context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_clinical_note" model="ir.actions.act_window">
+        <field name="name">Notes cliniques</field>
+        <field name="res_model">megga.dental.clinical.note</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Journal vierge</p>
+            <p>Les notes cliniques s'écrivent au stylo : horodatées et
+               signées par le serveur, jamais modifiées, jamais
+               supprimées — on corrige par une note de rectification.</p>
+        </field>
+    </record>
+</odoo>

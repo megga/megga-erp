@@ -21,7 +21,9 @@ ordonnances (émission qui fige, renouvellement chaîné, impression,
 référentiel de médicaments du cabinet — réservées au groupe Soins),
 questionnaires et consentements (gabarits du cabinet, signature qui
 fige, anamnèse à péremption avec indicateur au dossier, impression),
-imagerie au dossier (clichés typés par dent, galerie, pièce jointe).
+imagerie au dossier (clichés typés par dent, galerie, pièce jointe),
+journal clinique immuable (notes au stylo : horodatage et auteur du
+serveur, ni modification ni suppression, rectification chaînée).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -56,6 +58,7 @@ imagerie au dossier (clichés typés par dent, galerie, pièce jointe).
         'views/dental_prescription_views.xml',
         'views/dental_questionnaire_views.xml',
         'views/dental_imaging_views.xml',
+        'views/dental_clinical_note_views.xml',
         'report/prescription_report.xml',
         'report/questionnaire_report.xml',
         'views/dental_menus.xml',

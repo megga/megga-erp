@@ -85,6 +85,13 @@ class MeggaDentalPatient(models.Model):
     imaging_count = fields.Integer(
         compute='_compute_imaging_count',
         groups="megga_dental.group_dental_praticien")
+    clinical_note_ids = fields.One2many(
+        'megga.dental.clinical.note', 'patient_id',
+        string="Journal clinique",
+        groups="megga_dental.group_dental_praticien")
+    clinical_note_count = fields.Integer(
+        compute='_compute_clinical_note_count',
+        groups="megga_dental.group_dental_praticien")
     anamnesis_state = fields.Selection([
         ('missing', "Anamnèse manquante"),
         ('ok', "Anamnèse à jour"),
@@ -172,6 +179,22 @@ class MeggaDentalPatient(models.Model):
         for patient in self:
             patient.questionnaire_count = len(
                 patient.questionnaire_answer_ids)
+
+    @api.depends('clinical_note_ids')
+    def _compute_clinical_note_count(self):
+        for patient in self:
+            patient.clinical_note_count = len(patient.clinical_note_ids)
+
+    def action_new_clinical_note(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Nouvelle note"),
+            'res_model': 'megga.dental.clinical.note',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_patient_id': self.id},
+        }
 
     @api.depends('imaging_ids')
     def _compute_imaging_count(self):

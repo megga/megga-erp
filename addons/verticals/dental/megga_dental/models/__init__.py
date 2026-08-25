@@ -7,3 +7,4 @@ from . import dental_plan
 from . import dental_prescription
 from . import dental_questionnaire
 from . import dental_imaging
+from . import dental_clinical_note

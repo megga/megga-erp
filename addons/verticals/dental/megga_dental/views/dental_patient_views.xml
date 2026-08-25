@@ -101,6 +101,21 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Journal" name="clinical_journal"
+                              groups="megga_dental.group_dental_praticien">
+                            <button name="action_new_clinical_note"
+                                    type="object" string="Nouvelle note"
+                                    class="btn-primary mb-2"/>
+                            <field name="clinical_note_ids" nolabel="1">
+                                <list edit="false" delete="false" create="false">
+                                    <field name="date_time"/>
+                                    <field name="author_id"
+                                           widget="many2one_avatar_user"/>
+                                    <field name="kind"/>
+                                    <field name="body"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Dossier médical" name="medical"
                               groups="megga_dental.group_dental_praticien">
                             <group>
