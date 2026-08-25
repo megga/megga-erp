@@ -20,7 +20,8 @@ d'ensemble, avancement, achèvement automatique),
 ordonnances (émission qui fige, renouvellement chaîné, impression,
 référentiel de médicaments du cabinet — réservées au groupe Soins),
 questionnaires et consentements (gabarits du cabinet, signature qui
-fige, anamnèse à péremption avec indicateur au dossier, impression).
+fige, anamnèse à péremption avec indicateur au dossier, impression),
+imagerie au dossier (clichés typés par dent, galerie, pièce jointe).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -54,6 +55,7 @@ fige, anamnèse à péremption avec indicateur au dossier, impression).
         'views/dental_plan_views.xml',
         'views/dental_prescription_views.xml',
         'views/dental_questionnaire_views.xml',
+        'views/dental_imaging_views.xml',
         'report/prescription_report.xml',
         'report/questionnaire_report.xml',
         'views/dental_menus.xml',

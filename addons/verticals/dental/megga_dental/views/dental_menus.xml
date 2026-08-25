@@ -28,6 +28,11 @@
               sequence="28"
               groups="megga_dental.group_dental_praticien"/>
 
+    <menuitem id="menu_dental_imaging" name="Imagerie"
+              parent="menu_dental_root" action="action_dental_imaging"
+              sequence="29"
+              groups="megga_dental.group_dental_praticien"/>
+
     <!-- Le menu des constats vit ici (et non dans le fichier de vues) :
          menu_dental_root n'existe qu'une fois dental_menus.xml charge —
          meme ordre de chargement que le menu du tarif par points. -->

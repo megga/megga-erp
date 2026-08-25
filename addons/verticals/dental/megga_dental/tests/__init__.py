@@ -8,3 +8,4 @@ from . import test_odontogram
 from . import test_plan
 from . import test_prescription
 from . import test_questionnaire
+from . import test_imaging

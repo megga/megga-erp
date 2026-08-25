@@ -30,3 +30,5 @@ access_dental_questionnaire_answer_praticien,dental.questionnaire.answer.pratici
 access_dental_questionnaire_answer_system,dental.questionnaire.answer.system,model_megga_dental_questionnaire_answer,base.group_system,1,1,1,1
 access_dental_questionnaire_answer_line_praticien,dental.questionnaire.answer.line.praticien,model_megga_dental_questionnaire_answer_line,group_dental_praticien,1,1,1,1
 access_dental_questionnaire_answer_line_system,dental.questionnaire.answer.line.system,model_megga_dental_questionnaire_answer_line,base.group_system,1,1,1,1
+access_dental_imaging_praticien,dental.imaging.praticien,model_megga_dental_imaging,group_dental_praticien,1,1,1,1
+access_dental_imaging_system,dental.imaging.system,model_megga_dental_imaging,base.group_system,1,1,1,1

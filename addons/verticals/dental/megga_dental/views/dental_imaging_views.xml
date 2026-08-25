@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_imaging_kanban" model="ir.ui.view">
+        <field name="name">megga.dental.imaging.kanban</field>
+        <field name="model">megga.dental.imaging</field>
+        <field name="arch" type="xml">
+            <kanban string="Imagerie">
+                <templates>
+                    <t t-name="card">
+                        <field name="image" widget="image"
+                               options="{'img_class': 'w-100 object-fit-cover'}"/>
+                        <div class="p-2">
+                            <field name="name" class="fw-bold"/>
+                            <div class="text-muted">
+                                <field name="patient_id"/> ·
+                                <field name="date"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_dental_imaging_form" model="ir.ui.view">
+        <field name="name">megga.dental.imaging.form</field>
+        <field name="model">megga.dental.imaging</field>
+        <field name="arch" type="xml">
+            <form string="Cliché">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="kind"/>
+                            <field name="tooth_ids" widget="many2many_tags"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="dentist_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="treatment_id"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+                    <field name="image" widget="image" class="w-100"
+                           options="{'zoom': true}"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_imaging_list" model="ir.ui.view">
+        <field name="name">megga.dental.imaging.list</field>
+        <field name="model">megga.dental.imaging</field>
+        <field name="arch" type="xml">
+            <list string="Imagerie">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="kind"/>
+                <field name="treatment_id" optional="hide"/>
+                <field name="dentist_id" widget="many2one_avatar_user"
+                       optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_imaging_search" model="ir.ui.view">
+        <field name="name">megga.dental.imaging.search</field>
+        <field name="model">megga.dental.imaging</field>
+        <field name="arch" type="xml">
+            <search string="Imagerie">
+                <field name="patient_id"/>
+                <field name="name"/>
+                <filter name="radios" string="Radiographies"
+                        domain="[('kind', 'in', ('retro', 'bitewing', 'pano', 'cbct', 'ceph'))]"/>
+                <filter name="photos" string="Photos"
+                        domain="[('kind', '=', 'photo')]"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_kind" string="Type"
+                            context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_imaging" model="ir.actions.act_window">
+        <field name="name">Imagerie</field>
+        <field name="res_model">megga.dental.imaging</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun cliché</p>
+            <p>Radios, photos cliniques et coupes exportées, rattachées
+               au dossier, aux dents et au traitement. L'image vit en
+               pièce jointe : elle suit les sauvegardes.</p>
+        </field>
+    </record>
+</odoo>

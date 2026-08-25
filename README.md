@@ -108,7 +108,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption) | 82 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie) | 91 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
@@ -194,6 +194,15 @@ adapter : l'anamnèse usuelle et le consentement au traitement des
 données (nLPD) — le consentement *médical* aux soins reste à écrire par
 le cabinet, son contenu engage le praticien. Réponses **et** gabarits
 fermés à la réception.
+
+L'**imagerie au dossier** archive les clichés : rétro-alvéolaire,
+bitewing, panoramique, coupe CBCT exportée, téléradio, photo clinique —
+typés, datés, rattachés aux dents FDI et au traitement, libellé
+auto-composé (« Rétro-alvéolaire — dent 16 »), consultés en **galerie**
+(kanban à vignettes). L'image vit en pièce jointe : elle suit le
+filestore, donc les sauvegardes et leur expédition. Le DICOM natif
+reste dans le logiciel du capteur — on archive l'export image. Modèle
+entièrement fermé à la réception, comme tout le clinique.
 
 Côté resto, les fiches techniques convertissent les unités : chaque
 ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl
