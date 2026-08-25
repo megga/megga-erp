@@ -118,6 +118,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_occasion` (**auto_install**) | Commerce d'occasion : reprise → stock → revente (le nouveau propriétaire entre au parc clients). Régime ordinaire = impôt préalable fictif (art. 28a LTVA, taxe incluse extraite du prix de reprise, revente TTC — la charge nette est la TVA de la marge) ; pièces de collection = imposition de la marge (art. 24a : TVA sur la marge seule, marge négative sans crédit, facture de vente **sans mention de TVA**). Factures de reprise et de vente en un clic | 15 |
@@ -297,6 +298,25 @@ d'une huile au litre — les unités maison comme le centilitre se créent
 en un clic, relatives au litre), le coût est converti par l'arbre
 d'unités du cœur, et seules les unités convertibles (même racine — en
 19 les catégories d'unités ont disparu) sont proposées.
+
+Le **portail client du restaurant** (`megga_resto_portal`) complète la
+série — et introduit la seule **écriture** de tous les portails Megga :
+le client suit ses réservations (à venir et passées, annulées
+comprises — il doit voir ce qu'il a annulé) et **annule en ligne**
+celles qui peuvent encore l'être. C'est la fonction utile côté salle :
+une table libérée à temps se revend. L'écriture ne passe jamais par un
+droit générique — les ACL du portail restent en lecture seule pure :
+elle emprunte une **action dédiée** qui vérifie l'accès, puis les
+gardes métier (la sienne, encore en demande ou confirmée, service à
+venir — une table déjà installée ou un service passé se règlent au
+téléphone), s'exécute en `sudo` et **se trace au chatter**
+(« Annulée par le client depuis le portail »). Le bouton n'apparaît que
+sur ce qui est annulable, mais le contrôleur revalide tout : la vue ne
+protège rien. Deux réserves de conception assumées : une réservation
+prise au téléphone **sans contact** n'appartient à personne au portail
+et n'y figure pas ; et les **notes de service** (où la salle écrit ses
+propres remarques) sont fermées au portail **par l'ORM**, pas seulement
+absentes du gabarit.
 
 La TVA de la restauration est câblée (`megga_resto_tva`, auto-installé
 avec la localisation suisse) : le même sandwich est au taux normal

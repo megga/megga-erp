@@ -44,7 +44,14 @@ class MeggaRestoReservation(models.Model):
     company_id = fields.Many2one(
         'res.company', required=True,
         default=lambda self: self.env.company)
-    notes = fields.Text("Notes (allergies, occasion, chaise haute…)")
+    # groups= : note de SERVICE. Le client y a donne des informations
+    # (allergies, occasion), mais la salle y ecrit aussi ses propres
+    # remarques — elle ne redescend donc pas au portail, et l'ORM le
+    # garantit (meme patron que le dossier medical du dentaire), pas
+    # seulement l'absence de la note dans un gabarit.
+    notes = fields.Text(
+        "Notes (allergies, occasion, chaise haute…)",
+        groups="base.group_user")
 
     @api.model_create_multi
     def create(self, vals_list):

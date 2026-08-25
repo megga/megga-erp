@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- La carte d'accueil du portail. -->
+    <template id="portal_my_home_resto" name="Portail : mes réservations"
+              inherit_id="portal.portal_my_home" customize_show="True"
+              priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/portal/static/src/img/portal-addresses.svg'"/>
+                <t t-set="title">Mes réservations</t>
+                <t t-set="text">Vos tables réservées, à venir et passées</t>
+                <t t-set="url" t-value="'/my/reservations'"/>
+                <t t-set="placeholder_count" t-value="'resto_reservation_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <!-- Fil d'Ariane. -->
+    <template id="portal_breadcrumbs_resto" name="Portail : fil salle"
+              inherit_id="portal.portal_breadcrumbs" priority="50">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'resto_reservations'"
+                class="breadcrumb-item active">Mes réservations</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_reservations" name="Mes réservations">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <h3 class="mb-3">Mes réservations</h3>
+
+            <div t-if="erreur == 'etat'" class="alert alert-warning">
+                Cette réservation ne peut plus être annulée en ligne —
+                appelez le restaurant.
+            </div>
+            <div t-if="erreur == 'passee'" class="alert alert-warning">
+                Ce service est passé : il n'y a plus rien à annuler.
+            </div>
+
+            <p t-if="not reservations">Aucune réservation à votre nom.</p>
+            <div t-else="" class="table-responsive">
+                <table class="table table-sm o_portal_my_doc_table">
+                    <thead>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Arrivée</th>
+                            <th class="text-end">Couverts</th>
+                            <th>État</th>
+                            <th class="text-end">Annuler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="reservations" t-as="reservation">
+                            <td t-esc="reservation.name"/>
+                            <td><span t-field="reservation.start"/></td>
+                            <td class="text-end"
+                                t-esc="reservation.party_size"/>
+                            <td><span t-field="reservation.state"/></td>
+                            <td class="text-end">
+                                <!-- Le bouton n'apparait que sur ce qui est
+                                     encore annulable ; le controleur
+                                     revalide de toute facon, la vue ne
+                                     protege rien. -->
+                                <form t-if="reservation.state in ('draft', 'confirmed')
+                                            and reservation.stop &gt; maintenant"
+                                      t-attf-action="/my/reservations/#{reservation.id}/annuler"
+                                      method="post" class="d-inline">
+                                    <input type="hidden" name="csrf_token"
+                                           t-att-value="request.csrf_token()"/>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Annuler
+                                    </button>
+                                </form>
+                                <span t-else="" class="text-muted">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

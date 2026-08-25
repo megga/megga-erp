@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- L'etancheite du portail salle : le client ne voit que les
+         reservations rattachees a SON contact. Une reservation prise au
+         telephone sans contact (guest_name seul) n'appartient a personne
+         au portail — elle n'y apparait pas, c'est voulu. -->
+    <record id="rule_portal_reservation" model="ir.rule">
+        <field name="name">Portail : ses réservations</field>
+        <field name="model_id" ref="megga_resto.model_megga_resto_reservation"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>
