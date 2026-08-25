@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_auto_vehicle,portal.auto.vehicle,fleet.model_fleet_vehicle,base.group_portal,1,0,0,0
+access_portal_auto_vehicle_model,portal.auto.vehicle.model,fleet.model_fleet_vehicle_model,base.group_portal,1,0,0,0
+access_portal_auto_vehicle_brand,portal.auto.vehicle.brand,fleet.model_fleet_vehicle_model_brand,base.group_portal,1,0,0,0
+access_portal_auto_odometer,portal.auto.odometer,fleet.model_fleet_vehicle_odometer,base.group_portal,1,0,0,0
+access_portal_auto_workorder,portal.auto.workorder,megga_auto.model_megga_auto_workorder,base.group_portal,1,0,0,0
+access_portal_auto_workorder_line,portal.auto.workorder.line,megga_auto.model_megga_auto_workorder_line,base.group_portal,1,0,0,0

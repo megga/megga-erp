@@ -108,3 +108,20 @@ class TestWorkorder(AccountTestInvoicingCommon):
         order = self._order()
         with self.assertRaises(UserError):
             order.action_create_invoice()
+
+    def test_designation_posee_a_la_source(self):
+        """Sans passer par l'interface : une ligne creee par script ou
+        par un forfait porte quand meme sa designation (le portail
+        client s'appuie dessus)."""
+        order = self._order(line_ids=[Command.create({
+            'product_id': self.plaquettes.id, 'price_unit': 260.0})])
+        self.assertEqual(order.line_ids.description,
+                         self.plaquettes.display_name)
+
+    def test_designation_saisie_est_respectee(self):
+        order = self._order(line_ids=[Command.create({
+            'product_id': self.plaquettes.id,
+            'description': "Plaquettes + rectification disques",
+            'price_unit': 320.0})])
+        self.assertEqual(order.line_ids.description,
+                         "Plaquettes + rectification disques")

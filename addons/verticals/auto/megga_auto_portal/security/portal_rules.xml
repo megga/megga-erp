@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- L'etancheite du portail garage : le client connecte ne voit que
+         SES vehicules (ceux dont il est le proprietaire au parc) et SES
+         ordres de reparation, et jamais un devis en cours de redaction
+         — un ordre n'existe pour lui qu'une fois ACCEPTE. Ces regles ne
+         touchent que le groupe portail : l'atelier garde ses droits.
+
+         Attention : fleet.vehicle est un modele du COEUR, ou vit aussi
+         le parc de la societe. La regle ci-dessous est donc la seule
+         chose qui separe le client du reste du parc — d'ou les tests
+         d'etancheite qui la prennent au serieux. -->
+
+    <record id="rule_portal_vehicle" model="ir.rule">
+        <field name="name">Portail : ses véhicules</field>
+        <field name="model_id" ref="fleet.model_fleet_vehicle"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('megga_owner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Le compteur affiche par la page est un CALCUL sur le journal de
+         compteur du coeur : sans droit de lecture dessus, la page tombe
+         en 403 (vecu). On l'ouvre donc, mais releve par releve et
+         uniquement sur ses propres vehicules — le kilometrage du parc
+         d'un garage en dit long sur son activite. -->
+    <record id="rule_portal_odometer" model="ir.rule">
+        <field name="name">Portail : les relevés de ses véhicules</field>
+        <field name="model_id" ref="fleet.model_fleet_vehicle_odometer"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('vehicle_id.megga_owner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_portal_workorder" model="ir.rule">
+        <field name="name">Portail : ses réparations engagées</field>
+        <field name="model_id" ref="megga_auto.model_megga_auto_workorder"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id), ('state', 'in', ['confirmed', 'done'])]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_portal_workorder_line" model="ir.rule">
+        <field name="name">Portail : les travaux de ses réparations engagées</field>
+        <field name="model_id" ref="megga_auto.model_megga_auto_workorder_line"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('workorder_id.partner_id', '=', user.partner_id.id), ('workorder_id.state', 'in', ['confirmed', 'done'])]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

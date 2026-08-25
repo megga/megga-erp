@@ -113,9 +113,10 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 |---|---|---|---|
 | [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes), plans de traitement par phases (ordre clinique garanti, devis d'ensemble, avancement), ordonnances (émission figée, renouvellement chaîné, impression), questionnaires et consentements (gabarits, signature, anamnèse à péremption), imagerie au dossier (clichés typés par dent, galerie), journal clinique immuable (notes au stylo, rectification chaînée), fauteuils et créneaux (conflits refusés, attribution automatique, calendrier), tiers payant d'assurance (dossiers AA/AI/AM/LAMal/LCA, garanties de prise en charge, facture à l'assureur avec référence du sinistre) | 126 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) ; productions de cuisine (banquet, service : plats × portions) avec liste de courses agrégée multi-plats, convertie dans l'unité de l'économat, coût prévisionnel et impression pour le marché | 44 |
-| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 42 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) ; forfaits d'atelier (gabarits main-d'œuvre + pièces posés sur l'ordre en un clic, au taux horaire du garage et aux prix du jour, figés à la pose) | 44 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
+| [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
@@ -272,6 +273,23 @@ médical n'ont **aucune** ACL portail — le patient a droit à ses
 documents remis, pas aux notes de travail du praticien (la nLPD donne
 un droit d'accès *sur demande*, art. 25 — le portail n'est pas tenu de
 tout montrer en libre-service).
+
+Le **portail client du garage** (`megga_auto_portal`) est le pendant du
+portail patient, côté atelier — même doctrine, même patron. Module
+séparé, jamais auto-installé. Le client connecté trouve « Mon garage » :
+**ses** véhicules (prochaine expertise OETV, compteur) et **ses**
+réparations, avec le détail des travaux et le montant. Jamais un devis
+en cours de rédaction : un ordre n'existe pour lui qu'une fois
+**accepté**. Le **carnet d'entretien** se télécharge en PDF, avec le
+contrôle d'accès **avant** le rendu (le rendu portail travaille en sudo,
+on ne s'y fie pas) ; le carnet lui-même reste complet et sans prix —
+c'est un document qui se transmet avec la voiture. Point d'attention
+assumé et testé : `fleet.vehicle` est un modèle du cœur où vit aussi le
+parc de la société, donc la règle d'enregistrement est la seule
+séparation — les tests vérifient qu'un client ne voit ni la voiture du
+voisin, ni le véhicule de service du garage, et qu'un véhicule revendu
+sort du portail de l'ancien propriétaire pour entrer dans celui du
+nouveau.
 
 Côté resto, les fiches techniques convertissent les unités : chaque
 ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl

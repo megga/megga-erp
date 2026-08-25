@@ -151,7 +151,13 @@ class MeggaAutoWorkorderLine(models.Model):
     sequence = fields.Integer(default=10)
     product_id = fields.Many2one(
         'product.product', string="Pièce / forfait", required=True)
-    description = fields.Char("Description")
+    # Compute store readonly=False : la designation est TOUJOURS posee
+    # cote serveur, jamais laissee vide. Le portail client peut alors
+    # afficher les travaux sans lire le catalogue du garage — un libelle
+    # ne vaut pas d'ouvrir product.product au groupe portail.
+    description = fields.Char(
+        "Description", compute='_compute_description', store=True,
+        readonly=False, precompute=True)
     quantity = fields.Float("Quantité", required=True, default=1.0)
     price_unit = fields.Float("Prix unitaire")
     currency_id = fields.Many2one(related='workorder_id.currency_id')
@@ -159,11 +165,16 @@ class MeggaAutoWorkorderLine(models.Model):
         "Sous-total", compute='_compute_subtotal', store=True,
         currency_field='currency_id')
 
+    @api.depends('product_id')
+    def _compute_description(self):
+        for line in self:
+            if line.product_id and not line.description:
+                line.description = line.product_id.display_name
+
     @api.onchange('product_id')
     def _onchange_product_id(self):
         for line in self:
             if line.product_id:
-                line.description = line.product_id.display_name
                 line.price_unit = line.product_id.list_price
 
     @api.depends('quantity', 'price_unit')
