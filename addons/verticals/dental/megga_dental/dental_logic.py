@@ -105,3 +105,55 @@ def all_fdi_numbers():
     definitives = [q * 10 + p for q in (1, 2, 3, 4) for p in range(1, 9)]
     lait = [q * 10 + p for q in (5, 6, 7, 8) for p in range(1, 6)]
     return definitives + lait
+
+
+# --- Odontogramme ------------------------------------------------------------
+
+# Surfaces d'une dent (nomenclature clinique usuelle). Le bord incisal
+# des dents antérieures partage le code O avec la face occlusale.
+SURFACES = {
+    'M': "mésiale",
+    'D': "distale",
+    'V': "vestibulaire",
+    'L': "linguale / palatine",
+    'O': "occlusale / incisale",
+}
+
+# Constats portés sur l'odontogramme, avec la couleur du schéma. Les
+# couleurs vivent ici (source unique) : le widget SVG les reçoit dans la
+# charge JSON et un futur rapport imprimé lira le même dictionnaire.
+CONDITION_COLORS = {
+    'carie': "#C0392B",
+    'a_surveiller': "#D4AC0D",
+    'obturation': "#2E6DA4",
+    'devitalisee': "#B9770E",
+    'couronne': "#7D3C98",
+    'implant': "#148F77",
+    'absente': "#909497",
+    'saine': "#A9DFBF",
+}
+
+
+def merge_findings(findings):
+    """Réduit un historique de constats à l'état ACTUEL de chaque dent.
+
+    `findings` : itérable de (numéro FDI, surface ou '', constat, clé
+    d'ordre) — la clé d'ordre est comparable ((date, id) en pratique) et
+    le DERNIER constat gagne, surface par surface : une obturation posée
+    par-dessus une carie remplace la carie sur cette surface, sans que
+    l'histoire soit réécrite. Un constat sans surface porte sur la dent
+    entière et vit à son propre niveau (une couronne n'efface pas le
+    constat mésial qui suivra).
+
+    Retourne {numéro: {'tooth': constat dent entière ou None,
+                       'surfaces': {surface: constat}}}.
+    """
+    state = {}
+    for number, surface, condition, order in sorted(
+            findings, key=lambda finding: finding[3]):
+        tooth = state.setdefault(number, {'tooth': None, 'surfaces': {}})
+        if surface:
+            tooth['surfaces'][surface] = condition
+        else:
+            tooth['tooth'] = condition
+    return state

@@ -4,3 +4,4 @@ from . import test_recall
 from . import test_treatment
 from . import test_tariff
 from . import test_lpd
+from . import test_odontogram

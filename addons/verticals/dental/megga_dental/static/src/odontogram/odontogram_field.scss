@@ -1,0 +1,53 @@
+.megga_odontogram {
+    svg {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .megga_odontogram_tooth {
+        cursor: pointer;
+
+        polygon,
+        text {
+            pointer-events: all;
+        }
+
+        &:hover .megga_odontogram_surface {
+            stroke-width: 1.6;
+        }
+    }
+
+    .megga_odontogram_surface {
+        stroke: #8a8f98;
+        stroke-width: 0.8;
+    }
+
+    .megga_odontogram_number {
+        font-size: 10px;
+        fill: #6c757d;
+    }
+
+    .megga_odontogram_cross {
+        stroke: #6c757d;
+        stroke-width: 2;
+        pointer-events: none;
+    }
+
+    .megga_odontogram_legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #8a8f98;
+            border-radius: 2px;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: -1px;
+        }
+    }
+}

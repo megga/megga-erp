@@ -106,12 +106,35 @@ class MeggaDentalTreatment(models.Model):
                 raise UserError(
                     _("Seul un traitement planifié peut être terminé."))
             treatment.state = 'done'
+            treatment._create_tooth_records()
             patient = treatment.patient_id
             patient.write({
                 'last_visit_date': treatment.date,
                 'recall_date': next_recall_date(
                     treatment.date, patient.recall_months or 6),
             })
+
+    def _create_tooth_records(self):
+        """Inscrit sur l'odontogramme le constat porté par chaque acte
+        (position avec constat + dents renseignées). En sudo : c'est un
+        effet système du flux — la réception peut clore une séance sans
+        détenir le moindre droit sur les constats ; la LECTURE, elle,
+        reste gardée par les groupes (doctrine LPD du dépôt)."""
+        Record = self.env['megga.dental.tooth.record'].sudo()
+        for treatment in self:
+            for line in treatment.line_ids:
+                condition = line.position_id.condition
+                if not condition or not line.tooth_ids:
+                    continue
+                Record.create([{
+                    'patient_id': treatment.patient_id.id,
+                    'tooth_id': tooth.id,
+                    'condition': condition,
+                    'date': treatment.date,
+                    'dentist_id': treatment.dentist_id.id,
+                    'line_id': line.id,
+                    'note': line.description or line.position_id.name,
+                } for tooth in line.tooth_ids])
 
     def action_cancel(self):
         for treatment in self:

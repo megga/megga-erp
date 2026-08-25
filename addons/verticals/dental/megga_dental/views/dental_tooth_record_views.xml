@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Constats dentaires : modèle 100 % clinique, réservé au groupe
+         Soins (aucune ligne ir.model.access pour la réception). Les
+         menus et actions portent le même groupe pour ne rien laisser
+         paraître. -->
+
+    <record id="view_dental_tooth_record_list" model="ir.ui.view">
+        <field name="name">megga.dental.tooth.record.list</field>
+        <field name="model">megga.dental.tooth.record</field>
+        <field name="arch" type="xml">
+            <list string="Constats dentaires" editable="bottom">
+                <field name="date"/>
+                <field name="patient_id"/>
+                <field name="tooth_id"/>
+                <field name="surface"/>
+                <field name="condition"/>
+                <field name="note"/>
+                <field name="dentist_id" widget="many2one_avatar_user"
+                       optional="show"/>
+                <field name="line_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_tooth_record_form" model="ir.ui.view">
+        <field name="name">megga.dental.tooth.record.form</field>
+        <field name="model">megga.dental.tooth.record</field>
+        <field name="arch" type="xml">
+            <form string="Constat dentaire">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="tooth_id"/>
+                            <field name="surface"/>
+                            <field name="condition"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="dentist_id"
+                                   widget="many2one_avatar_user"/>
+                            <field name="note"/>
+                            <field name="line_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_tooth_record_search" model="ir.ui.view">
+        <field name="name">megga.dental.tooth.record.search</field>
+        <field name="model">megga.dental.tooth.record</field>
+        <field name="arch" type="xml">
+            <search string="Constats dentaires">
+                <field name="patient_id"/>
+                <field name="tooth_id"/>
+                <field name="condition"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_condition" string="Constat"
+                            context="{'group_by': 'condition'}"/>
+                    <filter name="group_tooth" string="Dent"
+                            context="{'group_by': 'tooth_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_tooth_record" model="ir.actions.act_window">
+        <field name="name">Constats dentaires</field>
+        <field name="res_model">megga.dental.tooth.record</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun constat</p>
+            <p>Un constat fixe l'état d'une dent (ou d'une surface) à une
+               date : l'odontogramme du patient lit le dernier constat de
+               chaque surface. Les actes des traitements en inscrivent
+               automatiquement à la clôture.</p>
+        </field>
+    </record>
+</odoo>

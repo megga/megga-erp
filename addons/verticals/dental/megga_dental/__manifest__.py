@@ -12,7 +12,9 @@ Gestion de cabinet dentaire sur le socle Megga.
 Dossier patient (identité déléguée à res.partner, donc facturable tel quel),
 plans de traitement avec actes, dents FDI et facturation en un clic,
 rappels de contrôle périodiques automatiques (activité au praticien),
-référentiel des 52 dents en notation FDI / ISO 3950.
+référentiel des 52 dents en notation FDI / ISO 3950,
+odontogramme interactif (constats par dent et par surface, alimenté
+automatiquement par les actes, réservé au groupe Soins — nLPD).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -41,8 +43,14 @@ référentiel des 52 dents en notation FDI / ISO 3950.
         'views/dental_patient_views.xml',
         'views/dental_treatment_views.xml',
         'views/dental_position_views.xml',
+        'views/dental_tooth_record_views.xml',
         'views/dental_menus.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'megga_dental/static/src/odontogram/**/*',
+        ],
+    },
     'demo': [
         'demo/dental_demo.xml',
     ],

@@ -1,5 +1,7 @@
 from odoo import api, fields, models
 
+from .dental_tooth_record import CONDITION_SELECTION
+
 
 class MeggaDentalPosition(models.Model):
     """Position du tarif dentaire par points.
@@ -29,6 +31,11 @@ class MeggaDentalPosition(models.Model):
         help="Regroupement du catalogue (diagnostic, prophylaxie, "
              "conservatrice…) — libre, pour le tri et la recherche.")
     active = fields.Boolean(default=True)
+    condition = fields.Selection(
+        CONDITION_SELECTION, string="Constat au terme de l'acte",
+        help="Si renseigné, terminer un traitement portant cette position "
+             "inscrit ce constat sur chaque dent de l'acte : "
+             "l'odontogramme du patient se met à jour tout seul.")
 
     _code_uniq = models.Constraint(
         'unique(code)',

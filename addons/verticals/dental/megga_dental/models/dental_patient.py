@@ -1,6 +1,9 @@
+import json
+
 from odoo import _, api, fields, models
 
-from ..dental_logic import age_years, next_recall_date
+from ..dental_logic import (
+    CONDITION_COLORS, age_years, merge_findings, next_recall_date)
 
 
 class MeggaDentalPatient(models.Model):
@@ -52,6 +55,13 @@ class MeggaDentalPatient(models.Model):
 
     treatment_ids = fields.One2many(
         'megga.dental.treatment', 'patient_id', string="Traitements")
+    tooth_record_ids = fields.One2many(
+        'megga.dental.tooth.record', 'patient_id',
+        string="Constats dentaires",
+        groups="megga_dental.group_dental_praticien")
+    odontogram_json = fields.Text(
+        "Odontogramme", compute='_compute_odontogram_json',
+        groups="megga_dental.group_dental_praticien")
     treatment_count = fields.Integer(compute='_compute_treatment_count')
 
     _code_uniq = models.Constraint(
@@ -71,6 +81,46 @@ class MeggaDentalPatient(models.Model):
         for patient in self:
             patient.age = (
                 age_years(patient.birthdate, today) if patient.birthdate else 0)
+
+    @api.depends('tooth_record_ids.tooth_id', 'tooth_record_ids.surface',
+                 'tooth_record_ids.condition', 'tooth_record_ids.date')
+    def _compute_odontogram_json(self):
+        """Charge JSON du widget : l'état ACTUEL de chaque dent (dernier
+        constat par surface, dernier constat dent entière), plus la
+        légende — libellés traduits et couleurs de dental_logic, pour
+        que le JS ne porte aucune constante métier."""
+        teeth = self.env['megga.dental.tooth'].search([])
+        Record = self.env['megga.dental.tooth.record']
+        legend = [
+            {'code': code, 'label': label,
+             'color': CONDITION_COLORS.get(code, '#999999')}
+            for code, label
+            in Record._fields['condition']._description_selection(self.env)
+        ]
+        for patient in self:
+            findings = [
+                (record.tooth_id.number, record.surface or '',
+                 record.condition, (record.date, record.id))
+                for record in patient.tooth_record_ids
+            ]
+            state = merge_findings(findings)
+            payload = {
+                'legend': legend,
+                'deciduous': any(
+                    record.tooth_id.deciduous
+                    for record in patient.tooth_record_ids),
+                'teeth': {
+                    str(tooth.number): {
+                        'id': tooth.id,
+                        'name': tooth.name,
+                        'tooth': state.get(tooth.number, {}).get('tooth'),
+                        'surfaces': state.get(
+                            tooth.number, {}).get('surfaces', {}),
+                    }
+                    for tooth in teeth
+                },
+            }
+            patient.odontogram_json = json.dumps(payload, ensure_ascii=False)
 
     @api.depends('treatment_ids')
     def _compute_treatment_count(self):

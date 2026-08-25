@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="megga_dental.OdontogramField">
+        <div class="megga_odontogram">
+            <t t-if="chart">
+                <svg t-attf-viewBox="0 0 {{ chart.width }} {{ chart.height }}"
+                     t-att-width="chart.width" t-att-height="chart.height"
+                     xmlns="http://www.w3.org/2000/svg" role="img"
+                     aria-label="Odontogramme">
+                    <t t-foreach="chart.cells" t-as="cell" t-key="cell.number">
+                        <g class="megga_odontogram_tooth"
+                           t-on-click="() => this.openTooth(cell)">
+                            <title t-esc="cell.title"/>
+                            <t t-foreach="cell.polys" t-as="poly" t-key="poly.code">
+                                <polygon class="megga_odontogram_surface"
+                                         t-att-points="poly.points"
+                                         t-att-fill="poly.fill"/>
+                            </t>
+                            <t t-if="cell.cross">
+                                <line class="megga_odontogram_cross"
+                                      t-att-x1="cell.cross.x1" t-att-y1="cell.cross.y1"
+                                      t-att-x2="cell.cross.x2" t-att-y2="cell.cross.y2"/>
+                                <line class="megga_odontogram_cross"
+                                      t-att-x1="cell.cross.x3" t-att-y1="cell.cross.y3"
+                                      t-att-x2="cell.cross.x4" t-att-y2="cell.cross.y4"/>
+                            </t>
+                            <text class="megga_odontogram_number"
+                                  t-att-x="cell.tx" t-att-y="cell.ty"
+                                  text-anchor="middle" t-esc="cell.number"/>
+                        </g>
+                    </t>
+                </svg>
+                <div class="megga_odontogram_legend">
+                    <span t-foreach="chart.legend" t-as="item" t-key="item.code">
+                        <span class="swatch"
+                              t-attf-style="background: {{ item.color }}"/>
+                        <t t-esc="item.label"/>
+                    </span>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

@@ -77,3 +77,37 @@ class TestDentalLogic(TransactionCase):
         bissextile = date(2000, 2, 29)
         self.assertEqual(age_years(bissextile, date(2026, 2, 28)), 25)
         self.assertEqual(age_years(bissextile, date(2026, 3, 1)), 26)
+
+
+class TestMergeFindings(TransactionCase):
+    """Réduction de l'historique des constats à l'état actuel : le
+    dernier constat gagne, surface par surface, la dent entière vit à
+    son propre niveau."""
+
+    def test_dernier_constat_gagne_par_surface(self):
+        from ..dental_logic import merge_findings
+        state = merge_findings([
+            (16, 'M', 'carie', (date(2026, 1, 10), 1)),
+            (16, 'D', 'carie', (date(2026, 1, 10), 2)),
+            (16, 'M', 'obturation', (date(2026, 3, 1), 3)),
+        ])
+        self.assertEqual(state[16]['surfaces']['M'], 'obturation')
+        self.assertEqual(state[16]['surfaces']['D'], 'carie')
+        self.assertIsNone(state[16]['tooth'])
+
+    def test_meme_jour_le_dernier_cree_gagne(self):
+        from ..dental_logic import merge_findings
+        state = merge_findings([
+            (26, 'V', 'a_surveiller', (date(2026, 5, 2), 7)),
+            (26, 'V', 'carie', (date(2026, 5, 2), 8)),
+        ])
+        self.assertEqual(state[26]['surfaces']['V'], 'carie')
+
+    def test_dent_entiere_niveau_independant(self):
+        from ..dental_logic import merge_findings
+        state = merge_findings([
+            (36, '', 'couronne', (date(2025, 11, 20), 1)),
+            (36, 'M', 'carie', (date(2026, 6, 1), 2)),
+        ])
+        self.assertEqual(state[36]['tooth'], 'couronne')
+        self.assertEqual(state[36]['surfaces']['M'], 'carie')

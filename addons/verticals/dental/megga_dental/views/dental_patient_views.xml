@@ -50,6 +50,25 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Odontogramme" name="odontogram"
+                              groups="megga_dental.group_dental_praticien">
+                            <field name="odontogram_json"
+                                   widget="megga_odontogram" nolabel="1"/>
+                            <separator string="Constats"/>
+                            <field name="tooth_record_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="tooth_id"/>
+                                    <field name="surface"/>
+                                    <field name="condition"/>
+                                    <field name="note"/>
+                                    <field name="dentist_id"
+                                           widget="many2one_avatar_user"
+                                           optional="hide"/>
+                                    <field name="line_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Dossier médical" name="medical"
                               groups="megga_dental.group_dental_praticien">
                             <group>

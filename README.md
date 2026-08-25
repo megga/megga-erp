@@ -108,7 +108,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 
 | Verticale | Méta-module | Contenu | Tests |
 |---|---|---|---|
-| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM) | 35 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental` | Dossier patient (délégué `res.partner`, donc facturable → QR), plans de traitement par dent (référentiel FDI/ISO 3950 complet), rappels de contrôle automatiques (cron + activités), tarif par points (positions, valeur du point du cabinet ou de la convention AA/AI/AM), facturation en un clic, groupes LPD Réception/Soins (champs médicaux protégés par l'ORM), odontogramme FDI interactif (constats par dent et par surface, alimentés par les actes) | 48 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto` | Carnet de réservations sur les tables du plan de salle (`restaurant.table` de `pos_restaurant`) : conflits de créneaux détectés, non-venus marqués par cron ; fiches techniques par plat (coût matière, marge, report du coût sur l'article) avec conversion d'unités (200 g d'un article au kilo, unité maison type cl) | 30 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto` | Parc des véhicules **clients** sur `fleet` (marques, modèles, plaques, journal de compteur) : propriétaire, rappels d'expertise au rythme fédéral 4-3-2 (art. 33 OETV), plausibilité VIN (ISO 3779) ; ordres de réparation atelier avec report du kilométrage et facture en un clic ; carnet d'entretien imprimable (PDF depuis la fiche véhicule : interventions terminées, chronologiques, sans les prix) | 23 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
@@ -144,6 +144,19 @@ au bénéfice d'une licence importe ses positions (CSV : `code`, `name`,
 `points`, `chapter` — exemple fictif dans `megga_dental/docs/`) ou les
 saisit à la main ; les lignes à produit (forfaits, fournitures) restent
 possibles et se mélangent librement.
+
+L'**odontogramme FDI** complète le dossier : chaque *constat* fixe l'état
+d'une dent — ou d'une de ses surfaces (mésiale, distale, vestibulaire,
+linguale, occlusale) — à une date ; le schéma (widget SVG maison, deux
+arcades, rangées de lait quand le dossier en porte) lit le **dernier
+constat par surface** : l'obturation posée par-dessus la carie remplace
+la carie à l'écran sans réécrire l'histoire (traçabilité nLPD). Une
+position tarifaire peut porter un « constat au terme de l'acte »
+(obturation, extraction…) : terminer le traitement inscrit alors le
+constat sur chaque dent de l'acte, en sudo — la réception peut clore une
+séance, mais le modèle des constats lui est entièrement fermé (aucune
+ligne `ir.model.access` : données de santé, art. 5 nLPD). Un clic sur
+une dent ouvre ses constats, pré-rempli pour en saisir un nouveau.
 
 Côté resto, les fiches techniques convertissent les unités : chaque
 ligne se saisit dans SON unité (200 g d'un article acheté au kilo, 5 cl

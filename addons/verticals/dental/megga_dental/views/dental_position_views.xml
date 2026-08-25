@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="points"/>
                 <field name="chapter" optional="show"/>
+                <field name="condition" optional="show"/>
                 <field name="active" widget="boolean_toggle" optional="hide"/>
             </list>
         </field>

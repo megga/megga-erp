@@ -10,3 +10,5 @@ access_dental_treatment_reception,dental.treatment.reception,model_megga_dental_
 access_dental_treatment_praticien,dental.treatment.praticien,model_megga_dental_treatment,group_dental_praticien,1,1,1,1
 access_dental_treatment_line_reception,dental.treatment.line.reception,model_megga_dental_treatment_line,group_dental_reception,1,1,1,0
 access_dental_treatment_line_praticien,dental.treatment.line.praticien,model_megga_dental_treatment_line,group_dental_praticien,1,1,1,1
+access_dental_tooth_record_praticien,dental.tooth.record.praticien,model_megga_dental_tooth_record,group_dental_praticien,1,1,1,1
+access_dental_tooth_record_system,dental.tooth.record.system,model_megga_dental_tooth_record,base.group_system,1,1,1,1
