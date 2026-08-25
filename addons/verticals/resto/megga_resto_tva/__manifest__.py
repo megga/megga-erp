@@ -24,7 +24,7 @@ a la meme dualite sur place / a emporter).
 """,
     'version': '19.0.1.0.0',
     'author': "Megga",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'category': 'Sales/Point of Sale',
     'depends': [
         'megga_resto',

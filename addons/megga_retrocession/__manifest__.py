@@ -35,7 +35,7 @@ clients le proposent ensuite d'elles-mêmes.
     'category': 'Accounting',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'depends': [
         'account',
     ],

@@ -25,7 +25,7 @@ sans plan comptable suisse, la facturation fictive refuse proprement.
 """,
     'version': '19.0.1.0.0',
     'author': "Megga",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'category': 'Industries',
     'depends': [
         'megga_auto',

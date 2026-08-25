@@ -20,7 +20,7 @@ matière, marge brute et report du coût sur l'article vendu.
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'application': True,
     'depends': [
         # Socle Megga (marque + normes suisses).

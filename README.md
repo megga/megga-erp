@@ -34,7 +34,10 @@ docker compose up --build
    dans `addons/`.
 2. **`addons-oca/` n'accepte que du LGPL-3** — `check_licences.py` refuse
    l'AGPL (2 640 des modules OCA) et toute licence inconnue. Lire le
-   `__manifest__.py` AVANT de copier un module.
+   `__manifest__.py` AVANT de copier un module. Nos propres modules
+   (`addons/`) sont tous **« Other proprietary »** depuis le 25.08.2026 :
+   modèle fermé homogène — Megga se revend à N clients (le cœur Odoo
+   LGPL-3 le permet), le client ne redistribue pas nos modules.
 3. **Jamais `git add -A` à la racine quand `odoo/` n'est pas matérialisé** —
    cela stagerait la suppression du gitlink. Ajouter les chemins explicitement.
 4. Refactoring : uniquement `addons/` et `scripts/` (voir `/refactor`).

@@ -4,7 +4,8 @@
 - addons-oca/ : seuls les modules LGPL-3 sont admis. L'AGPL-3 (85 % de
   l'ecosysteme OCA) declencherait la clause reseau sur l'oeuvre combinee :
   refus systematique. Toute licence inconnue exige une revue humaine -> echec.
-- addons/    : nos modules (licence libre de notre choix), mais on bloque
+- addons/    : nos modules (licence de notre choix — « Other
+  proprietary » depuis le 25.08.2026, modele ferme homogene), mais on bloque
   l'AGPL/GPL par inadvertance (copier-coller depuis un module OCA).
 """
 import argparse

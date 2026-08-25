@@ -23,7 +23,7 @@ refusée proprement. Les annulations se synchronisent dans les deux sens
     'category': 'Hidden',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'auto_install': True,
     'depends': [
         'megga_resto',

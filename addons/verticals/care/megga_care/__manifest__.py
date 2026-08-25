@@ -2,9 +2,9 @@
 # le métier d'une conciergerie médicale suisse — le socle Megga complet
 # (débranding, QR-facture à l'export, camt, pain.001, décompte TVA), le CRM
 # pour les nouveaux clients, l'agenda pour les événements de mandat et le
-# carnet d'adresses. À la différence des trois autres verticales (LGPL-3),
-# celle-ci est propriétaire : exigence contractuelle du déploiement fondateur
-# (logiciel fermé, non revendu), au même titre que les modules du socle.
+# carnet d'adresses. Propriétaire, comme tout le produit désormais : le
+# modèle fermé homogène a été arrêté le 25.08.2026 (socle, verticales et
+# services — le client déploie, il ne redistribue pas).
 {
     'name': "Megga Care",
     'summary': "Conciergerie médicale : mandats, événements à double prix, "

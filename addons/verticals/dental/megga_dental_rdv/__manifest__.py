@@ -17,7 +17,7 @@ réservations en ligne ; la réservation montre son patient.
     'category': 'Hidden',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",
-    'license': 'LGPL-3',
+    'license': 'Other proprietary',
     'auto_install': True,
     'depends': [
         'megga_dental',
