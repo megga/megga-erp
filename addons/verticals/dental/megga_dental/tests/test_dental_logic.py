@@ -111,3 +111,32 @@ class TestMergeFindings(TransactionCase):
         ])
         self.assertEqual(state[36]['tooth'], 'couronne')
         self.assertEqual(state[36]['surfaces']['M'], 'carie')
+
+
+class TestAnamnesisExpired(TransactionCase):
+    """Péremption d'une anamnèse : signée + validité du gabarit,
+    écrêtage de fin de mois compris (réutilise add_months)."""
+
+    def test_fraiche(self):
+        from ..dental_logic import anamnesis_expired
+        self.assertFalse(anamnesis_expired(
+            date(2026, 1, 15), 24, date(2026, 8, 25)))
+        # Le jour meme de l'echeance : encore valable.
+        self.assertFalse(anamnesis_expired(
+            date(2024, 8, 25), 24, date(2026, 8, 25)))
+
+    def test_perimee(self):
+        from ..dental_logic import anamnesis_expired
+        self.assertTrue(anamnesis_expired(
+            date(2024, 8, 24), 24, date(2026, 8, 25)))
+        # Fin de mois ecretee : signee le 31.12.2023, 2 mois -> echeance
+        # 29.02.2024 (bissextile), perimee au 01.03.2024.
+        self.assertTrue(anamnesis_expired(
+            date(2023, 12, 31), 2, date(2024, 3, 1)))
+        self.assertFalse(anamnesis_expired(
+            date(2023, 12, 31), 2, date(2024, 2, 29)))
+
+    def test_sans_peremption(self):
+        from ..dental_logic import anamnesis_expired
+        self.assertFalse(anamnesis_expired(date(2000, 1, 1), 0, date(2026, 8, 25)))
+        self.assertFalse(anamnesis_expired(None, 24, date(2026, 8, 25)))

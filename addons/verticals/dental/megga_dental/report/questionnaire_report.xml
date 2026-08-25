@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_questionnaire" model="ir.actions.report">
+        <field name="name">Questionnaire signé</field>
+        <field name="model">megga.dental.questionnaire.answer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_dental.report_questionnaire</field>
+        <field name="report_file">megga_dental.report_questionnaire</field>
+        <field name="print_report_name">'%s - %s' % (object.questionnaire_id.name, object.patient_id.name)</field>
+        <field name="binding_model_id" ref="model_megga_dental_questionnaire_answer"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_questionnaire">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="answer">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Titre du corps pour les mises en page qui ne
+                             titrent pas elles-memes ; la DIN recoit le
+                             sien par le modele de rendu (voir
+                             l'ordonnance). -->
+                        <div class="h2" t-esc="answer.questionnaire_id.name"/>
+                        <div class="row mt-3 mb-3">
+                            <div class="col-6">
+                                <strong>Patient</strong>
+                                <div t-esc="answer.patient_id.name"/>
+                                <div t-if="answer.patient_id.birthdate">
+                                    Né(e) le
+                                    <span t-field="answer.patient_id.birthdate"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <strong>Recueilli par</strong>
+                                <div t-esc="answer.dentist_id.name"/>
+                                <div>Le <span t-field="answer.date"/></div>
+                            </div>
+                        </div>
+
+                        <p t-if="answer.questionnaire_id.intro"
+                           t-esc="answer.questionnaire_id.intro"/>
+
+                        <table class="table table-sm" t-if="answer.line_ids">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th class="text-center">Réponse</th>
+                                    <th>Précision</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="answer.line_ids" t-as="line">
+                                    <td t-esc="line.question"/>
+                                    <td class="text-center">
+                                        <t t-if="line.answer == 'yes'">Oui</t>
+                                        <t t-elif="line.answer == 'no'">Non</t>
+                                        <t t-elif="line.answer == 'na'">Sans objet</t>
+                                    </td>
+                                    <td t-esc="line.note or ''"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <div t-if="answer.signed_by">
+                                    Signé par
+                                    <strong t-esc="answer.signed_by"/>
+                                </div>
+                                <div t-if="answer.signed_on">
+                                    le <span t-field="answer.signed_on"/>
+                                </div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <img t-if="answer.signature"
+                                     t-att-src="image_data_uri(answer.signature)"
+                                     style="max-height: 80px;" alt="Signature"/>
+                                <div style="border-top: 1px solid #000;">Signature</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -57,7 +57,7 @@ ODOO_BIN="$SUB/odoo-bin"
 BASE="${TEST_DB:-megga_ci_$$}"
 MODULES="${TEST_MODULES:-megga_base,megga_qr_export,megga_camt,megga_pain001,megga_qr_import,megga_tva_ch,megga_rdv,megga_retrocession,megga_dental,megga_dental_rdv,megga_resto,megga_resto_rdv,megga_resto_tva,megga_auto,megga_auto_rdv,megga_auto_occasion,megga_care,megga_care_import}"
 TAGS="${TEST_TAGS:-/megga_qr_export,/megga_camt,/megga_pain001,/megga_qr_import,/megga_tva_ch,/megga_rdv,/megga_retrocession,/megga_dental,/megga_dental_rdv,/megga_resto,/megga_resto_rdv,/megga_resto_tva,/megga_auto,/megga_auto_rdv,/megga_auto_occasion,/megga_care,/megga_care_import}"
-MIN="${TEST_MIN:-270}"
+MIN="${TEST_MIN:-283}"
 # Chaque verticale (addons/verticals/<secteur>/) est un chemin d'addons
 # supplémentaire : le rituel teste ainsi le cœur + le socle + TOUTES les
 # verticales d'un coup à chaque bump.

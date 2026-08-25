@@ -5,3 +5,4 @@ from . import dental_patient
 from . import dental_treatment
 from . import dental_plan
 from . import dental_prescription
+from . import dental_questionnaire

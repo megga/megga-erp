@@ -72,6 +72,21 @@ class MeggaDentalPatient(models.Model):
     prescription_count = fields.Integer(
         compute='_compute_prescription_count',
         groups="megga_dental.group_dental_praticien")
+    questionnaire_answer_ids = fields.One2many(
+        'megga.dental.questionnaire.answer', 'patient_id',
+        string="Questionnaires",
+        groups="megga_dental.group_dental_praticien")
+    questionnaire_count = fields.Integer(
+        compute='_compute_questionnaire_count',
+        groups="megga_dental.group_dental_praticien")
+    anamnesis_state = fields.Selection([
+        ('missing', "Anamnèse manquante"),
+        ('ok', "Anamnèse à jour"),
+        ('expired', "Anamnèse périmée"),
+    ], compute='_compute_anamnesis_state', string="Anamnèse",
+        groups="megga_dental.group_dental_praticien",
+        help="État de la DERNIÈRE anamnèse signée, au regard de la "
+             "validité de son gabarit.")
 
     _code_uniq = models.Constraint(
         'unique(code)', "Ce numéro de patient existe déjà.")
@@ -145,6 +160,38 @@ class MeggaDentalPatient(models.Model):
     def _compute_prescription_count(self):
         for patient in self:
             patient.prescription_count = len(patient.prescription_ids)
+
+    @api.depends('questionnaire_answer_ids')
+    def _compute_questionnaire_count(self):
+        for patient in self:
+            patient.questionnaire_count = len(
+                patient.questionnaire_answer_ids)
+
+    @api.depends('questionnaire_answer_ids.state',
+                 'questionnaire_answer_ids.signed_on')
+    def _compute_anamnesis_state(self):
+        for patient in self:
+            signees = patient.questionnaire_answer_ids.filtered(
+                lambda answer: answer.kind == 'anamnese'
+                and answer.state == 'signed')
+            if not signees:
+                patient.anamnesis_state = 'missing'
+                continue
+            derniere = signees.sorted(
+                key=lambda answer: (answer.signed_on, answer.id))[-1]
+            patient.anamnesis_state = (
+                'expired' if derniere.expired else 'ok')
+
+    def action_view_questionnaires(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Questionnaires"),
+            'res_model': 'megga.dental.questionnaire.answer',
+            'view_mode': 'list,form',
+            'domain': [('patient_id', '=', self.id)],
+            'context': {'default_patient_id': self.id},
+        }
 
     def action_view_prescriptions(self):
         self.ensure_one()

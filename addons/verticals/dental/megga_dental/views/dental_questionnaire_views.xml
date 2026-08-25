@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reponses (questionnaires signes) : modele clinique, Soins
+         seulement. -->
+    <record id="view_dental_answer_form" model="ir.ui.view">
+        <field name="name">megga.dental.questionnaire.answer.form</field>
+        <field name="model">megga.dental.questionnaire.answer</field>
+        <field name="arch" type="xml">
+            <form string="Questionnaire">
+                <header>
+                    <button name="action_sign" type="object"
+                            string="Valider la signature" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,signed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Périmé"
+                            bg_color="text-bg-warning" invisible="not expired"/>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="questionnaire_id"/>
+                            <field name="kind" invisible="1"/>
+                            <field name="expired" invisible="1"/>
+                            <field name="date"/>
+                            <field name="dentist_id"
+                                   widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="treatment_id"/>
+                            <field name="plan_id"/>
+                            <field name="signed_on"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="question"/>
+                            <field name="answer"/>
+                            <field name="note"/>
+                            <field name="note_on_yes" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group>
+                        <group>
+                            <field name="signed_by"
+                                   placeholder="Nom en toutes lettres"/>
+                        </group>
+                        <group>
+                            <field name="signature" widget="signature"
+                                   options="{'full_name': 'signed_by'}"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_answer_list" model="ir.ui.view">
+        <field name="name">megga.dental.questionnaire.answer.list</field>
+        <field name="model">megga.dental.questionnaire.answer</field>
+        <field name="arch" type="xml">
+            <list string="Questionnaires">
+                <field name="date"/>
+                <field name="patient_id"/>
+                <field name="questionnaire_id"/>
+                <field name="kind" optional="show"/>
+                <field name="signed_on" optional="show"/>
+                <field name="expired" optional="show"
+                       widget="boolean_toggle" readonly="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'signed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_answer_search" model="ir.ui.view">
+        <field name="name">megga.dental.questionnaire.answer.search</field>
+        <field name="model">megga.dental.questionnaire.answer</field>
+        <field name="arch" type="xml">
+            <search string="Questionnaires">
+                <field name="patient_id"/>
+                <field name="questionnaire_id"/>
+                <filter name="anamneses" string="Anamnèses"
+                        domain="[('kind', '=', 'anamnese')]"/>
+                <filter name="consents" string="Consentements"
+                        domain="[('kind', '=', 'consent')]"/>
+                <group>
+                    <filter name="group_patient" string="Patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter name="group_questionnaire" string="Gabarit"
+                            context="{'group_by': 'questionnaire_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_answer" model="ir.actions.act_window">
+        <field name="name">Questionnaires</field>
+        <field name="res_model">megga.dental.questionnaire.answer</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun questionnaire</p>
+            <p>Anamnèses et consentements signés. Un questionnaire signé
+               ne se modifie plus : on en refait un — l'anamnèse se
+               périme d'ailleurs toute seule (validité du gabarit).</p>
+        </field>
+    </record>
+
+    <!-- Gabarits (configuration). -->
+    <record id="view_dental_questionnaire_form" model="ir.ui.view">
+        <field name="name">megga.dental.questionnaire.form</field>
+        <field name="model">megga.dental.questionnaire</field>
+        <field name="arch" type="xml">
+            <form string="Gabarit de questionnaire">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé"
+                            bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"
+                                   placeholder="Anamnèse médicale"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="kind"/>
+                            <field name="validity_months"
+                                   invisible="kind != 'anamnese'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="intro"/>
+                    </group>
+                    <field name="question_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="note_on_yes"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_questionnaire_list" model="ir.ui.view">
+        <field name="name">megga.dental.questionnaire.list</field>
+        <field name="model">megga.dental.questionnaire</field>
+        <field name="arch" type="xml">
+            <list string="Gabarits">
+                <field name="name"/>
+                <field name="kind"/>
+                <field name="validity_months" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dental_questionnaire" model="ir.actions.act_window">
+        <field name="name">Gabarits de questionnaires</field>
+        <field name="res_model">megga.dental.questionnaire</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

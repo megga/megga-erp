@@ -157,3 +157,13 @@ def merge_findings(findings):
         else:
             tooth['tooth'] = condition
     return state
+
+
+def anamnesis_expired(signed_on, validity_months, on_day):
+    """Une anamnèse signée le `signed_on` avec une validité de
+    `validity_months` mois est-elle périmée au jour `on_day` ?
+    `validity_months` <= 0 signifie sans péremption. La date limite
+    réutilise add_months (écrêtage de fin de mois compris)."""
+    if not signed_on or validity_months <= 0:
+        return False
+    return add_months(signed_on, validity_months) < on_day

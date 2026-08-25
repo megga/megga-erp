@@ -18,7 +18,9 @@ automatiquement par les actes, réservé au groupe Soins — nLPD),
 plans de traitement par phases (ordre clinique garanti, devis
 d'ensemble, avancement, achèvement automatique),
 ordonnances (émission qui fige, renouvellement chaîné, impression,
-référentiel de médicaments du cabinet — réservées au groupe Soins).
+référentiel de médicaments du cabinet — réservées au groupe Soins),
+questionnaires et consentements (gabarits du cabinet, signature qui
+fige, anamnèse à péremption avec indicateur au dossier, impression).
 """,
     'version': '19.0.1.0.0',
     'category': 'Industries',
@@ -44,13 +46,16 @@ référentiel de médicaments du cabinet — réservées au groupe Soins).
         'data/sequences.xml',
         'data/megga.dental.tooth.csv',
         'data/dental_data.xml',
+        'data/questionnaire_data.xml',
         'views/dental_patient_views.xml',
         'views/dental_treatment_views.xml',
         'views/dental_position_views.xml',
         'views/dental_tooth_record_views.xml',
         'views/dental_plan_views.xml',
         'views/dental_prescription_views.xml',
+        'views/dental_questionnaire_views.xml',
         'report/prescription_report.xml',
+        'report/questionnaire_report.xml',
         'views/dental_menus.xml',
     ],
     'assets': {
