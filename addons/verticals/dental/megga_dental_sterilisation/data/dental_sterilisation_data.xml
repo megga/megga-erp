@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- company_id vide : sans cela ir.sequence prend la société
+             courante et next_by_code ne retrouve plus la séquence
+             depuis une autre société. Même leçon que les séquences du
+             module dentaire. -->
+        <record id="seq_dental_sterilisation_cycle" model="ir.sequence">
+            <field name="name">Cycles de stérilisation</field>
+            <field name="code">megga.dental.sterilisation.cycle</field>
+            <field name="prefix">STE/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- D'où sortent les sachets stériles.
+
+             usage='production' : avant le cycle, le sachet stérile
+             n'existait pas — c'est le pendant exact de « Consommé en
+             soins » (usage customer) où il finit. Le magasin lit donc
+             une histoire complète : sorti de l'autoclave, entré en
+             rayon, parti au fauteuil.
+
+             Sans société ni parent, patron des emplacements virtuels
+             du cœur : un emplacement rattaché à une société casserait
+             en multi-cabinets (check_company sur location_id). -->
+        <record id="stock_location_dental_sterilisation" model="stock.location">
+            <field name="name">Stérilisation</field>
+            <field name="usage">production</field>
+            <field name="company_id"></field>
+        </record>
+
+        <!-- Les sets stérilisés sont des consommables du cabinet comme
+             les autres — et ils portent la MÊME stratégie de sortie.
+
+             Le FEFO est ici plus qu'un confort : le sachet dont la
+             stérilité expire en premier doit partir en premier, sinon
+             il périme au fond du tiroir pendant qu'on ouvre celui du
+             dessus, et une charge entière part au rebut.
+
+             Catégorie propre, et non un enfant des consommables :
+             `_get_removal_strategy` du cœur lit `categ_id` sans
+             remonter la chaîne des parents — un enfant n'hériterait
+             pas de la stratégie. Vérifié dans le cœur avant d'écrire. -->
+        <record id="product_category_dental_sets" model="product.category">
+            <field name="name">Sets stérilisés</field>
+            <field name="removal_strategy_id" ref="product_expiry.removal_fefo"/>
+        </record>
+    </data>
+</odoo>

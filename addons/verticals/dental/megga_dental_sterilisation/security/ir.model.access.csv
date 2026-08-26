@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dental_sterilisation_cycle_reception,dental.sterilisation.cycle.reception,model_megga_dental_sterilisation_cycle,megga_dental.group_dental_reception,1,1,1,0
+access_dental_sterilisation_cycle_stock,dental.sterilisation.cycle.stock,model_megga_dental_sterilisation_cycle,stock.group_stock_user,1,0,0,0
+access_dental_sterilisation_cycle_system,dental.sterilisation.cycle.system,model_megga_dental_sterilisation_cycle,base.group_system,1,1,1,0
+access_dental_sterilisation_line_reception,dental.sterilisation.line.reception,model_megga_dental_sterilisation_line,megga_dental.group_dental_reception,1,1,1,1
+access_dental_sterilisation_line_stock,dental.sterilisation.line.stock,model_megga_dental_sterilisation_line,stock.group_stock_user,1,0,0,0
+access_dental_sterilisation_line_system,dental.sterilisation.line.system,model_megga_dental_sterilisation_line,base.group_system,1,1,1,1

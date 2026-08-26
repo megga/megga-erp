@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dental_sterilisation_cycle_form" model="ir.ui.view">
+        <field name="name">megga.dental.sterilisation.cycle.form</field>
+        <field name="model">megga.dental.sterilisation.cycle</field>
+        <field name="arch" type="xml">
+            <form string="Cycle de stérilisation">
+                <header>
+                    <button name="action_validate" type="object"
+                            string="Valider la charge" class="btn-primary"
+                            invisible="state != 'draft'"
+                            help="Les sets entrent en rayon, chacun avec son numéro de cycle et sa date de péremption de stérilité."/>
+                    <button name="action_fail" type="object"
+                            string="Marquer non conforme"
+                            invisible="state == 'failed'"
+                            confirm="Les sets de cette charge encore en rayon seront bloqués, et les séances déjà servies seront nommées. Continuer ?"/>
+                    <button name="action_back_to_draft" type="object"
+                            string="Remettre en brouillon"
+                            invisible="state != 'failed' or picking_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Le rappel n'est PAS ouvert à tout le monde :
+                             il nomme des séances, donc des patients. Il
+                             suit les groupes LPD, comme tout le
+                             clinique. Le magasinier voit le cycle et sa
+                             conformité ; il ne voit pas qui a été
+                             soigné. -->
+                        <button name="action_megga_served_treatments"
+                                type="object" class="oe_stat_button"
+                                icon="fa-user-md"
+                                groups="megga_dental.group_dental_reception"
+                                invisible="not picking_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Séances</span>
+                                <span class="o_stat_text">servies</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Cycle"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="La charge">
+                            <field name="equipment_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="chair_id" invisible="not chair_id"/>
+                            <field name="date_start"
+                                   readonly="state != 'draft'"/>
+                            <field name="user_id"
+                                   readonly="state != 'draft'"
+                                   widget="many2one_avatar_user"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Les contrôles">
+                            <field name="program"
+                                   readonly="state != 'draft'"/>
+                            <field name="temperature"
+                                   readonly="state != 'draft'"/>
+                            <field name="plateau_minutes"
+                                   readonly="state != 'draft'"/>
+                            <field name="helix_ok"
+                                   widget="boolean_toggle"
+                                   readonly="state != 'draft'"/>
+                            <!-- Reste ouvert APRÈS validation : c'est le
+                                 seul champ dont le résultat arrive le
+                                 lendemain. -->
+                            <field name="indicator"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Sets de la charge" name="charge">
+                            <field name="line_ids"
+                                   readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="product_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_name" string="Unité"/>
+                                    <field name="sterility_deadline"
+                                           readonly="1"/>
+                                </list>
+                            </field>
+                            <p class="text-muted">
+                                Chaque ligne devient un lot à la
+                                validation : le sachet porte le numéro
+                                de cycle, et sa stérilité expire au
+                                délai réglé sur le produit.
+                            </p>
+                        </page>
+                        <!-- Gardée par le groupe stock : `lot_ids`
+                             est un One2many sur `stock.lot`, que le
+                             cœur ne montre qu'au magasin. Sans cette
+                             garde, la fiche refusait de s'ouvrir à
+                             l'assistante qui venait de valider la
+                             charge. La date de stérilité, elle, vit
+                             aussi sur la ligne ci-dessus — lisible par
+                             tout le cabinet, sans un droit de plus. -->
+                        <page string="Sets produits" name="lots"
+                              groups="stock.group_stock_user"
+                              invisible="not lot_ids">
+                            <field name="lot_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="expiration_date"
+                                           string="Stérilité jusqu'au"/>
+                                </list>
+                            </field>
+                            <field name="picking_id" readonly="1"
+                                   invisible="not picking_id"
+                                   groups="stock.group_stock_user"/>
+                        </page>
+                        <page string="Observations" name="note">
+                            <field name="note"
+                                   placeholder="Anomalie relevée, charge reprise, remarque du technicien…"/>
+                            <p class="text-muted">
+                                Le rapport de cycle imprimé par
+                                l'autoclave s'attache au fil de
+                                discussion ci-dessous : c'est lui, la
+                                preuve.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dental_sterilisation_cycle_list" model="ir.ui.view">
+        <field name="name">megga.dental.sterilisation.cycle.list</field>
+        <field name="model">megga.dental.sterilisation.cycle</field>
+        <field name="arch" type="xml">
+            <list string="Cycles de stérilisation"
+                  decoration-danger="state == 'failed'"
+                  decoration-muted="state == 'draft'">
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="equipment_id"/>
+                <field name="user_id" widget="many2one_avatar_user"
+                       optional="show"/>
+                <field name="program" optional="hide"/>
+                <field name="helix_ok" optional="hide"/>
+                <field name="indicator"/>
+                <field name="state"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_dental_sterilisation_cycle_search" model="ir.ui.view">
+        <field name="name">megga.dental.sterilisation.cycle.search</field>
+        <field name="model">megga.dental.sterilisation.cycle</field>
+        <field name="arch" type="xml">
+            <search string="Cycles de stérilisation">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="user_id"/>
+                <filter name="brouillon" string="Brouillon"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="valide" string="Validé"
+                        domain="[('state', '=', 'done')]"/>
+                <filter name="non_conforme" string="Non conforme"
+                        domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <!-- Le geste du matin : les charges dont l'indicateur
+                     biologique n'est pas encore revenu. -->
+                <filter name="indicateur_en_attente"
+                        string="Indicateur en attente"
+                        domain="[('indicator', '=', 'pending')]"/>
+                <group>
+                    <filter name="group_equipment" string="Autoclave"
+                            domain="[]"
+                            context="{'group_by': 'equipment_id'}"/>
+                    <filter name="group_state" string="État"
+                            domain="[]" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Mois"
+                            domain="[]"
+                            context="{'group_by': 'date_start:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dental_sterilisation_cycle" model="ir.actions.act_window">
+        <field name="name">Cycles d'autoclave</field>
+        <field name="res_model">megga.dental.sterilisation.cycle</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_dental_sterilisation_cycle_list"/>
+        <field name="search_view_id"
+               ref="view_dental_sterilisation_cycle_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun cycle enregistré
+            </p><p>
+                Une charge d'autoclave par cycle : l'appareil, les
+                contrôles, et les sets qui en sortent. C'est ce registre
+                qui répond, un an plus tard, à « avec quoi
+                m'a-t-on soigné ? ».
+            </p>
+        </field>
+    </record>
+
+    <!-- La preuve, dans l'autre sens : depuis la séance.
+         Gardé par le groupe Soins comme tout ce qui touche au dossier :
+         la réception encaisse, elle ne consulte pas le clinique. -->
+    <record id="view_dental_treatment_form_sterilisation" model="ir.ui.view">
+        <field name="name">megga.dental.treatment.form.sterilisation</field>
+        <field name="model">megga.dental.treatment</field>
+        <field name="inherit_id" ref="megga_dental.view_dental_treatment_form"/>
+        <field name="arch" type="xml">
+            <!-- La fiche de séance n'a PAS de notebook : on ajoute
+                 en fin de feuille, sans en imposer un. -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Stérilisation" name="sterilisation"
+                       groups="megga_dental.group_dental_praticien"
+                       invisible="not sterilisation_cycle_ids">
+                    <field name="sterilisation_cycle_ids" nolabel="1"
+                           readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="date_start"/>
+                            <field name="equipment_id"/>
+                            <field name="indicator"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                    <p class="text-muted" colspan="2">
+                        Les charges d'autoclave dont sont sortis les
+                        sets consommés par cette séance.
+                    </p>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

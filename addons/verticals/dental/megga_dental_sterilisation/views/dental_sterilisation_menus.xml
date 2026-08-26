@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le registre de stérilisation sous le menu du cabinet.
+
+         Gardé par le groupe d'entrée du dentaire
+         (`group_dental_reception`, impliqué par le groupe Soins) : la
+         personne qui décharge l'autoclave est de l'équipe du cabinet,
+         et l'ACL du modèle lui donne exactement ce menu. Aucun droit
+         stock n'est exigé — la validation fait entrer les sets en
+         `sudo`, effet système du flux, comme la clôture de séance
+         décompte les consommables.
+
+         Séquence 42 : entre « Stock du cabinet » (40) et « Matériel »
+         (45). Le magasin compte, la stérilisation prouve, le registre
+         entretient. -->
+    <menuitem id="menu_dental_sterilisation_root" name="Stérilisation"
+              parent="megga_dental.menu_dental_root" sequence="42"
+              groups="megga_dental.group_dental_reception"/>
+
+    <menuitem id="menu_dental_sterilisation_cycles" name="Cycles d'autoclave"
+              parent="menu_dental_sterilisation_root"
+              action="action_dental_sterilisation_cycle" sequence="10"/>
+</odoo>
