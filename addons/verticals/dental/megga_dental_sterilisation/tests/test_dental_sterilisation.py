@@ -745,6 +745,175 @@ class TestDentalSterilisation(TransactionCase):
 
         self.assertNotIn(cycle, vus)
 
+    def test_une_charge_deja_perimee_a_l_entree_se_valide_quand_meme(self):
+        """Un set qui SORT de l'autoclave n'est pas périmé.
+
+        Le cœur interpose un assistant dès qu'une ligne porte un lot
+        dont la date de RETRAIT est atteinte — pas seulement la
+        péremption. Sans `skip_expired`, l'assistant remplaçait la
+        validation, le contrôle de l'entrée voyait un transfert non
+        validé, et la charge devenait DÉFINITIVEMENT impossible à
+        valider. La garde qui compte est celle de la sortie vers les
+        soins, et elle reste entière."""
+        self.set_examen.product_tmpl_id.removal_time = 200
+
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        self.assertEqual(cycle.state, 'done')
+        self.assertEqual(cycle.picking_id.state, 'done')
+        self.assertEqual(
+            self.env['stock.quant']._get_available_quantity(
+                self.set_examen, self.entrepot.lot_stock_id,
+                lot_id=cycle.lot_ids, strict=True), 4.0)
+
+    def test_une_ligne_ne_s_ajoute_pas_a_une_charge_close(self):
+        """Le gel ne voyait que le chemin `line_ids` : une ligne créée
+        en direct passait, et le registre annonçait des sachets qui ne
+        sont jamais entrés en rayon."""
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        with self.assertRaises(UserError):
+            self.env['megga.dental.sterilisation.line'].create({
+                'cycle_id': cycle.id,
+                'product_id': self.set_chirurgie.id,
+                'quantity': 5.0,
+            })
+
+    def test_le_rappel_marche_sans_droit_dentaire(self):
+        """Le registre est tenu par le gestionnaire d'équipements, qui
+        n'a aucun droit sur le dentaire. Chercher les séances avec SES
+        droits faisait échouer le rappel — le geste central du module —
+        pour la persona même à qui le menu est donné."""
+        technique = self.env['res.users'].create({
+            'name': "Technicien externe", 'login': "steri_technique",
+            'email': "technique@exemple.ch",
+            'group_ids': [(4, self.env.ref(
+                'maintenance.group_equipment_manager').id)],
+        })
+        cycle = self._cycle(indicator='pending')
+        cycle.action_validate()
+        seance = self._seance_qui_consomme(cycle)
+
+        # Il ne lit pas les séances — et il doit pourtant pouvoir
+        # marquer la charge non conforme et savoir qu'elle a servi.
+        with self.assertRaises(AccessError):
+            self.env['megga.dental.treatment'].with_user(
+                technique).search_count([])
+
+        cycle.with_user(technique).action_fail()
+
+        self.assertEqual(cycle.state, 'failed')
+        self.assertIn(seance.name, cycle.message_ids[0].body)
+
+    def test_dupliquer_ne_recopie_aucun_releve(self):
+        """Un indicateur recopié ferait état d'un contrôle que la
+        nouvelle charge n'a jamais subi — et un « non conforme » hérité
+        condamnerait la copie à ne jamais pouvoir être validée ni
+        supprimée."""
+        cycle = self._cycle(indicator='pending', helix_ok=True,
+                            temperature=121.0)
+        cycle.action_validate()
+        cycle.indicator = 'fail'
+
+        copie = cycle.copy()
+
+        self.assertEqual(copie.state, 'draft')
+        self.assertEqual(copie.indicator, 'none')
+        self.assertFalse(copie.helix_ok)
+        self.assertEqual(copie.temperature, 134.0)
+        self.assertEqual(len(copie.line_ids), 1,
+                         "La composition, elle, se rejoue.")
+
+    def test_la_date_de_sterilite_suit_le_lot_et_non_son_nom(self):
+        """Le lot se retrouve par son LIEN. Déduire le lot de son nom
+        cessait de correspondre dès qu'une charge changeait de
+        composition, et l'écran retombait en silence sur un recalcul —
+        deux dates divergentes, ce que le code dit éviter."""
+        cycle = self._cycle(lignes=[(self.set_examen, 4.0),
+                                    (self.set_chirurgie, 2.0)])
+        cycle.action_validate()
+
+        for ligne in cycle.line_ids:
+            self.assertEqual(ligne.lot_ids.sterilisation_line_id, ligne)
+            self.assertEqual(ligne.sterility_deadline,
+                             ligne.lot_ids.expiration_date)
+
+        # Le délai du produit change APRÈS coup : le lot fait foi.
+        self.set_examen.product_tmpl_id.expiration_time = 3
+        examen = cycle.line_ids.filtered(
+            lambda l: l.product_id == self.set_examen)
+        self.assertEqual(examen.sterility_deadline,
+                         examen.lot_ids.expiration_date)
+
+    def test_les_boutons_suivent_les_droits(self):
+        """Trois boutons visibles qui lèvent une AccessError au clic :
+        la fiche est atteignable depuis la séance et depuis le lot."""
+        arch = self.env['megga.dental.sterilisation.cycle'].with_user(
+            self._responsable("steri_boutons")).get_view(
+                view_type='form')['arch']
+        self.assertIn('action_validate', arch)
+
+        assistante = self.env['res.users'].create({
+            'name': "Assistante boutons", 'login': "steri_boutons_lect",
+            'email': "boutons@exemple.ch",
+            'group_ids': [(4, self.env.ref(
+                'megga_dental.group_dental_reception').id)],
+        })
+        arch_lecture = self.env[
+            'megga.dental.sterilisation.cycle'].with_user(
+                assistante).get_view(view_type='form')['arch']
+        self.assertNotIn('action_validate', arch_lecture)
+        self.assertNotIn('action_fail', arch_lecture)
+
+    def test_la_composition_d_un_cabinet_ne_se_lit_pas_depuis_l_autre(self):
+        """L'en-tête était cachée par sa règle, son contenu non — et
+        une ligne de charge dit quels sets et combien de sachets."""
+        autre = self.env['res.company'].create({'name': "Cabinet C"})
+        cycle = self._cycle()
+        responsable = self._responsable("steri_multi_ligne")
+        responsable.write({
+            'company_ids': [(4, autre.id)],
+            'company_id': autre.id,
+        })
+
+        vues = self.env['megga.dental.sterilisation.line'].with_user(
+            responsable).with_context(
+                allowed_company_ids=[autre.id]).search([])
+
+        self.assertFalse(vues & cycle.line_ids)
+
+    def test_l_etat_force_dit_le_bon_geste(self):
+        """Sur une charge close, le message du gel sortait le premier
+        et conseillait le mauvais geste."""
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        with self.assertRaises(UserError) as refus:
+            cycle.write({'state': 'draft'})
+
+        self.assertIn("boutons", str(refus.exception))
+
+    def test_un_set_perime_et_non_conforme_n_est_compte_qu_une_fois(self):
+        """Deux motifs sur le même sachet : l'activité du magasin ne
+        doit pas l'annoncer écarté deux fois, ni pour le mauvais
+        motif."""
+        cycle = self._cycle()
+        cycle.action_validate()
+        cycle.lot_ids.sudo().expiration_date = (
+            fields.Datetime.now() - timedelta(days=1))
+        cycle.action_fail()
+
+        seance = self._seance_qui_consomme(cycle)
+
+        self.assertEqual(seance.state, 'done')
+        activites = seance.supply_picking_id.sudo().activity_ids
+        self.assertEqual(len(activites), 1)
+        self.assertEqual(activites.note.count(cycle.lot_ids.name), 1,
+                         "Le sachet est nommé une fois, pour le motif "
+                         "qui l'a réellement emporté.")
+
     def test_aucun_cron_maison(self):
         """Rien ne tourne tout seul ici : un cycle se saisit, un
         indicateur se relève. Inventer un cron ferait croire à une

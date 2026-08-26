@@ -14,6 +14,14 @@ class StockLot(models.Model):
         'megga.dental.sterilisation.cycle', string="Cycle de stérilisation",
         readonly=True, ondelete='restrict', index='btree_not_null',
         help="La charge d'autoclave d'où ce sachet est sorti.")
+    sterilisation_line_id = fields.Many2one(
+        'megga.dental.sterilisation.line', string="Ligne de charge",
+        readonly=True, ondelete='set null', index='btree_not_null',
+        help="La ligne de charge d'où ce sachet est sorti. C'est ce "
+             "lien — et non le NOM du lot — qui relie la ligne à sa "
+             "date de stérilité : déduire le lot de son nom rendait "
+             "l'affichage faux dès qu'une charge changeait de "
+             "composition.")
     sterilisation_state = fields.Selection(
         related='sterilisation_cycle_id.state', readonly=True,
         string="État du cycle")

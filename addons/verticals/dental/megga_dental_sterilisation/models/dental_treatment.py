@@ -105,14 +105,29 @@ class StockPicking(models.Model):
 
     def _megga_unservable_lines(self, move):
         refus = super()._megga_unservable_lines(move)
-        non_steriles = move.move_line_ids.filtered(
-            lambda ml: ml.lot_id and ml.lot_id._megga_sterilisation_refused())
-        if non_steriles:
-            motifs = {ml.lot_id._megga_sterilisation_refused()
-                      for ml in non_steriles}
-            refus.append((non_steriles, _(
-                "%(produit)s : %(lots)s écarté(s) — %(motifs)s.") % {
-                    'produit': move.product_id.display_name,
-                    'lots': ", ".join(non_steriles.mapped('lot_id.name')),
-                    'motifs': " ; ".join(sorted(motifs))}))
+        # Les lignes qu'un refus PRÉCÉDENT emporte déjà (un lot périmé
+        # ET d'une charge non conforme) ne se comptent pas deux fois :
+        # elles seront retirées avant qu'on arrive ici, et les nommer
+        # ferait dire à l'activité du magasin qu'un lot a été écarté
+        # pour un motif qui n'est pas celui qui l'a emporté.
+        deja = self.env['stock.move.line'].browse(
+            [ident for lignes, _motif in refus for ident in lignes.ids])
+        # Un seul calcul du motif par ligne : `_megga_sterilisation_refused`
+        # lit le cycle en `sudo`, et cette méthode est sur le chemin de
+        # CHAQUE clôture de séance.
+        motifs = {}
+        for ligne in move.move_line_ids - deja:
+            if not ligne.lot_id:
+                continue
+            motif = ligne.lot_id._megga_sterilisation_refused()
+            if motif:
+                motifs[ligne.id] = motif
+        if not motifs:
+            return refus
+        non_steriles = self.env['stock.move.line'].browse(list(motifs))
+        refus.append((non_steriles, _(
+            "%(produit)s : %(lots)s écarté(s) — %(motifs)s.") % {
+                'produit': move.product_id.display_name,
+                'lots': ", ".join(non_steriles.mapped('lot_id.name')),
+                'motifs': " ; ".join(sorted(set(motifs.values())))}))
         return refus

@@ -38,7 +38,7 @@ class MeggaDentalSterilisationCycle(models.Model):
         'megga.dental.chair', string="Fauteuil desservi",
         related='equipment_id.chair_id', readonly=True)
     date_start = fields.Datetime(
-        "Début du cycle", required=True, tracking=True,
+        "Début du cycle", required=True, tracking=True, copy=False,
         default=fields.Datetime.now)
     user_id = fields.Many2one(
         'res.users', string="Opérateur", tracking=True,
@@ -50,13 +50,13 @@ class MeggaDentalSterilisationCycle(models.Model):
          ('n', "Cycle N — instruments massifs nus")],
         string="Programme", default='b', required=True, tracking=True)
     temperature = fields.Float(
-        "Palier (°C)", default=134.0,
+        "Palier (°C)", default=134.0, copy=False,
         help="Température du palier de stérilisation relevée au rapport "
              "de cycle.")
     plateau_minutes = fields.Float(
-        "Durée du palier (min)", default=18.0)
+        "Durée du palier (min)", default=18.0, copy=False)
     helix_ok = fields.Boolean(
-        "Test Helix conforme", tracking=True,
+        "Test Helix conforme", tracking=True, copy=False,
         help="Contrôle de pénétration de vapeur, exigé pour une charge "
              "creuse ou emballée (cycle B).")
     indicator = fields.Selection(
@@ -65,7 +65,7 @@ class MeggaDentalSterilisationCycle(models.Model):
          ('pass', "Conforme"),
          ('fail', "Non conforme")],
         string="Indicateur biologique", default='none', required=True,
-        tracking=True,
+        tracking=True, copy=False,
         help="Le résultat arrive souvent le LENDEMAIN, une fois les "
              "sachets déjà distribués : c'est précisément pour ce "
              "cas-là que le rappel existe.")
@@ -75,6 +75,12 @@ class MeggaDentalSterilisationCycle(models.Model):
          ('failed', "Non conforme")],
         string="État", default='draft', required=True, tracking=True,
         copy=False)
+    # Dupliquer un cycle sert a REJOUER la meme composition : les
+    # lignes se copient, les RELEVES non. Un indicateur biologique
+    # recopie ferait etat d'un controle que la nouvelle charge n'a
+    # jamais subi — dans un registre dont c'est tout l'objet — et un
+    # « non conforme » herite condamnerait la copie a ne jamais pouvoir
+    # etre validee ni supprimee.
     line_ids = fields.One2many(
         'megga.dental.sterilisation.line', 'cycle_id', string="Charge",
         copy=True)
@@ -86,7 +92,7 @@ class MeggaDentalSterilisationCycle(models.Model):
         copy=False,
         help="Le mouvement engendré par la validation. Sa présence "
              "interdit une seconde entrée.")
-    note = fields.Text("Observations")
+    note = fields.Text("Observations", copy=False)
     company_id = fields.Many2one(
         'res.company', string="Société", required=True,
         default=lambda self: self.env.company,
@@ -125,11 +131,19 @@ class MeggaDentalSterilisationCycle(models.Model):
                    'message_ids', 'message_follower_ids',
                    'activity_ids', 'message_main_attachment_id'}
         figes = set(vals) - OUVERTS
-        # `state` ne s'ecrit que par les actions : le laisser ouvert
-        # aurait rendu le gel decoratif — un write({'state': 'draft'})
-        # et tout redevenait modifiable.
-        if 'state' in figes and self.env.context.get('megga_sterilisation_state'):
+        # `state` ne s'écrit que par les actions : le laisser ouvert
+        # aurait rendu le gel décoratif — un write({'state': 'draft'})
+        # et tout redevenait modifiable. Ce refus-là passe AVANT celui
+        # du gel : sur une charge close, le message du gel serait sorti
+        # le premier et aurait conseillé le mauvais geste.
+        if self.env.context.get('megga_sterilisation_state'):
             figes.discard('state')
+        elif 'state' in vals:
+            raise UserError(_(
+                "L'état d'un cycle se change par ses boutons : valider "
+                "la charge, ou la marquer non conforme. Chacun fait ce "
+                "qu'il annonce — l'un fait entrer les sets en rayon, "
+                "l'autre les bloque et nomme les séances servies."))
         if figes:
             clos = self.filtered(lambda c: c.state != 'draft')
             if clos:
@@ -141,13 +155,6 @@ class MeggaDentalSterilisationCycle(models.Model):
                     "marquez le cycle NON CONFORME — ses sets seront "
                     "bloqués et les séances servies seront nommées.",
                     cycle=clos[0].name))
-        if 'state' in vals and not self.env.context.get(
-                'megga_sterilisation_state'):
-            raise UserError(_(
-                "L'état d'un cycle se change par ses boutons : valider "
-                "la charge, ou la marquer non conforme. Chacun fait ce "
-                "qu'il annonce — l'un fait entrer les sets en rayon, "
-                "l'autre les bloque et nomme les séances servies."))
         res = super().write(vals)
         # L'indicateur biologique qui revient NON CONFORME est le geste
         # du lendemain : il doit bloquer les sets, pas seulement noircir
@@ -323,6 +330,7 @@ class MeggaDentalSterilisationCycle(models.Model):
                 'product_id': line.product_id.id,
                 'company_id': self.company_id.id,
                 'sterilisation_cycle_id': self.id,
+                'sterilisation_line_id': line.id,
                 # La stérilité expire à partir du CYCLE, pas de la
                 # saisie : `expiration_date` du cœur est un compute
                 # stocké `readonly=False`, il se pose donc à la main.
@@ -340,18 +348,29 @@ class MeggaDentalSterilisationCycle(models.Model):
                 'quantity': line.quantity,
             })
             move.picked = True
-        # `button_validate` peut rendre une ACTION (un assistant du
-        # cœur) au lieu de valider : le prendre pour un succès figeait
-        # le cycle en « Validé » alors que rien n'était en rayon.
-        resultat = picking.with_context(
-            skip_backorder=True).button_validate()
+        # `skip_expired` : le cœur interpose un assistant de confirmation
+        # dès qu'une ligne porte un lot dont la date de RETRAIT est
+        # atteinte (`_check_expired_lots` regarde `removal_date`, pas
+        # seulement la péremption). Un set qui SORT de l'autoclave n'est
+        # pas périmé — mais avec un délai de retrait égal au délai de
+        # péremption, ou une charge saisie après coup, il l'est aux yeux
+        # du cœur dès sa création. Sans ce contexte, l'assistant
+        # remplace la validation, le contrôle ci-dessous voit un
+        # transfert non validé, et la charge devient IMPOSSIBLE à
+        # valider — définitivement. La garde qui compte est celle de la
+        # SORTIE vers les soins, et elle, reste entière.
+        picking.with_context(
+            skip_backorder=True, skip_expired=True).button_validate()
         if picking.state != 'done':
             raise UserError(_(
                 "L'entrée en rayon du cycle %(cycle)s n'a pas abouti "
                 "(%(etat)s) : la charge n'est pas validée.",
                 cycle=self.name, etat=picking.state))
         self.picking_id = picking.id
-        return resultat
+        # Toujours le TRANSFERT, jamais le retour de `button_validate` :
+        # celui-ci vaut True ou une action client, et un appelant qui
+        # ferait `.origin` dessus casserait un jour sur deux.
+        return picking
 
     # ------------------------------------------------------------------
     # Les deux sens de la traçabilité
@@ -383,7 +402,14 @@ class MeggaDentalSterilisationCycle(models.Model):
         pickings = lignes.picking_id
         if not pickings:
             return self.env['megga.dental.treatment']
-        return self.env['megga.dental.treatment'].search(
+        # En `sudo` jusqu'au bout : le registre est tenu par le
+        # gestionnaire d'équipements, qui n'a aucun droit sur le
+        # dentaire. Chercher les séances avec SES droits aurait fait
+        # échouer le rappel — le geste central du module — pour la
+        # persona même à qui le menu est donné. Ce qui sort d'ici est
+        # une liste de RÉFÉRENCES de séances, jamais un dossier : même
+        # arbitrage que le mouvement de stock (D7).
+        return self.env['megga.dental.treatment'].sudo().search(
             [('supply_picking_id', 'in', pickings.ids)])
 
     def action_megga_served_treatments(self):
@@ -419,6 +445,9 @@ class MeggaDentalSterilisationLine(models.Model):
         "Sachets", default=1.0, required=True,
         digits='Product Unit of Measure')
     uom_name = fields.Char(related='product_id.uom_id.name', readonly=True)
+    lot_ids = fields.One2many(
+        'stock.lot', 'sterilisation_line_id', string="Lots produits",
+        readonly=True)
     sterility_deadline = fields.Datetime(
         "Stérilité jusqu'au", compute='_compute_sterility_deadline',
         help="Calculée depuis le début du cycle et le délai réglé sur "
@@ -426,7 +455,7 @@ class MeggaDentalSterilisationLine(models.Model):
              "sachet.")
 
     @api.depends('product_id', 'cycle_id.date_start',
-                 'cycle_id.lot_ids.expiration_date')
+                 'lot_ids.expiration_date')
     def _compute_sterility_deadline(self):
         """La même date que celle posée sur le lot, une seule source.
 
@@ -444,13 +473,15 @@ class MeggaDentalSterilisationLine(models.Model):
             # elle ne bouge plus. Recalculer aurait fait mentir l'écran
             # dès qu'on change le délai réglé sur le produit — « une
             # seule source » n'aurait pas été vrai.
-            lot = line.cycle_id.sudo().lot_ids.filtered(
-                lambda l: l.product_id == line.product_id
-                and l.name == line._megga_lot_name())
-            if lot:
-                line.sterility_deadline = lot[:1].expiration_date
-            else:
-                line.sterility_deadline = line._megga_sterility_deadline()
+            #
+            # Le lot se retrouve par son LIEN, jamais par son nom :
+            # `_megga_lot_name` dépend du rang de la ligne dans la
+            # charge, si bien qu'ajouter une ligne faisait cesser la
+            # correspondance et retomber en silence sur un recalcul.
+            lot = line.sudo().lot_ids[:1]
+            line.sterility_deadline = (
+                lot.expiration_date if lot
+                else line._megga_sterility_deadline())
 
     @api.constrains('quantity')
     def _check_quantity(self):
@@ -486,6 +517,16 @@ class MeggaDentalSterilisationLine(models.Model):
                 "Le registre doit dire ce qui est sorti de "
                 "l'autoclave, pas ce qu'on aurait voulu y mettre.",
                 cycle=clos[0].cycle_id.name, geste=geste))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lignes = super().create(vals_list)
+        # Le gel du cycle ne voyait que le chemin `line_ids` : une
+        # ligne creee EN DIRECT sur une charge close passait, et le
+        # registre annoncait des sachets qui ne sont jamais entres en
+        # rayon.
+        lignes._megga_check_cycle_draft(_("complete"))
+        return lignes
 
     def write(self, vals):
         self._megga_check_cycle_draft(_("modifie"))

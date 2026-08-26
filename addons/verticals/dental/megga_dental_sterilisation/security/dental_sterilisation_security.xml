@@ -14,5 +14,15 @@
             <field name="model_id" ref="model_megga_dental_sterilisation_cycle"/>
             <field name="domain_force">[('company_id', 'in', company_ids + [False])]</field>
         </record>
+
+        <!-- La composition d'une charge est aussi bavarde que son
+             en-tete : quels sets, combien de sachets. La ligne n'a pas
+             de societe a elle — elle suit celle de son cycle. Sans
+             cette regle, l'en-tete etait cachee et son contenu non. -->
+        <record id="sterilisation_line_comp_rule" model="ir.rule">
+            <field name="name">Ligne de charge : règle multi-sociétés</field>
+            <field name="model_id" ref="model_megga_dental_sterilisation_line"/>
+            <field name="domain_force">[('cycle_id.company_id', 'in', company_ids + [False])]</field>
+        </record>
     </data>
 </odoo>

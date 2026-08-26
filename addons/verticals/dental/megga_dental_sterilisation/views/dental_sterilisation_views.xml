@@ -5,7 +5,14 @@
         <field name="model">megga.dental.sterilisation.cycle</field>
         <field name="arch" type="xml">
             <form string="Cycle de stérilisation">
-                <header>
+                <!-- Les boutons portent le groupe qui peut vraiment
+                     s'en servir : depuis ce chantier, la reception, le
+                     praticien et le magasinier LISENT le cycle sans
+                     pouvoir l'ecrire. Sans garde, les trois boutons
+                     leur restaient visibles et chacun levait une
+                     AccessError brute au clic — la fiche est
+                     atteignable depuis la seance et depuis le lot. -->
+                <header groups="maintenance.group_equipment_manager">
                     <button name="action_validate" type="object"
                             string="Valider la charge" class="btn-primary"
                             invisible="state != 'draft'"
