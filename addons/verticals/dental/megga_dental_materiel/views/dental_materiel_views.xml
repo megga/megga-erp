@@ -4,6 +4,24 @@
          matériel demande une fiche. Le module apporte donc le
          formulaire qui lui manquait, et ouvre l'action existante
          dessus — le fauteuil et ce qui l'entoure au même endroit. -->
+    <!-- La liste des fauteuils est ÉDITABLE : cliquer une ligne l'édite
+         sur place, et la fiche ne s'ouvre JAMAIS. Le formulaire que ce
+         module apporte — son écran phare — serait resté injoignable
+         depuis le menu « Fauteuils ». `open_form_view` est l'attribut
+         du cœur pour ce cas exact (account, analytic l'utilisent) : il
+         ajoute la flèche d'ouverture en bout de ligne, sans retirer
+         l'édition rapide. -->
+    <record id="view_dental_chair_list_materiel" model="ir.ui.view">
+        <field name="name">megga.dental.chair.list.materiel</field>
+        <field name="model">megga.dental.chair</field>
+        <field name="inherit_id" ref="megga_dental.view_dental_chair_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="open_form_view">True</attribute>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Le compteur et l'onglet sont gardés par le gestionnaire
          d'équipements, et non par `base.group_user`, pour la même
          raison que le menu « Appareils » : la règle du cœur
@@ -74,7 +92,18 @@
     </record>
 
     <!-- Le fauteuil sur la fiche de l'appareil : un champ, pas un
-         écran. Le reste du formulaire du cœur ne bouge pas. -->
+         écran. Le reste du formulaire du cœur ne bouge pas.
+
+         Le champ n'est PAS gardé par un groupe, et c'est délibéré : le
+         responsable technique d'un cabinet n'a pas forcément de rôle
+         dentaire, et le lui cacher retirerait au module son seul geste
+         d'écriture. Le prix est connu : dans une base partagée avec une
+         autre verticale, un technicien non dentaire voit une case
+         « Fauteuil » qui ne le concerne pas. Elle lui apparaît vide et
+         jamais en erreur — le cœur rattrape l'absence de droit sur le
+         référentiel des fauteuils (`Many2one.convert_to_read` renvoie
+         False sur AccessError). Une case de trop vaut mieux qu'un
+         registre qu'on ne peut plus tenir. -->
     <record id="view_equipment_form_dental" model="ir.ui.view">
         <field name="name">maintenance.equipment.form.dental</field>
         <field name="model">maintenance.equipment</field>
@@ -126,6 +155,14 @@
                 <separator/>
                 <filter name="sous_garantie" string="Sous garantie"
                         domain="[('warranty_date', '&gt;=', 'today')]"/>
+                <separator/>
+                <!-- Le cœur porte ce filtre dans SA vue de recherche ;
+                     la nôtre la remplace, et sans lui un appareil
+                     déclassé (archivé) devenait introuvable depuis
+                     l'écran du cabinet — or c'est justement là qu'on
+                     va chercher ce qu'on a remplacé. -->
+                <filter name="inactive" string="Archivé"
+                        domain="[('active', '=', False)]"/>
                 <group>
                     <filter name="group_chair" string="Fauteuil"
                             domain="[]" context="{'group_by': 'chair_id'}"/>
@@ -136,13 +173,40 @@
         </field>
     </record>
 
+    <!-- Le périmètre du cabinet, et pas la base entière.
+
+         « Raccourci filtré » n'est pas une figure de style : sans
+         domaine, cet écran montre TOUS les équipements de la base —
+         l'imprimante de la réception, la camionnette du garage, le
+         matériel d'une autre verticale — sous un menu dentaire qui
+         promet le contraire. Le module frère (megga_dental_stock)
+         borne chacune de ses actions par la catégorie du cabinet ;
+         ici, le périmètre est le FAUTEUIL ou l'ÉQUIPE du cabinet.
+
+         Dans un cabinet seul en base, le domaine ne retire rien : tout
+         appartient à l'équipe « Cabinet ». Il ne coûte que le jour où
+         une autre verticale partage la base — c'est-à-dire le jour où
+         il compte.
+
+         Le contexte pose l'équipe du cabinet par défaut : un appareil
+         créé DEPUIS cet écran doit y rester visible après
+         enregistrement, même sans fauteuil (le compresseur du local
+         technique). Sans ce défaut, il disparaîtrait sous les yeux de
+         celui qui vient de le saisir. -->
     <record id="action_dental_equipment" model="ir.actions.act_window">
         <field name="name">Matériel</field>
         <field name="res_model">maintenance.equipment</field>
         <field name="view_mode">list,kanban,form</field>
         <field name="view_id" ref="view_dental_equipment_list"/>
         <field name="search_view_id" ref="view_dental_equipment_search"/>
-        <field name="context">{'search_default_group_chair': 1}</field>
+        <field name="domain"
+               eval="['|', ('chair_id', '!=', False),
+                      ('maintenance_team_id', '=',
+                       ref('maintenance_team_dental'))]"/>
+        <field name="context"
+               eval="{'search_default_group_chair': 1,
+                      'default_maintenance_team_id':
+                          ref('maintenance_team_dental')}"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Aucun appareil au registre
@@ -156,18 +220,47 @@
 
     <!-- Les demandes d'entretien : l'écran du cœur, borné au matériel
          qui porte un fauteuil OU qui appartient à l'équipe du cabinet.
-         Aucun modèle de plus, aucun cycle de plus. -->
+         Aucun modèle de plus, aucun cycle de plus — mais un périmètre
+         réellement posé, et non seulement annoncé.
+
+         Le demandeur n'a pas à être pré-rempli : le cœur pose déjà
+         `owner_user_id` sur l'utilisateur courant. Le contexte portait
+         `default_user_id`, qui est le TECHNICIEN et non le demandeur —
+         et que le compute du cœur écrase dès qu'un équipement est
+         choisi. Un défaut faux et sans effet : retiré. Ce qui est posé
+         par défaut, c'est l'équipe du cabinet, pour qu'une demande
+         créée ici y reste visible.
+
+         `search_default_active` écarte les demandes annulées : le
+         filtre `active` existe bien dans la vue de recherche du cœur
+         (un contexte sans filtre serait un contexte sans effet). -->
     <record id="action_dental_maintenance_request" model="ir.actions.act_window">
         <field name="name">Entretiens</field>
         <field name="res_model">maintenance.request</field>
         <field name="view_mode">kanban,list,form,calendar,activity</field>
         <field name="view_id" ref="maintenance.hr_equipment_request_view_kanban"/>
-        <!-- Idiome du cœur : on écarte les demandes annulées et on
-             pré-remplit le demandeur. `search_default_group_equipment`
-             n'existe PAS dans la vue de recherche du cœur — un contexte
-             sans effet aurait donné l'illusion d'un regroupement. -->
-        <field name="context">{'search_default_active': True,
-                               'default_user_id': uid}</field>
+        <!-- Le périmètre se lit sur l'APPAREIL, pas sur l'équipe de la
+             demande : `maintenance_team_id` de la demande porte un
+             `default=` du cœur (la première équipe de la société), et
+             un défaut posé à la création court-circuite le compute qui
+             aurait recopié l'équipe de l'appareil. Une panne signalée
+             depuis l'app Maintenance serait donc tombée hors du
+             périmètre alors qu'elle vise bien le compresseur du
+             cabinet. Le troisième terme rattrape la demande SANS
+             appareil — une demande générale du cabinet, la seule où
+             son équipe à elle fait foi. -->
+        <field name="domain"
+               eval="['|', '|',
+                      ('equipment_id.chair_id', '!=', False),
+                      ('equipment_id.maintenance_team_id', '=',
+                       ref('maintenance_team_dental')),
+                      '&amp;', ('equipment_id', '=', False),
+                      ('maintenance_team_id', '=',
+                       ref('maintenance_team_dental'))]"/>
+        <field name="context"
+               eval="{'search_default_active': True,
+                      'default_maintenance_team_id':
+                          ref('maintenance_team_dental')}"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Aucune demande d'entretien

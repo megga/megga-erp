@@ -14,11 +14,25 @@
 
         <!-- Les familles d'appareils qu'un cabinet dentaire possède
              toutes. Elles ne sont PAS du matériel semé (le matériel est
-             de la donnée client) : ce sont des rubriques de classement,
-             et elles portent le rythme d'entretien attendu par la
-             pratique — l'autoclave se valide plus souvent que le
-             fauteuil. -->
+             de la donnée client) : ce sont des rubriques de classement.
+
+             Deux défauts du cœur sont explicitement neutralisés ici :
+
+             - `technician_user_id` vaut par défaut l'utilisateur qui
+               INSTALLE, c'est-à-dire OdooBot. Et le cœur le recopie :
+               sur l'appareil (`_onchange_category_id`), puis de
+               l'appareil sur la demande (`_compute_user_id`). Un
+               cabinet se serait retrouvé avec le robot du système comme
+               responsable de ses entretiens. On livre la case VIDE :
+               c'est au cabinet de nommer son responsable technique.
+
+             - `company_id` vaut par défaut la société d'installation.
+               Les familles suivent l'équipe, qui est délibérément
+               partagée : un cabinet à deux sociétés ne veut pas deux
+               fois « Stérilisation ». -->
         <record id="equipment_category_sterilisation" model="maintenance.equipment.category">
+            <field name="company_id"></field>
+            <field name="technician_user_id" eval="False"/>
             <field name="name">Stérilisation</field>
             <field name="note" type="html">
                 <p>Autoclaves, thermosoudeuses, bacs à ultrasons. La
@@ -28,6 +42,8 @@
             </field>
         </record>
         <record id="equipment_category_imagerie" model="maintenance.equipment.category">
+            <field name="company_id"></field>
+            <field name="technician_user_id" eval="False"/>
             <field name="name">Imagerie</field>
             <field name="note" type="html">
                 <p>Générateurs de rayons X, capteurs, panoramiques.
@@ -35,9 +51,13 @@
             </field>
         </record>
         <record id="equipment_category_fauteuil" model="maintenance.equipment.category">
+            <field name="company_id"></field>
+            <field name="technician_user_id" eval="False"/>
             <field name="name">Unit et fauteuil</field>
         </record>
         <record id="equipment_category_technique" model="maintenance.equipment.category">
+            <field name="company_id"></field>
+            <field name="technician_user_id" eval="False"/>
             <field name="name">Local technique</field>
             <field name="note" type="html">
                 <p>Compresseur, pompe à salive, aspiration, adoucisseur —

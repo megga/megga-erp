@@ -180,7 +180,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`dental/`](addons/verticals/dental/) | `megga_dental_rdv` (**auto_install**) | Pont réservation ↔ dossier : toute réservation en ligne rattache — ou crée — le dossier patient du contact (archivés compris, jamais de doublon), débrayable par type de RDV ; effet système en sudo, lien `patient_id` gardé par les groupes LPD | 9 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; **kits de consommables par position tarifaire** décomptés à la clôture de séance (zéro ressaisie au fauteuil, besoins agrégés, effet système en sudo) — et le stock ne bloque **jamais** la clinique : rien en rayon, la sortie part en négatif, plus rien de servable, elle part sans lot, avec une activité au magasin dans les deux cas ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur ; **réapprovisionnement** mini/maxi et bons de commande proposés par le planificateur du cœur | 59 |
-| [`dental/`](addons/verticals/dental/) | `megga_dental_materiel` (installation **délibérée**, jamais auto) | Registre du matériel du cabinet sur `maintenance` : autoclave, compresseur, générateur de rayons X, unit — numéro de série, garantie, technicien, historique des pannes et MTBF sont ceux du cœur ; ce que le module ajoute, c'est **le rattachement au fauteuil** (« qu'est-ce qui s'arrête si cet appareil part en réparation ? ») : écran groupé par fauteuil, onglet « Matériel » et compteur sur la fiche fauteuil, et un fauteuil équipé qui ne se supprime plus — il s'archive ; **entretien préventif récurrent** du cœur (clore la validation du trimestre engendre celle du suivant, aucun cron maison) ; menu « Matériel » en raccourcis filtrés — le registre au gestionnaire d'équipements, « Entretiens » ouvert à tout employé, exactement comme le cœur | 18 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_materiel` (installation **délibérée**, jamais auto) | Registre du matériel du cabinet sur `maintenance` : autoclave, compresseur, générateur de rayons X, unit — numéro de série, garantie, technicien, historique des pannes et MTBF sont ceux du cœur ; ce que le module ajoute, c'est **le rattachement au fauteuil** (« qu'est-ce qui s'arrête si cet appareil part en réparation ? ») : écran groupé par fauteuil, onglet « Matériel » et compteur sur la fiche fauteuil, et un fauteuil équipé qui ne se supprime plus — il s'archive ; **entretien préventif récurrent** du cœur (clore la validation du trimestre engendre celle du suivant, aucun cron maison) ; menu « Matériel » en raccourcis **réellement filtrés** (périmètre : le fauteuil ou l'équipe du cabinet) — le registre au gestionnaire d'équipements, « Entretiens » ouvert à tout employé, exactement comme le cœur | 24 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
@@ -535,7 +535,52 @@ Le décor livré est du **classement, pas du matériel** : une équipe
 « Cabinet » partagée (sans société, comme les emplacements virtuels du
 magasin) et quatre familles — Stérilisation, Imagerie, Unit et
 fauteuil, Local technique. Le matériel lui-même est de la donnée
-client : personne ne sème l'autoclave de quelqu'un d'autre.
+client : personne ne sème l'autoclave de quelqu'un d'autre. Deux
+défauts du cœur y sont neutralisés, parce qu'ils se propagent : le
+responsable d'une famille vaut par défaut **l'utilisateur qui
+installe**, c'est-à-dire OdooBot — et le cœur le recopie sur chaque
+appareil de la famille, puis de l'appareil sur ses demandes ; et la
+société d'installation s'y colle alors que l'équipe, elle, est
+délibérément partagée. Les deux cases sont livrées **vides**.
+
+Une revue adversariale passée sur le module **après** sa livraison a
+trouvé trois défauts de plus, tous corrigés :
+
+- **« Raccourci filtré » n'était pas vrai.** Les deux actions n'avaient
+  **aucun domaine** : sous un menu dentaire, elles ouvraient la base
+  entière — l'imprimante de la réception, la camionnette du garage. Le
+  commentaire du code, le manifeste, ce README et le message de commit
+  promettaient tous les quatre un périmètre que le code ne posait pas.
+  C'est le mode de défaillance récurrent du dépôt, et le troisième cas.
+  Le périmètre est désormais réel : **le fauteuil ou l'équipe du
+  cabinet**. Il se lit sur l'**appareil** et non sur l'équipe de la
+  demande — celle-ci porte un `default=` du cœur qui court-circuite le
+  compute, si bien qu'une panne signalée depuis l'app Maintenance
+  serait tombée hors périmètre. Et ce qu'on crée depuis ces écrans y
+  reste : l'équipe du cabinet est posée par défaut, sans quoi un
+  appareil sans fauteuil disparaîtrait sous les yeux de qui vient de le
+  saisir.
+- **La fiche fauteuil était injoignable.** L'écran phare du chantier —
+  l'onglet « Matériel », le compteur — n'était atteignable par aucun
+  clic : la liste des fauteuils est **éditable**, et cliquer une ligne
+  l'édite sur place au lieu d'ouvrir le formulaire. L'attribut
+  `open_form_view` du cœur rétablit la flèche d'ouverture.
+- **Le compteur mentait encore, un cran plus bas.** Calculé en `sudo`,
+  il franchissait aussi la règle **multi-société** du cœur : un fauteuil
+  n'a pas de société, un appareil si — « 2 appareils » se seraient
+  affichés sur un onglet qui n'en montre qu'un. Le `sudo` est tombé :
+  le compteur se calcule avec les droits de son lecteur, et dit donc
+  toujours ce que l'écran qu'il ouvre montrera. Les deux mensonges sont
+  tenus par mutation : remettre le `sudo` fait tomber deux tests.
+
+Un dernier point, assumé et documenté : le champ « Fauteuil » greffé
+sur le formulaire d'équipement du cœur **n'est gardé par aucun
+groupe**. Le responsable technique d'un cabinet n'a pas forcément de
+rôle dentaire, et le lui cacher retirerait au module son seul geste
+d'écriture. Le prix : dans une base partagée avec une autre verticale,
+un technicien non dentaire voit une case qui ne le concerne pas — vide
+et jamais en erreur, le cœur rattrapant l'absence de droit sur le
+référentiel des fauteuils.
 
 Le **portail client du garage** (`megga_auto_portal`) est le pendant du
 portail patient, côté atelier — même doctrine, même patron. Module

@@ -169,7 +169,6 @@ if not validation:
         'repeat_unit': 'month',
         'repeat_type': 'forever',
         'schedule_date': maintenant - timedelta(days=5),
-        'duration': 1.5,
         'description': "<p>Test de penetration de vapeur (Helix) et "
                        "controle du cycle 134 °C. Rapport de cycle en "
                        "piece jointe.</p>",
@@ -192,7 +191,6 @@ if not revision:
         'repeat_unit': 'year',
         'repeat_type': 'forever',
         'schedule_date': maintenant + timedelta(days=12),
-        'duration': 2.0,
         'priority': '2',
         'description': "<p>Vidange du separateur, controle des "
                        "courroies et de la soupape de securite.</p>",

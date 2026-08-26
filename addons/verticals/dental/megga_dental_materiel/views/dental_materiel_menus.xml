@@ -15,9 +15,14 @@
          D'où le partage : le registre complet au gestionnaire
          d'équipements, et « Entretiens » à tout employé — signaler une
          panne, suivre la sienne, c'est le geste du fauteuil et le cœur
-         l'ouvre à tous. Le menu racine du dentaire, lui, reste gardé
-         par les groupes LPD : seule l'équipe du cabinet voit ce
-         raccourci.
+         l'ouvre à tous.
+
+         Le menu racine ci-dessous porte les deux groupes, à l'exact
+         patron du cœur (`maintenance.menu_m_request`) : il n'a donc
+         PAS de valeur de garde à lui seul, `base.group_user` couvrant
+         tout employé. Ce qui garde vraiment, c'est son PARENT — le
+         menu dentaire, réservé aux groupes LPD du cabinet — et le
+         groupe posé sur chaque enfant.
 
          Séquence 45 : après « Stock du cabinet » (40), avant
          « Configuration » (90) — le magasin compte, le registre

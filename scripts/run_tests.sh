@@ -57,7 +57,7 @@ ODOO_BIN="$SUB/odoo-bin"
 BASE="${TEST_DB:-megga_ci_$$}"
 MODULES="${TEST_MODULES:-megga_base,megga_relances,megga_pilotage,megga_qr_export,megga_camt,megga_pain001,megga_qr_import,megga_tva_ch,megga_rdv,megga_retrocession,megga_dental,megga_dental_rdv,megga_dental_portal,megga_dental_stock,megga_dental_materiel,megga_resto,megga_resto_portal,megga_resto_rdv,megga_resto_tva,megga_auto,megga_auto_portal,megga_auto_rdv,megga_auto_occasion,megga_care,megga_care_import}"
 TAGS="${TEST_TAGS:-/megga_relances,/megga_pilotage,/megga_qr_export,/megga_camt,/megga_pain001,/megga_qr_import,/megga_tva_ch,/megga_rdv,/megga_retrocession,/megga_dental,/megga_dental_rdv,/megga_dental_portal,/megga_dental_stock,/megga_dental_materiel,/megga_resto,/megga_resto_portal,/megga_resto_rdv,/megga_resto_tva,/megga_auto,/megga_auto_portal,/megga_auto_rdv,/megga_auto_occasion,/megga_care,/megga_care_import}"
-MIN="${TEST_MIN:-534}"
+MIN="${TEST_MIN:-540}"
 # Chaque verticale (addons/verticals/<secteur>/) est un chemin d'addons
 # supplémentaire : le rituel teste ainsi le cœur + le socle + TOUTES les
 # verticales d'un coup à chaque bump.
