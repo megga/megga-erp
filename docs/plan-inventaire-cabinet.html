@@ -1,0 +1,527 @@
+<title>Inventaire du cabinet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f8fafb;
+    --surface: #ffffff;
+    --ink: #182530;
+    --muted: #546e7c;
+    --accent: #0d7a8a;
+    --accent-ink: #0a5f6c;
+    --accent-soft: #e2f0f3;
+    --warn-bg: #fbf3dc;
+    --warn-ink: #7c5407;
+    --warn-line: #e3cd96;
+    --ok: #256d3f;
+    --ok-bg: #e6f2ea;
+    --line: #d8e0e5;
+    --code-bg: #edf3f5;
+    --code-ink: #14434e;
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0e171c;
+      --surface: #142028;
+      --ink: #d9e5ea;
+      --muted: #8ba3ae;
+      --accent: #41b7ca;
+      --accent-ink: #63c8d8;
+      --accent-soft: #113238;
+      --warn-bg: #2c2410;
+      --warn-ink: #ddb25f;
+      --warn-line: #4d3d15;
+      --ok: #6ec48d;
+      --ok-bg: #14301e;
+      --line: #24343d;
+      --code-bg: #17252d;
+      --code-ink: #a5d6e0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0e171c;
+    --surface: #142028;
+    --ink: #d9e5ea;
+    --muted: #8ba3ae;
+    --accent: #41b7ca;
+    --accent-ink: #63c8d8;
+    --accent-soft: #113238;
+    --warn-bg: #2c2410;
+    --warn-ink: #ddb25f;
+    --warn-line: #4d3d15;
+    --ok: #6ec48d;
+    --ok-bg: #14301e;
+    --line: #24343d;
+    --code-bg: #17252d;
+    --code-ink: #a5d6e0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15.5px;
+    line-height: 1.65;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .eyebrow {
+    font-family: var(--display); font-weight: 700; font-size: 12px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800; font-size: 44px;
+    letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .standfirst { font-size: 17px; color: var(--muted); max-width: 64ch; margin: 0 0 18px; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 18px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 10px 0; margin: 0 0 40px;
+  }
+  .meta b { color: var(--ink); font-weight: 600; }
+
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 26px;
+    letter-spacing: -0.01em; margin: 56px 0 6px; text-wrap: balance;
+  }
+  h2 .num {
+    color: var(--accent); font-weight: 800; margin-right: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 700; font-size: 17px;
+    margin: 30px 0 8px;
+  }
+  .kicker { color: var(--muted); margin: 0 0 18px; font-size: 14.5px; }
+  p { margin: 0 0 14px; max-width: 72ch; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 7px; max-width: 70ch; }
+  li::marker { color: var(--accent); font-weight: 600; }
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--code-bg); color: var(--code-ink);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg); color: var(--code-ink);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto;
+    font-family: var(--mono); font-size: 13px; line-height: 1.6;
+    margin: 0 0 16px;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .toc {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px 24px; margin: 0 0 8px;
+  }
+  .toc-title {
+    font-family: var(--display); font-weight: 700; font-size: 13px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .toc ol { margin: 0 0 10px; padding-left: 26px; }
+  .toc ol li::marker { font-variant-numeric: tabular-nums; }
+  .toc ul { list-style: none; padding-left: 0; margin: 0; border-top: 1px dashed var(--line); padding-top: 10px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc-note { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+  .verdict {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 18px 0 22px;
+  }
+  .verdict p { margin-bottom: 8px; }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  .piege {
+    background: var(--warn-bg); border: 1px solid var(--warn-line);
+    border-radius: 8px; padding: 12px 16px; margin: 0 0 12px;
+    font-size: 14.5px;
+  }
+  .piege .tag {
+    font-family: var(--display); font-weight: 700; font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--warn-ink);
+    display: block; margin-bottom: 4px;
+  }
+
+  .decision-list { list-style: none; padding-left: 0; counter-reset: dec; }
+  .decision-list > li {
+    counter-increment: dec;
+    border-left: 3px solid var(--accent); background: var(--surface);
+    border-radius: 0 8px 8px 0; border-top: 1px solid var(--line);
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 12px 16px 12px 46px; margin-bottom: 10px; position: relative;
+    max-width: none;
+  }
+  .decision-list > li::before {
+    content: "D" counter(dec);
+    position: absolute; left: 14px; top: 13px;
+    font-family: var(--mono); font-weight: 600; font-size: 12px;
+    color: var(--accent-ink);
+  }
+
+  .check { list-style: none; padding-left: 0; }
+  .check > li {
+    padding-left: 30px; position: relative; margin-bottom: 9px; max-width: 74ch;
+  }
+  .check > li::before {
+    content: ""; position: absolute; left: 2px; top: 4px;
+    width: 13px; height: 13px; border: 2px solid var(--accent);
+    border-radius: 4px;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 0 0 16px; }
+  table {
+    border-collapse: collapse; width: 100%; font-size: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: var(--display); font-weight: 700; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    background: var(--code-bg);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }
+
+  .ok-chip {
+    display: inline-block; background: var(--ok-bg); color: var(--ok);
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    padding: 1px 8px; border-radius: 999px; margin-right: 6px;
+  }
+  .section-rule { border: none; border-top: 1px solid var(--line); margin: 48px 0 0; }
+  .footer-note { color: var(--muted); font-size: 13px; margin-top: 40px; border-top: 1px solid var(--line); padding-top: 16px; }
+  @media (max-width: 640px) {
+    h1 { font-size: 33px; }
+    .page { padding-top: 32px; }
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">Megga — ERP suisse sur Odoo 19 Community</p>
+  <h1>Inventaire du cabinet</h1>
+  <p class="standfirst">Plan d'exécution complet pour doter la verticale dentaire d'un vrai magasin&nbsp;: consommables tracés par lots et péremption, consommation décomptée à la clôture des séances, réapprovisionnement, registre du matériel — et, en suite directe, la traçabilité de stérilisation. Ce document est autoportant&nbsp;: une session neuve l'exécute sans autre mémoire que le dépôt.</p>
+  <div class="meta">
+    <span>Rédigé le <b>25.08.2026</b></span>
+    <span>Mis à jour le <b>26.08.2026</b> — <b>chantiers 0 à 5 livrés</b>, plus le regroupement sous «&nbsp;Intendance&nbsp;»</span>
+    <span>Dépôt <b>megga/megga-erp</b> (branche <b>main</b>)</span>
+    <span>Cœur <b>Odoo 19 Community</b> — sous-module <b>megga/odoo @ 19.0</b></span>
+    <span>Suite&nbsp;: <b>457 → 594 tests verts</b></span>
+  </div>
+
+  <div class="verdict">
+    <p><b>État au 26.08.2026 — le plan est exécuté.</b> Les cinq chantiers sont livrés sur <code>main</code> (CI verte), et la suite du dépôt est passée de <b>457</b> à <b>594</b> tests verts. Trois modules dentaires sont nés&nbsp;: <code>megga_dental_stock</code> (59 tests), <code>megga_dental_materiel</code> (24), <code>megga_dental_sterilisation</code> (54).</p>
+    <p>Le chantier 5 — la traçabilité de stérilisation — était noté ici en «&nbsp;phase 2 optionnelle, non lancée&nbsp;». Il a été lancé et livré dans la foulée&nbsp;: il ne restait plus rien à attendre, ses deux fondations (les lots du chantier 1, le registre du chantier 4) étant en place.</p>
+    <p>Ce qui a changé dans ce document&nbsp;: le chantier 5 y est décrit, les chantiers 0 à 4 portent leur bilan réel, la section des <a href="#lecons">leçons</a> a doublé — ces chantiers ont payé treize pièges de plus, dont trois fois le même — et un <a href="#intendance">regroupement de menus</a> est venu après coup réunir les trois familles sous une seule entrée.</p>
+  </div>
+
+  <nav class="toc">
+    <p class="toc-title">Chantiers — dans cet ordre, un commit chacun</p>
+    <ol start="0">
+      <li><a href="#c0">Amorçage de la session — rien avant les 457 verts</a></li>
+      <li><a href="#c1">Le socle magasin — <code>megga_dental_stock</code>&nbsp;: lots, péremption, FEFO</a></li>
+      <li><a href="#c2">Le pont acte&nbsp;→&nbsp;consommation — kits par position tarifaire</a></li>
+      <li><a href="#c3">Le réapprovisionnement — mini/maxi et bons de commande</a></li>
+      <li><a href="#c4">Le registre du matériel — <code>megga_dental_materiel</code></a></li>
+      <li><a href="#c5">La traçabilité de stérilisation — <code>megga_dental_sterilisation</code></a></li>
+    </ol>
+    <ul>
+      <li><a href="#verdict">Ce qui a été vérifié avant d'écrire ce plan</a></li>
+      <li><a href="#decisions">Les décisions arrêtées — à ne pas rouvrir</a></li>
+      <li><a href="#intendance">Après les cinq chantiers — le regroupement sous «&nbsp;Intendance&nbsp;»</a></li>
+      <li><a href="#deroule">Le déroulé standard d'un chantier Megga</a></li>
+      <li><a href="#lecons">Les leçons vécues du dépôt — pièges déjà payés</a></li>
+      <li><a href="#risques">Risques assumés, hors périmètre, suite</a></li>
+      <li><a href="#amorce">La phrase d'amorçage</a></li>
+    </ul>
+    <p class="toc-note">La numérotation est un ordre d'exécution réel&nbsp;: le socle avant les kits, les kits avant le réapprovisionnement, et la stérilisation en dernier — elle a besoin des lots du chantier 1 et de l'autoclave du chantier 4. Chaque chantier se termine livré (tests, README, push, CI, démo) avant d'ouvrir le suivant.</p>
+  </nav>
+
+  <h2 id="verdict">Ce qui a été vérifié avant d'écrire ce plan</h2>
+  <div class="verdict">
+    <p><b>Il n'existe aucun inventaire chez nous.</b> Rien dans <code>megga_dental</code> ni ailleurs dans le dépôt ne suit les quantités&nbsp;: le catalogue d'actes facture, le référentiel de médicaments ordonne, personne ne compte les compresses ni ne surveille une date de péremption.</p>
+    <p><b>Et il ne manque rien au cœur.</b> Tout le socle nécessaire est dans Odoo 19 <em>Community</em>, vérifié module par module dans le sous-module&nbsp;: <code>stock</code> (emplacements, lots, mouvements, règles mini/maxi <code>stock.warehouse.orderpoint</code>), <code>product_expiry</code> (dates <code>expiration_date</code> et <code>alert_date</code> sur les lots, stratégie de sortie FEFO — l'enregistrement <code>product_expiry.removal_fefo</code> existe dans ses data), <code>purchase</code> et <code>purchase_stock</code> (bons de commande, réception), <code>maintenance</code> (équipements, entretien préventif et correctif). Aucune dépendance Enterprise&nbsp;: on <em>configure et relie</em> le cœur, on ne réinvente pas un stock.</p>
+  </div>
+  <p>Le travail est donc surtout un travail de couture&nbsp;: brancher le magasin sur le métier du cabinet (les séances), avec les gardes métier qui font la valeur — «&nbsp;le périmé ne sort plus&nbsp;», «&nbsp;la clôture d'une séance ne se bloque jamais pour une histoire de magasin&nbsp;», «&nbsp;le mouvement de stock ne raconte pas le soin&nbsp;».</p>
+
+  <h2 id="decisions">Les décisions arrêtées — à ne pas rouvrir</h2>
+  <p class="kicker">Ces arbitrages ont été rendus avec le propriétaire à la conception. La session d'exécution les applique&nbsp;; elle ne les re-discute pas.</p>
+  <ol class="decision-list">
+    <li><b>Deux modules, pas un.</b> <code>megga_dental_stock</code> (chantiers 1 à 3) et <code>megga_dental_materiel</code> (chantier 4), tous deux dans <code>addons/verticals/dental/</code>, licence <code>Other proprietary</code>, jamais <code>auto_install</code> — doctrine du dépôt&nbsp;: un cabinet peut vouloir le métier sans le magasin.</li>
+    <li><b>Dépendances.</b> <code>megga_dental_stock</code>&nbsp;: <code>megga_dental</code>, <code>stock</code>, <code>product_expiry</code>&nbsp;; le chantier 3 ajoute <code>purchase_stock</code> au manifeste. <code>megga_dental_materiel</code>&nbsp;: <code>megga_dental</code>, <code>maintenance</code>.</li>
+    <li><b>Les kits s'accrochent à la position tarifaire.</b> Nouveau modèle <code>megga.dental.position.supply</code> (One2many sur <code>megga.dental.position</code>)&nbsp;: c'est l'acte qui sait ce qu'il consomme, pas le praticien qui ressaisit.</li>
+    <li><b>La consommation part à la clôture de séance.</b> Extension de <code>megga.dental.treatment.action_done()</code>, en <code>sudo</code> avec docstring de doctrine — précédent exact dans le même fichier&nbsp;: <code>_create_tooth_records()</code>, «&nbsp;effet système du flux&nbsp;: la réception peut clore une séance sans détenir le moindre droit&nbsp;». La garde d'état existante (<code>action_done</code> refuse tout état ≠ <code>confirmed</code>) donne l'idempotence de premier rang&nbsp;; une ceinture s'y ajoute (D6).</li>
+    <li><b>Destination&nbsp;: un emplacement virtuel «&nbsp;Consommé en soins&nbsp;»</b> (<code>stock.location</code>, <code>usage='customer'</code>, data du module). Les quantités sortent définitivement, la valorisation suit, et l'histoire du magasin reste lisible&nbsp;: tout ce qui part en soins va au même endroit.</li>
+    <li><b>Jamais deux fois.</b> Le traitement porte les mouvements qu'il a engendrés (champ de lien vers picking/moves, <code>copy=False</code>)&nbsp;; <code>_consume_supplies()</code> ne refait rien si ce lien est déjà peuplé. Marquage par identité, pas par valeur — doctrine des relances.</li>
+    <li><b>LPD&nbsp;: le magasin ne raconte pas les soins.</b> Le mouvement porte la <em>référence</em> de la séance (origin/name), jamais le diagnostic, jamais le détail des actes. Un magasinier qui lit les mouvements ne lit pas le dossier médical. Test dédié obligatoire.</li>
+    <li><b>Le stock ne bloque jamais la clinique.</b> Stock insuffisant à la clôture&nbsp;→ la consommation part quand même (quantité en négatif) et une activité signale l'écart au responsable. Le soin est fait&nbsp;; le magasin constate, il n'interdit pas.</li>
+    <li><b>Le périmé ne sort plus vers les soins</b> — refus explicite à la sortie manuelle (UserError nommant le lot et sa date), et la consommation automatique <em>ne choisit jamais</em> un lot périmé (filtré à l'assignation). Le lot périmé reste visible en stock pour être détruit proprement (le rebut/scrap reste permis&nbsp;: la garde ne vise que la destination soins).</li>
+    <li><b>Point ouvert assumé — lot indisponible.</b> S'il ne reste aucun lot servable (rien en stock, ou uniquement du périmé), la consommation part <em>sans lot</em>&nbsp;: traçabilité dégradée, signalée par la même activité que D8, jamais bloquante. Documenté au README comme limite connue.</li>
+    <li><b>Rien ne revient tout seul.</b> Un traitement clôturé puis annulé ne ré-intègre aucun stock&nbsp;: une compresse sortie ne se remet pas en boîte. Le geste inverse est un ajustement d'inventaire manuel, tracé. Test dédié.</li>
+    <li><b>Pas de nouveau groupe de droits.</b> Le magasin réutilise les groupes stock du cœur (<code>stock.group_stock_user</code> / <code>_manager</code>)&nbsp;; le menu du cabinet est un raccourci vers des vues filtrées, pas un contournement d'ACL. Recommandation&nbsp;: ne pas câbler d'<code>implied_ids</code> depuis les groupes dentaires (ça ouvrirait l'app Inventaire entière à toute la réception)&nbsp;— l'attribution des droits stock reste un geste d'administration, documenté au README.</li>
+  </ol>
+
+  <h2 id="c0"><span class="num">0</span>Amorçage de la session — rien avant les 457 verts</h2>
+  <p class="kicker">La session neuve part d'un conteneur vide. Ordre strict&nbsp;; le rituel vert est le point de départ, pas une formalité.</p>
+  <ul class="check">
+    <li>Attacher le dépôt <b>megga/megga-erp</b> (accès push) via <code>add_repo</code>, puis le cloner. C'est le dépôt <em>produit</em>&nbsp;: tout le travail, tous les push vont sur sa branche <code>main</code>, directement — ce dépôt ne fait jamais de PR. Le dépôt de session (celui de la branche désignée par le harnais) ne reçoit rien.</li>
+    <li>Matérialiser le cœur&nbsp;: <code>git submodule update --init --depth 1 odoo</code> — le sous-module est le fork <b>megga/odoo</b>, branche 19.0, shallow. Le harnais de tests retrouve <code>odoo-bin</code> tout seul via <code>.gitmodules</code>.</li>
+    <li>Postgres&nbsp;: <code>pg_ctlcluster 16 main start</code> (et créer un rôle superuser au nom de l'utilisateur système si absent&nbsp;: <code>sudo -u postgres createuser -s "$(whoami)"</code>). Le conteneur peut redémarrer en cours de session&nbsp;: si la base ne répond plus, c'est ça, et rien d'autre — relancer le cluster avant de chercher un bug.</li>
+    <li>Dépendances Python du cœur si l'image ne les a pas&nbsp;: <code>pip install -r odoo/requirements.txt</code>.</li>
+    <li>Lire le <b>README racine</b> du dépôt en entier&nbsp;: c'est l'état des lieux du produit (un paragraphe de doctrine par module) et la charte des conventions.</li>
+    <li>Rituel complet&nbsp;: <code>scripts/run_tests.sh</code> doit finir sur <b>«&nbsp;TESTS VERTS (457 tests executes)&nbsp;»</b> avant la première ligne de code. 457 est la référence au moment où ce plan est écrit&nbsp;; si <code>TEST_MIN</code> dans le script a monté depuis, c'est le script qui fait foi. Le harnais a deux garde-fous (code retour non nul, et «&nbsp;un run qui n'exécute aucun test est un échec&nbsp;») — ne jamais les contourner.</li>
+    <li>Calibrer l'œil&nbsp;: survoler un module récent complet pour le patron (manifeste, security, vues, tests) — <code>megga_resto_portal</code> pour un petit module, <code>megga_dental</code> pour les vues métier riches.</li>
+  </ul>
+  <pre><code># Amorçage, dans l'ordre
+git submodule update --init --depth 1 odoo
+pg_ctlcluster 16 main start
+pip install -r odoo/requirements.txt   # si necessaire
+scripts/run_tests.sh                    # => TESTS VERTS (457 tests executes)</code></pre>
+  <div class="piege"><span class="tag">Piège vécu — gitlink</span>Ne <b>jamais</b> faire <code>git add -A</code> à la racine du dépôt&nbsp;: le sous-module <code>odoo</code> est un gitlink, le stager le ferait «&nbsp;bouger&nbsp;» dans un commit métier. Le checkout local du sous-module peut être en avance ou en retard sur le gitlink enregistré&nbsp;: c'est sans effet et ce n'est pas au chantier inventaire d'y toucher — les bumps du cœur passent par le rituel mensuel. Toujours <code>git add</code> ciblé sur les chemins réellement modifiés.</div>
+
+  <h2 id="c1"><span class="num">1</span>Le socle magasin — <code>megga_dental_stock</code></h2>
+  <p class="kicker"><span class="ok-chip">livré</span>19 tests au chantier, 59 pour le module une fois les chantiers 2 et 3 posés dessus. Commit <code>76f4919</code>.<br>Le module configure le cœur plus qu'il ne modélise&nbsp;: catégorie outillée, emplacement de consommation, FEFO, menu du cabinet, et la garde «&nbsp;périmé&nbsp;».</p>
+
+  <h3>Manifeste (patron du dépôt)</h3>
+  <pre><code>{
+    'name': "Megga Dentaire — Stock du cabinet",
+    'version': '19.0.1.0.0',
+    'category': 'Industries',
+    'author': "Megga",
+    'website': "https://github.com/megga/megga-erp",
+    'license': 'Other proprietary',
+    'depends': ['megga_dental', 'stock', 'product_expiry'],
+    'data': [ ... ],   # security, data, vues, menus — menus en DERNIER
+}</code></pre>
+
+  <h3>Data du module</h3>
+  <ul>
+    <li><b>Catégorie produit</b> «&nbsp;Consommables du cabinet&nbsp;» avec <code>removal_strategy_id</code> = <code>product_expiry.removal_fefo</code> — c'est ELLE qui rend le FEFO effectif&nbsp;: à quantités réservées, le cœur sert le lot dont la date de retrait est la plus proche.</li>
+    <li><b>Emplacement virtuel</b> «&nbsp;Consommé en soins&nbsp;» (<code>usage='customer'</code>), enfant logique du réseau du cabinet, référencé par XML id pour le chantier 2.</li>
+    <li>Rien d'autre en dur&nbsp;: pas de produits semés en data (les produits du cabinet sont de la donnée client)&nbsp;; le semeur de démo en crée pour les captures.</li>
+  </ul>
+
+  <h3>Comportements</h3>
+  <ul>
+    <li>Les produits du cabinet se créent dans la catégorie avec <code>is_storable=True</code> (Odoo 19&nbsp;: le booléen a remplacé <code>type='product'</code> — vérifier la sémantique exacte dans le cœur avant d'écrire), <code>tracking='lot'</code> et <code>use_expiration_date=True</code>. Le module peut poser des valeurs par défaut contextuelles sur le menu du cabinet, pas des overrides globaux de <code>product.template</code>.</li>
+    <li><b>La garde «&nbsp;périmé ne sort plus&nbsp;»</b>&nbsp;: à la validation d'un mouvement dont la destination est l'emplacement soins, un lot dont <code>expiration_date</code> est passée est refusé avec un message qui nomme le lot, sa date, et le bon geste («&nbsp;détruisez-le proprement&nbsp;»). Point d'accrochage à vérifier dans le cœur avant d'écrire (doctrine du dépôt&nbsp;: lire le cœur d'abord)&nbsp;— la surcharge de <code>_action_done</code> côté <code>stock.move.line</code> est la piste la plus sûre&nbsp;; une <code>@api.constrains</code> sur des champs d'état est la piste piégeuse. Le rebut (scrap), les retours fournisseur et les ajustements restent permis&nbsp;: la garde ne vise QUE la destination soins.</li>
+    <li><b>Menu «&nbsp;Stock du cabinet&nbsp;»</b> sous <code>megga_dental.menu_dental_root</code> (séquence entre «&nbsp;Constats&nbsp;» et «&nbsp;Configuration&nbsp;») — <em>depuis le <a href="#intendance">regroupement</a>, sous «&nbsp;Intendance&nbsp;»</em>&nbsp;: produits du cabinet (liste filtrée sur la catégorie), quantités en stock (quants), lots avec dates de péremption (liste triée par urgence, décor d'alerte sur <code>alert_date</code> atteinte). Actions fenêtres propres au module, modèles du cœur.</li>
+  </ul>
+
+  <h3>Tests attendus (ordre de grandeur&nbsp;: 14–18)</h3>
+  <ul>
+    <li>La catégorie sort en FEFO&nbsp;: deux lots en stock, celui qui expire en premier part en premier (réservation réelle, pas un test de config).</li>
+    <li>Le lot périmé est refusé vers l'emplacement soins (UserError), et le même lot part sans broncher en rebut.</li>
+    <li>Une réception fournisseur crée le lot avec sa date de péremption (délais <code>expiration_time</code> du produit).</li>
+    <li>L'<code>alert_date</code> se calcule et la vue des lots la décore.</li>
+    <li>Menu et ACL&nbsp;: l'utilisateur stock voit les vues du cabinet&nbsp;; un utilisateur portail ne voit rien.</li>
+  </ul>
+
+  <h2 id="c2"><span class="num">2</span>Le pont acte&nbsp;→&nbsp;consommation</h2>
+  <p class="kicker"><span class="ok-chip">livré</span>28 tests de plus, dont la logique d'agrégation testée sans ORM. Commit <code>61932cf</code>.<br>Le cœur du chantier&nbsp;: ce que le cabinet consomme se déduit de ce qu'il soigne. Zéro ressaisie au fauteuil.</p>
+
+  <h3>Modèle <code>megga.dental.position.supply</code></h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Champ</th><th>Type</th><th>Rôle et gardes</th></tr>
+      <tr><td><code>position_id</code></td><td>Many2one <code>megga.dental.position</code></td><td><code>required</code>, <code>ondelete='cascade'</code>, <code>index</code> — le kit meurt avec sa position.</td></tr>
+      <tr><td><code>product_id</code></td><td>Many2one <code>product.product</code></td><td><code>required</code>, <code>ondelete='restrict'</code> — un produit consommé quelque part ne se supprime pas. Domaine&nbsp;: produits stockables du cabinet.</td></tr>
+      <tr><td><code>quantity</code></td><td>Float</td><td>&gt;&nbsp;0 (contrainte), quantité consommée par acte.</td></tr>
+      <tr><td><code>uom_id</code></td><td>Many2one <code>uom.uom</code></td><td>Défaut&nbsp;: l'UoM du produit&nbsp;; même catégorie d'unité exigée. Conversion à la consommation via <code>_compute_quantity(..., round=False)</code> — leçon des fiches techniques resto&nbsp;: l'arrondi par ligne fausse les sommes.</td></tr>
+    </table>
+  </div>
+  <p>Interface&nbsp;: un onglet «&nbsp;Consommables&nbsp;» sur la fiche position (héritage de <code>dental_position_views.xml</code>), liste éditable en ligne. C'est de la configuration de cabinet&nbsp;: droits alignés sur ceux du tarif.</p>
+
+  <h3>Extension de <code>megga.dental.treatment</code></h3>
+  <ul>
+    <li>Champ de lien vers les mouvements engendrés (<code>copy=False</code>, invisible du portail) + un état affichable «&nbsp;consommé&nbsp;» sur la fiche.</li>
+    <li><code>action_done()</code>&nbsp;: <code>super()</code> d'abord (la clôture clinique reste souveraine), puis <code>self._consume_supplies()</code>.</li>
+    <li><code>_consume_supplies()</code>, <code>sudo</code>, docstring de doctrine calquée sur <code>_create_tooth_records</code>&nbsp;:
+      <ol>
+        <li>Ceinture d'idempotence&nbsp;: déjà des mouvements liés&nbsp;→ retour immédiat.</li>
+        <li>Agrégation des besoins de toutes les lignes d'acte à position&nbsp;: somme par produit, conversion d'UoM <code>round=False</code> — calquer le patron <code>merge_needs</code> de <code>megga_resto</code> (<code>resto_logic.py</code>&nbsp;: logique pure, testable sans ORM, ordre d'apparition préservé). Aucun besoin&nbsp;→ aucun picking&nbsp;: pas de coquille vide.</li>
+        <li>Un picking interne stock&nbsp;→&nbsp;«&nbsp;Consommé en soins&nbsp;», <code>origin</code> = référence de la séance (D7&nbsp;: jamais le soin). Assignation&nbsp;: FEFO du cœur, MOINS les lots périmés (filtre explicite)&nbsp;; plus de lot servable&nbsp;→ ligne sans lot (D10). Stock insuffisant&nbsp;→ on force la quantité faite (négatif permis, D8) et on poste l'activité d'écart.</li>
+        <li>Validation immédiate du picking&nbsp;: la consommation est un fait accompli, pas un brouillon à oublier.</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h3>Tests attendus (ordre de grandeur&nbsp;: 14–16)</h3>
+  <ul>
+    <li>La clôture consomme&nbsp;; deux actes partageant un produit&nbsp;→ quantités additionnées, un seul mouvement par produit.</li>
+    <li>FEFO en vrai&nbsp;: deux lots, part celui qui expire en premier&nbsp;; un lot périmé en stock n'est jamais choisi&nbsp;; plus que du périmé&nbsp;→ mouvement sans lot + activité.</li>
+    <li>Stock à zéro&nbsp;→ la clôture passe, quant négatif, activité posée. La clinique d'abord.</li>
+    <li>Idempotence&nbsp;: rejouer la clôture ne double rien (garde d'état) et <code>_consume_supplies</code> rappelé à la main ne double rien non plus (ceinture).</li>
+    <li>LPD&nbsp;: le picking et ses mouvements ne portent ni acte ni diagnostic — seulement la référence de séance.</li>
+    <li>Annulation après clôture&nbsp;: rien ne revient en stock (D11).</li>
+    <li>Un utilisateur réception (sans droits stock) clôt une séance&nbsp;: la consommation part quand même (le sudo est là pour ça), et il ne peut pas LIRE le magasin pour autant.</li>
+    <li>Position sans kit&nbsp;→ aucun picking créé.</li>
+  </ul>
+
+  <h2 id="c3"><span class="num">3</span>Le réapprovisionnement</h2>
+  <p class="kicker"><span class="ok-chip">livré</span>12 tests, et <b>aucune ligne de Python</b>&nbsp;: tout est au cœur. Commits <code>f40a733</code> et <code>7acf0b0</code>.<br>Le magasin qui se remplit tout seul&nbsp;: règles mini/maxi du cœur, bons de commande proposés, réception qui remet des lots datés en rayon.</p>
+  <ul>
+    <li>Manifeste&nbsp;: <code>depends</code> +=&nbsp;<code>purchase_stock</code> (montée de version mineure du module).</li>
+    <li>Réutiliser <code>stock.warehouse.orderpoint</code> tel quel&nbsp;: mini/maxi par produit du cabinet. Le module apporte le raccourci&nbsp;: menu «&nbsp;À commander&nbsp;» (vue replenishment filtrée sur la catégorie cabinet) et, sur la fiche produit du cabinet, la main courante fournisseur (<code>seller_ids</code>) mise en avant.</li>
+    <li>Le planificateur du cœur fait le travail (procurement&nbsp;→ BdC brouillon chez le fournisseur du produit). Ne PAS écrire de cron maison&nbsp;: tester en appelant le scheduler du cœur.</li>
+    <li>Cycle complet vérifié en test&nbsp;: consommation (chantier 2) fait passer un produit sous le mini&nbsp;→ scheduler&nbsp;→ un BdC brouillon et un seul (pas de doublon au deuxième passage)&nbsp;→ confirmation&nbsp;→ réception avec lot et date&nbsp;→ le disponible remonte, le FEFO voit le nouveau lot en dernier.</li>
+    <li>Tests attendus&nbsp;: 8–12. Le gros du comportement est au cœur&nbsp;; on teste la couture (filtre cabinet, cycle bout en bout, pas de doublon).</li>
+  </ul>
+
+  <h2 id="c4"><span class="num">4</span>Le registre du matériel — <code>megga_dental_materiel</code></h2>
+  <p class="kicker"><span class="ok-chip">livré</span>24 tests. Commits <code>69ce5ea</code> et <code>c8d3c39</code>.<br>Autoclave, compresseur, radiographie, fauteuils&nbsp;: ce qui se révise, se calibre et se prouve. Module séparé&nbsp;: le magasin compte, le registre entretient.</p>
+  <ul>
+    <li><code>depends</code>&nbsp;: <code>megga_dental</code>, <code>maintenance</code>. AVANT d'écrire&nbsp;: inventorier les champs existants de <code>maintenance.equipment</code> (n° de série, dates, garantie, emplacement, équipe…) — n'ajouter QUE ce qui manque vraiment. Attendu&nbsp;: <code>chair_id</code> (Many2one <code>megga.dental.chair</code>, <code>ondelete='restrict'</code>, index) pour rattacher l'équipement à son fauteuil&nbsp;; le reste existe probablement déjà.</li>
+    <li>Un fauteuil ne se supprime pas s'il porte du matériel (le <code>restrict</code> ci-dessus)&nbsp;; la fiche fauteuil montre son matériel (One2many inverse + compteur).</li>
+    <li>Entretien préventif périodique par équipement&nbsp;: le mécanisme du cœur (demandes générées par fréquence) sert tel quel pour «&nbsp;autoclave&nbsp;: validation trimestrielle&nbsp;», «&nbsp;compresseur&nbsp;: révision annuelle&nbsp;». Data&nbsp;: une équipe de maintenance «&nbsp;Cabinet&nbsp;» par défaut.</li>
+    <li>Menu «&nbsp;Matériel&nbsp;» sous <code>megga_dental.menu_dental_root</code> (<em>depuis le <a href="#intendance">regroupement</a>, sous «&nbsp;Intendance&nbsp;»</em>)&nbsp;: équipements (groupés par fauteuil), demandes d'entretien (kanban du cœur). Pas de doublon de l'app Maintenance&nbsp;: des raccourcis filtrés.</li>
+    <li>Tests attendus&nbsp;: 8–10 (lien fauteuil, restrict, préventif généré à la bonne date, compteur de la fiche fauteuil, ACL).</li>
+  </ul>
+
+  <h2 id="c5"><span class="num">5</span>La traçabilité de stérilisation — <code>megga_dental_sterilisation</code></h2>
+  <p class="kicker"><span class="ok-chip">livré</span>54 tests. Commits <code>904c9ec</code>, <code>f163d52</code> et <code>7055317</code>.<br>
+  Le magasin COMPTE, le registre ENTRETIENT, la stérilisation PROUVE. Ce chantier n'était pas au plan d'origine&nbsp;: il y figurait en «&nbsp;phase 2 optionnelle, non lancée&nbsp;», et a été lancé une fois ses deux fondations posées.</p>
+
+  <p>Il répond à deux questions, et la seconde est la vraie&nbsp;: «&nbsp;avec quoi m'a-t-on soigné&nbsp;?&nbsp;», qu'un patient ou un expert peut poser un an plus tard — et «&nbsp;l'indicateur biologique est non conforme, qui a été soigné avec cette charge&nbsp;?&nbsp;», qui se pose le lendemain matin et n'attend pas.</p>
+
+  <h3>Ce qu'il n'invente pas</h3>
+  <ul>
+    <li><code>depends</code>&nbsp;: <code>megga_dental_stock</code> et <code>megga_dental_materiel</code> — il ne tient debout que sur les deux.</li>
+    <li>Le <b>cycle</b> se rattache à l'autoclave du <b>registre du matériel</b> (chantier 4). L'appareil, son historique d'entretien et ses validations périodiques sont l'autre moitié de la preuve.</li>
+    <li>Les <b>sets stérilisés</b> sont des <b>lots datés du magasin</b> (chantier 1), dans une catégorie <b>enfant</b> des consommables du cabinet. La péremption de stérilité est la péremption tout court&nbsp;: le FEFO sort donc le sachet dont la stérilité expire en premier, la garde du cabinet refuse un set périmé en soins, et clore une séance décompte les sets comme n'importe quelle compresse — sans une ligne de plus.</li>
+  </ul>
+
+  <h3>Ce qu'il ajoute&nbsp;: deux liens</h3>
+  <ul>
+    <li><b>Le rappel.</b> L'indicateur biologique revient souvent le <em>lendemain</em>, les sachets déjà distribués. Marquer la charge non conforme <b>bloque</b> ceux qui restent en rayon — seconde garde du magasin — et <b>nomme les séances</b> qui en ont déjà consommé.</li>
+    <li><b>La preuve.</b> Depuis la séance, les cycles qui l'ont servie. Gardée par les groupes LPD&nbsp;: le magasinier voit le cycle et sa conformité, jamais qui a été soigné.</li>
+  </ul>
+
+  <h3>Décisions de ce chantier</h3>
+  <ol class="decision-list" start="13" style="counter-reset: dec 12">
+    <li><b>Un cycle est un document de preuve.</b> Il ne se supprime pas — pas même un brouillon, qui dit déjà qu'une charge est passée à l'autoclave — et une charge validée est figée, ses lignes comprises. Deux champs restent ouverts après coup&nbsp;: l'indicateur biologique (dont le résultat arrive plus tard, et dont le passage à «&nbsp;non conforme&nbsp;» bloque la charge à lui seul) et les observations. L'état ne se force pas par un <code>write</code>&nbsp;: il se change par les boutons.</li>
+    <li><b>Le registre est tenu par le gestionnaire d'équipements</b>, pas par les groupes dentaires. Le cycle exige un autoclave, et la règle d'enregistrement du cœur borne les équipements à ceux dont on est suiveur&nbsp;: un groupe dentaire seul aurait vu une liste vide sur un champ obligatoire. La réception LIT les cycles (la preuve d'une séance en dépend) sans pouvoir en enregistrer. Un cabinet qui veut que ses assistantes saisissent les charges leur donne ce droit&nbsp;: geste d'administration délibéré, comme les droits stock du magasin.</li>
+    <li><b>L'entrée en rayon est un effet système du flux</b>, en <code>sudo</code>, exactement comme la clôture de séance décompte les consommables&nbsp;: celui qui valide la charge ne peut pas créer un lot à la main, et la validation en crée pour lui sans lui en donner le droit.</li>
+  </ol>
+
+  <h3>Ce que la revue adversariale a rattrapé</h3>
+  <p>Six angles sur le code gelé, <b>avant</b> le push&nbsp;: 64 trouvailles brutes, 40 confirmées après réfutation, cinq bloquantes. Les deux premières visaient des règles que ce dépôt avait déjà écrites en toutes lettres.</p>
+  <div class="piege"><span class="tag">Bloquant — la porte du chantier 4, rouverte</span>Le menu était gardé par le groupe Réception seul&nbsp;: menu visible, écran inutilisable, faute d'un autoclave sélectionnable. C'est exactement le défaut que le chantier 4 avait diagnostiqué et refermé deux commits plus tôt.</div>
+  <div class="piege"><span class="tag">Bloquant — le stock bloquait la clinique</span>La garde de stérilisation avait été posée sur <code>_action_done</code> <em>sans sa ceinture</em>&nbsp;: un set non conforme réservé pour une séance faisait planter la clôture. La ceinture est désormais un point d'extension du magasin (<code>_megga_unservable_lines</code>) que les deux gardes alimentent.</div>
+  <div class="piege"><span class="tag">Bloquant — des sachets disparaissaient</span>Deux lignes du même set&nbsp;: le cœur fusionne les mouvements confirmés, et l'appariement se faisait par position après <code>action_confirm</code>. Un lot n'était jamais créé, en silence.</div>
+  <div class="piege"><span class="tag">Bloquant — la catégorie sœur</span>Les sets, dans une catégorie de premier niveau, étaient invisibles de tous les écrans du magasin ET du sélecteur de kit&nbsp;: «&nbsp;clore une séance décompte les sets&nbsp;» était une phrase sans code derrière.</div>
+
+  <h3>Limites connues, documentées au README</h3>
+  <ul>
+    <li>Le <b>rappel remonte aux séances par le transfert de consommation</b>&nbsp;: un set sorti à la main, hors clôture de séance, n'y figure pas. Le message du rappel le dit.</li>
+    <li>La <b>péremption de stérilité n'existe que si le produit porte un délai</b> (<code>expiration_time</code>)&nbsp;: sans lui, le cœur ne date rien, ni FEFO ni garde ne mordent. L'écran le signale en orange sur la ligne de charge.</li>
+  </ul>
+
+  <h2 id="intendance">Après les cinq chantiers — les trois familles sous «&nbsp;Intendance&nbsp;»</h2>
+  <p class="kicker"><span class="ok-chip">livré</span>3 tests de plus (591&nbsp;→&nbsp;594). Commit <code>fa18ccb</code>.<br>
+  Le magasin, la stérilisation et le registre vivaient en trois racines sœurs sous «&nbsp;Dentaire&nbsp;» (séquences 40&nbsp;/&nbsp;42&nbsp;/&nbsp;45). Ils passent sous un conteneur commun, dans l'ordre de la formule&nbsp;: <b>compter, prouver, entretenir</b>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Menu</th><th>Déclaré par</th><th>Séquence</th><th>Groupe</th></tr>
+      <tr><td><b>Intendance</b></td><td><code>megga_dental</code></td><td>40</td><td><em>aucun</em></td></tr>
+      <tr><td>↳ Stock du cabinet</td><td><code>megga_dental_stock</code></td><td>10</td><td><code>stock.group_stock_user</code></td></tr>
+      <tr><td>↳ Stérilisation</td><td><code>megga_dental_sterilisation</code></td><td>20</td><td><code>maintenance.group_equipment_manager</code>, <code>base.group_user</code></td></tr>
+      <tr><td>↳ Matériel</td><td><code>megga_dental_materiel</code></td><td>30</td><td><code>maintenance.group_equipment_manager</code>, <code>base.group_user</code></td></tr>
+    </table>
+  </div>
+
+  <p>Le conteneur vit dans <code>megga_dental</code>&nbsp;: c'est le seul ancêtre commun aux trois modules. Deux décisions le gouvernent, et toutes deux ont été trouvées par la revue, puis <b>reproduites sur une vraie base</b> avant correctif.</p>
+
+  <ol class="decision-list" start="16" style="counter-reset: dec 15">
+    <li><b>Le conteneur ne porte ni action ni groupe.</b> <code>_visible_menu_ids</code> part des menus porteurs d'une action accessible puis remonte l'ascendance, en s'arrêtant dès qu'un ancêtre a été écarté par ses propres groupes&nbsp;; <code>load_menus</code> élimine ensuite tout sous-arbre privé d'<code>app_id</code>. Un groupe stock posé sur «&nbsp;Intendance&nbsp;» aurait donc fait disparaître de la barre la stérilisation et le matériel pour le responsable technique, et le magasin pour le magasinier. La garde reste au parent dentaire et au groupe de chaque enfant — les trois en portaient déjà un, rien n'a été élargi. Un cabinet qui n'installe aucun des trois modules ne voit rien&nbsp;: un conteneur sans action et sans enfant visible n'entre jamais dans <code>visible_ids</code>.</li>
+    <li><b>Le conteneur est re-déclaré dans les trois modules</b>, sous le <code>xml_id</code> de <code>megga_dental</code>. Ce n'est pas de la redondance&nbsp;: un module ne monte JAMAIS sa dépendance. Sans ce bloc, <code>-i megga_dental_materiel</code> seul sur une base en service meurt sur <code>External ID not found in the system: megga_dental.menu_dental_intendance</code> — or c'est le parcours <em>prévu</em> pour ce module, que le README donne en «&nbsp;installation délibérée, jamais auto&nbsp;» et que <code>init_prod.sh</code> n'installe pas. Le nom et la séquence sont verrouillés par un test, pour qu'aucune des trois copies ne dérive en silence.</li>
+  </ol>
+
+  <p>Deux conséquences assumées&nbsp;: un niveau de profondeur de plus au clic, et «&nbsp;Intendance&nbsp;» visible de tout le personnel — «&nbsp;Entretiens&nbsp;» étant ouvert à tout employé, exactement comme «&nbsp;Matériel&nbsp;» l'était avant le regroupement. L'alternative, si la profondeur gêne à l'usage&nbsp;: aplatir les sept écrans directement sous «&nbsp;Intendance&nbsp;», chacun portant déjà sa propre garde.</p>
+
+  <h2 id="deroule">Le déroulé standard d'un chantier Megga</h2>
+  <p class="kicker">Chaque chantier (1 à 5) se livre ainsi, dans cet ordre. C'est la définition de «&nbsp;fini&nbsp;» du dépôt — huit modules ont déjà été livrés exactement comme ça.</p>
+  <ul class="check">
+    <li><b>Lire le cœur d'abord.</b> Chaque mécanisme du cœur qu'on s'apprête à toucher (méthode, champ, data) se vérifie dans le sous-module AVANT d'écrire — les signatures d'Odoo 19 ont piégé chaque chantier qui a cru s'en souvenir.</li>
+    <li><b>Calquer un module existant</b> du dépôt (structure, patrons de tests, ton des docstrings — elles portent la doctrine, en français).</li>
+    <li><b>Run ciblé pendant le développement</b>&nbsp;: <code>TEST_MODULES=&lt;liste socle + le module&gt; TEST_TAGS=/&lt;module&gt; TEST_MIN=1 scripts/run_tests.sh</code> — vite, isolé, sur base jetable.</li>
+    <li><b>Revue adversariale AVANT push</b> quand le mode ultracode est actif&nbsp;: un Workflow multi-angles (correctness, sécurité/étanchéité, métier suisse, ORM/perf) puis des sceptiques chargés de RÉFUTER chaque trouvaille&nbsp;; chaque défaut confirmé reçoit son correctif ET son test de non-régression. Trois revues de plus sur ce plan ont confirmé 40 défauts sur le seul chantier 5, dont cinq bloquants&nbsp;; et les deux revues passées APRÈS le push (chantiers 3 et 4) ont chacune coûté un second commit de correction. <b>Faire la revue avant, toujours</b> — et geler le code pendant qu'elle tourne&nbsp;: une correction concurrente invalide les réfutations en cours. (Mécanique&nbsp;: pas d'accents graves/backticks dans les prompts du script — ils cassent le littéral JS&nbsp;; assembler les contextes avec <code>join('\n')</code>.)</li>
+    <li><b>Suite complète verte</b>&nbsp;: <code>scripts/run_tests.sh</code>, puis relever <code>TEST_MIN</code> (défaut du script) au nouveau total — le garde-fou ne protège que s'il monte avec la suite.</li>
+    <li><b>Licences</b>&nbsp;: <code>scripts/check_licences.py</code> propre (l'AGPL est interdite dans les addons du produit).</li>
+    <li><b>README racine</b>&nbsp;: la ligne du tableau des modules ET le paragraphe de doctrine du module (ce qu'il fait, ce qu'il refuse de faire, pourquoi).</li>
+    <li><b>Commit en français SANS accents</b>, descriptif (le «&nbsp;pourquoi&nbsp;» y tient une phrase), terminé par les deux lignes d'attribution que le harnais de la session impose (Co-Authored-By et Claude-Session propres à cette session-là). Jamais de PR sur ce dépôt.<br><b>Vécu&nbsp;:</b> le harnais de session impose sa propre branche et interdit de pousser ailleurs. Le travail va donc sur la branche désignée, et <code>main</code> se met à jour en <b>fast-forward</b> à la fin, sur autorisation explicite du propriétaire&nbsp;: <code>git checkout main &amp;&amp; git merge --ff-only &lt;branche&gt; &amp;&amp; git push origin main</code>. L'historique est identique&nbsp;; il n'y a ni commit de fusion ni conflit possible.</li>
+    <li><b>CI socle verte</b> sur megga/megga-erp (workflow <code>socle</code>, déclenché au push)&nbsp;: vérifier le run via les outils GitHub MCP (<code>actions_list</code>)&nbsp;; sortie &gt;60&nbsp;Ko&nbsp;→ l'écrire dans un fichier et la lire au <code>jq</code>.</li>
+    <li><b>Démo visuelle</b>&nbsp;: monter une base fraîche avec le module (les productions locales de l'ancienne session n'existent plus), la semer de données réalistes (script shell + <code>odoo-bin shell</code>, patron des semeurs&nbsp;: idempotent, <code>env.cr.commit()</code> explicite), capturer au Playwright (chromium préinstallé sous <code>/opt/pw-browsers</code>, <code>wait_until='domcontentloaded'</code> + attente fixe — les réseaux d'assets d'Odoo ne finissent jamais pour <code>networkidle</code>), envoyer les captures via SendUserFile.</li>
+    <li><b>Artefact des fonctionnalités</b>&nbsp;: mettre à jour la page <a href="https://claude.ai/code/artifact/58655204-1a36-45f7-a2ab-c96481f21940">claude.ai/code/artifact/58655204-1a36-45f7-a2ab-c96481f21940</a> (la vitrine des verticales&nbsp;: sections par module, compteurs de tests). Porte de publication&nbsp;: TOUJOURS relire l'artefact publié (action <code>read</code>) avant de republier, et recopier l'URL exacte en paramètre <code>url</code> — sinon on crée un doublon au lieu de mettre à jour. <b>Vécu&nbsp;:</b> l'action <code>read</code> ne suffit pas — elle écrit la source publiée dans un fichier, et la publication reste refusée tant que CHAQUE ligne de ce fichier n'a pas été lue. Et renvoyer deux fois les mêmes octets est refusé aussi&nbsp;: il faut <b>reconstruire</b> la page à partir de la source publiée (enveloppe d'exécution retirée) et y réappliquer ses modifications. Un <code>diff</code> contre sa copie locale ne remplace pas la lecture&nbsp;: c'est en relisant la vitrine ligne à ligne qu'on a vu qu'elle affirmait encore, en bas de page, que la stérilisation «&nbsp;n'est pas livrée&nbsp;» — alors qu'elle en portait déjà la carte complète.</li>
+    <li><b>Bilan en français</b> au propriétaire&nbsp;: ce qui est livré, les chiffres (tests, commit), ce qui reste.</li>
+  </ul>
+
+  <h2 id="lecons">Les leçons vécues du dépôt — pièges déjà payés</h2>
+  <p class="kicker">Chacune a coûté un debug réel dans les chantiers précédents. Les re-payer serait un choix.</p>
+  <div class="piege"><span class="tag">Tests — décor suisse</span>Le décor <code>setup_country('ch')</code> pose le tag <code>post_install_l10n</code>&nbsp;: sans localisation chargée, les tests sont silencieusement IGNORÉS (vécu&nbsp;: 6 collectés sur 23, attrapé par le garde-fou <code>TEST_MIN</code>). Décor générique par défaut&nbsp;; le décor suisse seulement quand le test a besoin de la Suisse.</div>
+  <div class="piege"><span class="tag">ORM — compute stocké à travers un non-stocké</span>Un champ <code>store=True</code> qui dépend d'un chemin traversant un compute NON stocké explose à l'inversion des dépendances («&nbsp;Cannot convert ... to SQL&nbsp;») — et casse même les tests d'autres modules au <code>create</code>. Soit tout le chemin est stocké, soit le champ final ne l'est pas.</div>
+  <div class="piege"><span class="tag">ORM — related non stockés</span>Sur <code>account.move</code> et ailleurs, des related/compute non stockés (<code>company_currency_id</code>…) ne sont ni filtrables en domaine ni disponibles en SQL. Pour filtrer ou requêter&nbsp;: un champ propre stocké, ou un JOIN dans la requête.</div>
+  <div class="piege"><span class="tag">SQL — une vue lit la table, pas le cache</span>Tout modèle <code>_auto=False</code> (vue SQL) lit la TABLE&nbsp;: les écritures en vol du test sont invisibles sans <code>flush_model(...)</code> — d'où l'override <code>_search</code> qui flushe (patron dans <code>megga_pilotage</code>).</div>
+  <div class="piege"><span class="tag">QWeb — t-field sur td</span><code>t-field</code> directement sur un <code>&lt;td&gt;</code> est interdit («&nbsp;QWeb widgets do not work correctly on 'td' elements&nbsp;»)&nbsp;: mettre un <code>&lt;span t-field&gt;</code> DANS la cellule.</div>
+  <div class="piege"><span class="tag">Vues — search Odoo 19</span>Dans une vue search&nbsp;: pas de <code>&lt;group expand="0" string="..."&gt;</code> (RELAXNG le refuse)&nbsp;; groupe nu, et filtres group_by avec <code>domain="[]"</code> — l'idiome du cœur.</div>
+  <div class="piege"><span class="tag">Chatter — message_post échappe</span><code>message_post</code> échappe toute chaîne non-Markup. Un corps texte se convertit via <code>plaintext2html</code> (les esperluettes des raisons sociales suisses l'ont prouvé).</div>
+  <div class="piege"><span class="tag">Sudo — effets système</span>Le <code>sudo()</code> d'un effet système (consommation, constats) s'accompagne d'une docstring de doctrine ET de tests des deux faces&nbsp;: l'effet passe pour un utilisateur sans droits, et cet utilisateur ne gagne aucune LECTURE pour autant.</div>
+  <div class="piege"><span class="tag">UoM — round=False</span>Convertir les unités ligne par ligne avec l'arrondi par défaut fausse les agrégats&nbsp;: toujours <code>_compute_quantity(..., round=False)</code> puis arrondir le TOTAL à l'affichage.</div>
+  <div class="piege"><span class="tag">Shell — pkill et codes retour</span>Un <code>pkill</code> en fin de commande composée fait sortir la commande en 144 alors que l'étape utile a réussi&nbsp;: isoler les kills par motif (<code>[m]egga-...</code>) dans leur propre commande&nbsp;; vérifier une installation via <code>ir_module_module.state</code>, pas via le code retour.</div>
+  <div class="piege"><span class="tag">Séquences — company_id vide</span>Les <code>ir.sequence</code> de data se posent avec <code>company_id</code> vide (partagées)&nbsp;: une séquence liée à une société casse en multi-sociétés — patron des séquences du dépôt.</div>
+  <div class="piege"><span class="tag">Gardes métier — dans le contrôleur/modèle, jamais dans la vue</span>Un bouton masqué n'est pas une garde. Toute règle («&nbsp;périmé ne sort plus&nbsp;», «&nbsp;jamais deux fois&nbsp;») vit dans le modèle et se teste en course réelle (l'état change ENTRE la lecture et l'action).</div>
+
+  <h3>Payées par ces cinq chantiers, et par le regroupement</h3>
+  <p class="kicker">Celles-ci sont neuves. La première a été payée <b>trois fois</b> dans le même projet&nbsp;: c'est de loin la plus chère.</p>
+  <div class="piege"><span class="tag">Droits — l'ACL n'est que la moitié de la réponse</span>Un menu ne doit JAMAIS s'ouvrir sur un écran vide ou refusé. L'ACL dit ce qu'un groupe peut lire&nbsp;; une <b>règle d'enregistrement</b> peut le vider ensuite. <code>maintenance.equipment_rule_user</code> borne les équipements à ceux dont on est <em>suiveur</em>&nbsp;: tout employé «&nbsp;lit&nbsp;» les équipements, et n'en voit aucun. Vérifier les deux, et pour CHAQUE persona du dépôt, avant de poser un <code>groups=</code>.</div>
+  <div class="piege"><span class="tag">Écrans — un compteur ment vite</span>Un compteur, un badge, un total affiché doit dire la même chose que l'écran qu'il ouvre, <b>pour chaque lecteur selon ses droits</b>. Un compte calculé en <code>sudo</code> derrière une liste filtrée par une règle (droits, ou multi-sociétés) affiche un nombre que le clic dément.</div>
+  <div class="piege"><span class="tag">Gardes — toute garde a besoin de sa ceinture</span>Une garde qui lève une <code>UserError</code> depuis <code>_action_done</code> tire sur le <em>métier</em> si rien ne retire la ligne fautive avant&nbsp;: la séance ne se clôture plus, et le magasin bloque la clinique. Le point d'extension est <code>_megga_unservable_lines</code> (megga_dental_stock)&nbsp;: toute garde ajoutée doit l'alimenter.</div>
+  <div class="piege"><span class="tag">Stock — le cœur fusionne les mouvements</span><code>action_confirm</code> fusionne les <code>stock.move</code> qui partagent produit, emplacements et unité (<code>_merge_moves</code>). Ne JAMAIS réapparier les mouvements aux lignes d'origine par position après confirmation&nbsp;: porter le lien dans un champ, et l'ajouter à <code>_prepare_merge_moves_distinct_fields</code> pour empêcher la fusion.</div>
+  <div class="piege"><span class="tag">product_expiry — la date écrite après coup ne bouge rien</span>Écrire <code>expiration_date</code> sur un lot DÉJÀ sauvé ne décale pas <code>removal_date</code> — celui sur lequel le FEFO trie vraiment&nbsp;: le cœur calcule un delta contre <code>_origin</code>, qui vaut <code>self</code> hors onchange. Poser la date à la CRÉATION du lot. Corollaire pour les tests&nbsp;: un test FEFO qui patche la date après coup ne teste pas le FEFO.</div>
+  <div class="piege"><span class="tag">Data — <code>noupdate="1"</code> ne rattrape pas une base installée</span>Un correctif porté sur un enregistrement de data dans un bloc <code>noupdate="1"</code> ne s'applique JAMAIS à une base existante&nbsp;: la mise à jour du module saute l'enregistrement. Les tests, eux, installent à neuf et passent. Un correctif de data se double d'un script de migration, ou la promesse ne vaut que pour les nouveaux clients.</div>
+  <div class="piege"><span class="tag">Vues — une liste éditable n'ouvre pas la fiche</span>Cliquer une ligne d'une <code>&lt;list editable="bottom"&gt;</code> l'édite sur place&nbsp;: le formulaire n'est atteignable par aucun clic. <code>open_form_view="True"</code> rétablit la flèche d'ouverture — sans quoi l'écran phare d'un chantier peut n'exister que pour ses tests.</div>
+  <div class="piege"><span class="tag">Cœur — les défauts se propagent</span><code>maintenance.equipment.category.technician_user_id</code> vaut par défaut l'utilisateur qui INSTALLE, soit OdooBot&nbsp;; le cœur le recopie ensuite sur chaque équipement de la famille, puis sur ses demandes. Livrer une donnée de configuration, c'est aussi neutraliser les défauts qu'elle traîne.</div>
+  <div class="piege"><span class="tag">Documentation — la promesse doit tenir</span>Le mode de défaillance le plus fréquent de ce dépôt&nbsp;: un commentaire, un README, un message de commit qui annoncent ce que le code ne fait pas («&nbsp;raccourci filtré&nbsp;» sans domaine, «&nbsp;le magasinier voit le cycle&nbsp;» sans champ dans aucune vue). Confronter chaque phrase au code fait partie de la revue, et vaut correctif même quand le code est bon.</div>
+  <div class="piege"><span class="tag">Tests — un test qui ne mord pas est pire que rien</span>Vidage de cache à la main qui masque une dépendance manquante, <code>assertTrue</code> sur un <code>env.ref</code> toujours vrai, assertion de non-vacuité qu'une méthode «&nbsp;renvoie tout&nbsp;» passerait, deux cas construits dans le sens où les deux stratégies s'accordent&nbsp;: à chaque fois, la mutation correspondante ne fait tomber aucun test. Écrire le test qui échoue AVANT le correctif.</div>
+  <div class="piege"><span class="tag">Menus — <code>_visible_menu_ids</code> n'est pas la couche qui coupe</span>Elle marque le descendant AVANT de remonter&nbsp;: sous un ancêtre écarté par ses groupes, l'orphelin RESTE dans l'ensemble. Ce qui le fait disparaître de la barre, c'est <code>load_menus</code> (filtre «&nbsp;not related to an app&nbsp;»). Conséquence pour les tests&nbsp;: un témoin de visibilité de menu qui interroge <code>_visible_menu_ids</code> peut rester vert sous la mutation même qu'il prétend attraper. Interroger <code>load_menus</code>, la couche que le client web appelle.</div>
+  <div class="piege"><span class="tag">Modules — un module ne monte JAMAIS sa dépendance</span><code>button_upgrade</code> ne parcourt que l'AVAL — les modules qui dépendent de lui&nbsp;; <code>update_list</code> se contente d'incrémenter un compteur d'affichage quand la version du manifeste dépasse celle en base, sans toucher à l'état. Une dépendance restée «&nbsp;installed&nbsp;» ne rejoue pas ses données. Dès qu'un module référence un <code>xml_id</code> neuf posé par un module dont il dépend, <code>-i</code> ou <code>-u</code> de l'enfant SEUL casse sur «&nbsp;External ID not found&nbsp;». Deux remèdes&nbsp;: monter le parent (lui seul cascade), et re-déclarer l'enregistrement dans l'enfant sous le <code>xml_id</code> du parent — le seul qui couvre aussi le parcours d'INSTALLATION, où aucun script de migration ne tourne.</div>
+  <div class="piege"><span class="tag">Démo — le décor doit rendre l'histoire possible</span>Un semeur qui met le même produit dans deux charges laisse le FEFO servir la mauvaise&nbsp;: la charge qu'on marque non conforme n'a alors servi personne, et le rappel — la valeur du module — ne montre rien. Et le shell Odoo tourne en OdooBot&nbsp;: basculer en administrateur, sinon tout le décor est signé par le robot du système.</div>
+
+  <h2 id="risques">Risques assumés, hors périmètre, suite</h2>
+  <ul>
+    <li><b>Valorisation comptable</b>&nbsp;: au premier jet, le coût suit le <code>standard_price</code> et la valorisation reste celle du cœur par défaut — pas d'anglo-saxon, pas de comptes de stock dédiés. C'est un chantier comptable séparé si le fiduciaire le demande.</li>
+    <li><b>Pas de codes-barres ni de terminal de scan</b> au premier jet&nbsp;: la saisie est celle des écrans standard. S'ajoutera si l'usage le réclame.</li>
+    <li><b>Traçabilité de stérilisation</b>&nbsp;: <span class="ok-chip">livré</span>c'était la phase 2 optionnelle&nbsp;; elle est devenue le <a href="#c5">chantier 5</a>.</li>
+    <li><b>Lot indisponible</b> (D10) et <b>stock négatif</b> (D8) sont des limites CHOISIES, documentées au README&nbsp;: le magasin constate, la clinique ne s'arrête jamais.</li>
+    <li><b>Le rappel ne voit que ce qui est passé par une clôture de séance</b>, et la <b>stérilité n'existe que si le produit porte un délai</b>&nbsp;: deux limites du chantier 5, dites à l'écran et au README.</li>
+  </ul>
+  <h3>La suite, si elle vient</h3>
+  <ul>
+    <li><b>Valorisation comptable</b> et <b>codes-barres</b> restent hors périmètre, aux mêmes conditions qu'au premier jour&nbsp;: le fiduciaire pour l'une, l'usage pour l'autre.</li>
+    <li><b>Impression d'étiquettes de sachet</b> (numéro de cycle + date de stérilité + code-barres) — le lot porte déjà tout ce qu'il faut&nbsp;; il ne manque qu'un rapport QWeb. C'est le prolongement naturel du chantier 5, et il est petit.</li>
+    <li><b>Une base déjà installée n'hérite pas des correctifs de data</b>&nbsp;: voir la leçon <code>noupdate</code> ci-dessus. À traiter avant le premier client en production, par un script de migration.</li>
+  </ul>
+
+  <h2 id="amorce">La phrase d'amorçage</h2>
+  <p>Elle a servi&nbsp;: c'est elle qui a lancé la session d'exécution, et les cinq chantiers en sont sortis. Conservée telle quelle, pour mémoire — et parce qu'une session qui reprendrait ce plan (migration, prolongement) part du même endroit&nbsp;:</p>
+  <pre><code>Lis d'abord entierement le plan « Inventaire du cabinet » :
+https://claude.ai/code/artifact/7cccf8b0-daf7-4210-b4ef-2b89b34c422f
+Execute le chantier 0 (amorcage), puis lance le chantier 1.
+Un chantier a la fois, livre selon le deroule standard du plan.</code></pre>
+  <p><span class="ok-chip">rappel</span>Aucun code n'avait été écrit dans la session qui a produit ce plan&nbsp;: tout a commencé au chantier 0. La session d'exécution a livré les chantiers 0 à 5, en amorçant sur <b>457</b> tests verts et en finissant sur <b>594</b>, regroupement compris.</p>
+
+  <p class="footer-note">Megga — surcouche propriétaire d'Odoo 19 Community pour cabinets, restaurants et garages suisses. Ce plan complète le README du dépôt <code>megga/megga-erp</code>, qui reste la référence des conventions&nbsp;; en cas de divergence, le dépôt fait foi.</p>
+</div>

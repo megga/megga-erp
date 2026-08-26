@@ -814,6 +814,13 @@ par e-mail chaque réservation confirmée qui démarre dans les 24 heures
 réservation de bout en bout par HTTP (CSRF compris). Indépendant des
 verticales : il ne dépend que de `calendar`.
 
+## Documents
+
+Le plan d'execution du chantier « Intendance » (magasin, kits, reassort,
+materiel, sterilisation) et le prompt de conception des ecrans vivent dans
+[`docs/`](docs/). Ils suivent le depot : en cas de divergence, c'est le code
+qui fait foi.
+
 ## Origine
 
 Ce dépôt a été extrait du dépôt d'audit `megga/rdc` par `git subtree split`,
