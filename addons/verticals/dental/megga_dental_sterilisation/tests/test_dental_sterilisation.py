@@ -591,10 +591,138 @@ class TestDentalSterilisation(TransactionCase):
                          'menu_dental_sterilisation_root'))
         self.assertEqual(
             menu.parent_id.parent_id,
+            self.env.ref('megga_dental.menu_dental_intendance'))
+        self.assertEqual(
+            menu.parent_id.parent_id.parent_id,
             self.env.ref('megga_dental.menu_dental_root'))
         # Le modèle est celui du cabinet : pas de domaine à poser, tout
         # cycle de stérilisation EST du cabinet.
         self.assertFalse(safe_eval(action.domain or '[]'))
+
+    # ------------------------------------------------------------------
+    # « Intendance » : le conteneur des trois familles
+    #
+    # Ce module est le seul où les trois sont installés à la fois — le
+    # seul endroit, donc, où l'on peut tester le regroupement.
+    # ------------------------------------------------------------------
+    def test_les_trois_familles_vivent_sous_intendance_dans_l_ordre(self):
+        """Le magasin compte, la stérilisation prouve, le registre
+        entretient : c'est la formule du produit, et c'est l'ordre du
+        menu."""
+        intendance = self.env.ref('megga_dental.menu_dental_intendance')
+        magasin = self.env.ref('megga_dental_stock.menu_dental_stock_root')
+        registre = self.env.ref(
+            'megga_dental_materiel.menu_dental_materiel_root')
+        sterilisation = self.env.ref(
+            'megga_dental_sterilisation.menu_dental_sterilisation_root')
+
+        self.assertEqual(
+            intendance.parent_id, self.env.ref('megga_dental.menu_dental_root'))
+        # Nom et séquence sont verrouillés ici parce que le conteneur
+        # est RE-DÉCLARÉ dans les trois modules (pour que chacun soit
+        # installable seul sur une base en service) : sans ce témoin,
+        # une copie pourrait le renommer ou le déplacer en silence, et
+        # la dernière chargée gagnerait.
+        self.assertEqual(intendance.name, "Intendance")
+        self.assertEqual(
+            intendance.sequence, 40,
+            "« Intendance » reprend la place du magasin : entre "
+            "« Constats » (30) et « Configuration » (90).")
+        self.assertLess(
+            self.env.ref('megga_dental.menu_dental_tooth_records').sequence,
+            intendance.sequence)
+        self.assertLess(
+            intendance.sequence,
+            self.env.ref('megga_dental.menu_dental_config').sequence)
+        for racine in (magasin, sterilisation, registre):
+            self.assertEqual(racine.parent_id, intendance)
+        self.assertEqual(
+            [magasin.sequence, sterilisation.sequence, registre.sequence],
+            [10, 20, 30],
+            "L'ordre porte la formule : compter, prouver, entretenir.")
+
+    def test_intendance_ne_porte_aucun_groupe(self):
+        """Le conteneur ne garde rien, et c'est ce qui le rend sûr.
+
+        `_visible_menu_ids` remonte l'ascendance depuis les menus
+        porteurs d'une action accessible et s'arrête dès qu'un ancêtre
+        a été écarté par ses propres groupes — mais c'est `load_menus`
+        qui achève le travail : un sous-arbre dont l'ancêtre a disparu
+        n'a plus d'app_id et sort de la barre. Un groupe posé ici
+        décapiterait les deux autres familles."""
+        intendance = self.env.ref('megga_dental.menu_dental_intendance')
+        self.assertFalse(
+            intendance.group_ids,
+            "Poser un groupe sur « Intendance » masquerait les familles "
+            "qui ne le portent pas, quels que soient leurs propres "
+            "droits.")
+        self.assertFalse(
+            intendance.action,
+            "« Intendance » est un conteneur : sans action et sans "
+            "enfant visible, le cœur ne l'affiche pas du tout.")
+
+    def test_intendance_ne_decapite_aucune_famille(self):
+        """LE témoin du regroupement : chaque rôle voit sa famille, et
+        voit « Intendance » avec elle.
+
+        Ce qui ferme la stérilisation au magasinier, ce n'est PAS
+        l'ACL — elle lui en donne la lecture par `stock.group_stock_user`
+        (security/ir.model.access.csv) — c'est le `groups=` posé sur
+        « Cycles d'autoclave », le menu racine de la stérilisation
+        portant lui-même `base.group_user`. Le responsable technique,
+        lui, n'a aucun groupe stock. Si le conteneur portait le groupe
+        de l'un, l'autre perdrait tout son sous-arbre sans qu'un seul
+        droit n'ait changé."""
+        Menu = self.env['ir.ui.menu']
+        intendance = self.env.ref('megga_dental.menu_dental_intendance')
+        magasin = self.env.ref('megga_dental_stock.menu_dental_stock_root')
+        sterilisation = self.env.ref(
+            'megga_dental_sterilisation.menu_dental_sterilisation_root')
+
+        magasinier = self.env['res.users'].create({
+            'name': "Magasinier intendance",
+            'login': "intendance_magasinier",
+            'email': "magasinier.intendance@exemple.ch",
+            'group_ids': [
+                (4, self.env.ref('megga_dental.group_dental_reception').id),
+                (4, self.env.ref('stock.group_stock_user').id),
+            ],
+        })
+        technicien = self.env['res.users'].create({
+            'name': "Responsable technique intendance",
+            'login': "intendance_technicien",
+            'email': "technicien.intendance@exemple.ch",
+            'group_ids': [
+                (4, self.env.ref('megga_dental.group_dental_reception').id),
+                (4, self.env.ref(
+                    'maintenance.group_equipment_manager').id),
+            ],
+        })
+
+        # `load_menus`, PAS `_visible_menu_ids` : c'est ce que le
+        # client web appelle, et c'est la seule couche qui coupe
+        # vraiment. `_visible_menu_ids` marque le descendant AVANT de
+        # remonter — un groupe posé sur « Intendance » y laisserait
+        # donc « Stérilisation » présent, et le témoin serait vert sous
+        # la mutation qu'il prétend attraper.
+        vus_magasinier = Menu.with_user(magasinier).load_menus(False)
+        vus_technicien = Menu.with_user(technicien).load_menus(False)
+
+        # La CHAÎNE entière, pas la seule présence du conteneur :
+        # « Intendance » est de toute façon ouvert à tout employé par
+        # « Entretiens », donc l'y trouver seul ne prouverait rien.
+        racine = self.env.ref('megga_dental.menu_dental_root')
+        self.assertLessEqual(
+            {magasin.id, intendance.id, racine.id}, set(vus_magasinier),
+            "Le magasin, son conteneur et l'app : la chaîne entière.")
+        self.assertLessEqual(
+            {sterilisation.id, intendance.id, racine.id},
+            set(vus_technicien),
+            "Un groupe stock posé sur « Intendance » aurait coupé la "
+            "stérilisation au responsable technique.")
+        # Et chacun voit LA SIENNE, pas celle de l'autre.
+        self.assertNotIn(sterilisation.id, vus_magasinier)
+        self.assertNotIn(magasin.id, vus_technicien)
 
     def test_la_seance_se_clot_meme_avec_un_set_non_conforme(self):
         """LA règle cardinale du dépôt : le stock ne bloque jamais la

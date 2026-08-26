@@ -223,4 +223,4 @@ PYTHON
 echo
 echo "Base de demo prete : $BASE"
 echo "  python3 $ODOO_BIN -d $BASE --addons-path=$CHEMINS --http-port=8069"
-echo "  puis Dentaire > Sterilisation > Cycles d'autoclave"
+echo "  puis Dentaire > Intendance > Sterilisation > Cycles d'autoclave"

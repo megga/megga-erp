@@ -290,10 +290,15 @@ class TestDentalMateriel(TransactionCase):
             "Maintenance sans qu'un test ne morde.")
         self.assertEqual(
             racine.parent_id,
+            self.env.ref('megga_dental.menu_dental_intendance'),
+            "Le registre vit sous « Intendance », aux côtés du magasin "
+            "et de la stérilisation.")
+        self.assertEqual(
+            racine.parent_id.parent_id,
             self.env.ref('megga_dental.menu_dental_root'),
             "C'est le PARENT dentaire qui garde vraiment le "
             "raccourci : les groupes du menu racine se réduisent à "
-            "base.group_user.")
+            "base.group_user, et « Intendance » n'en porte aucun.")
 
     def test_le_praticien_ne_voit_pas_un_registre_vide(self):
         """Le praticien ne voit pas « Appareils » — il y verrait le

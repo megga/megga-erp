@@ -27,7 +27,7 @@ serveur, ni modification ni suppression, rectification chaînée),
 fauteuils et créneaux (conflits refusés par fauteuil et par
 praticien, attribution automatique, calendrier des séances).
 """,
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",

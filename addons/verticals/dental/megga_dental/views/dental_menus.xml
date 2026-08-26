@@ -52,6 +52,48 @@
               sequence="30"
               groups="megga_dental.group_dental_praticien"/>
 
+    <!-- L'INTENDANCE : ce qui fait tourner le cabinet sans soigner
+         personne. Le magasin compte, la sterilisation prouve, le
+         registre entretient — trois modules livres separement, une
+         seule entree pour l'assistante qui les tient tous les trois.
+
+         CE CONTENEUR NE PORTE AUCUN GROUPE, ET C'EST DELIBERE.
+
+         `_visible_menu_ids` (ir_ui_menu.py:120-135) ne part PAS des
+         conteneurs : il part des menus porteurs d'une action
+         accessible, puis REMONTE l'ascendance — en s'arretant des
+         qu'un ancetre a ete ecarte par ses propres groupes. Attention
+         a la lecture exacte : le descendant deja marque, lui, RESTE
+         dans l'ensemble ; seul le conteneur en sort. Ce qui acheve la
+         decapitation, c'est `load_menus` (ir_ui_menu.py:249-259) —
+         `_set_app_id` descend recursivement depuis les racines
+         visibles, un sous-arbre dont l'ancetre a disparu n'est jamais
+         atteint, et le filtre « Filter out menus not related to an
+         app » l'elimine. Le coeur commente lui-meme ce cas.
+
+         Poser ici le groupe stock aurait donc fait disparaitre la
+         sterilisation et le materiel de la barre du gestionnaire
+         d'equipements, et poser l'union des trois n'aurait rien garde
+         que `base.group_user` ne donne deja.
+
+         Sans groupe, l'arbitrage revient entierement aux enfants — qui
+         le portent tous — et un cabinet qui n'installe aucun des trois
+         modules ne voit rien : un conteneur sans action et sans enfant
+         visible n'entre jamais dans `visible_ids`. C'est la meme
+         doctrine que les anciennes racines : ce qui garde vraiment,
+         c'est le PARENT dentaire et le groupe de chaque enfant.
+
+         CONSEQUENCE ASSUMEE : « Entretiens » etant ouvert a tout
+         employe (`base.group_user`, patron du coeur), « Intendance »
+         apparait pour tout le personnel du cabinet — exactement comme
+         « Materiel » avant le regroupement. Le conteneur ne masque
+         rien de plus, et rien de moins, qu'auparavant.
+
+         Sequence 40 : elle reprend celle que « Stock du cabinet »
+         occupait, entre « Constats » (30) et « Configuration » (90). -->
+    <menuitem id="menu_dental_intendance" name="Intendance"
+              parent="menu_dental_root" sequence="40"/>
+
     <menuitem id="menu_dental_config" name="Configuration"
               parent="menu_dental_root" sequence="90"
               groups="base.group_system"/>

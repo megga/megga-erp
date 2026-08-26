@@ -49,7 +49,7 @@ fournisseur du produit des que le rayon passe sous le minimum. Aucun
 cron maison — le coeur en a deja un. La reception remet des lots dates
 en rayon, que le FEFO range a leur place.
 """,
-    'version': '19.0.1.2.0',
+    'version': '19.0.1.2.1',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",

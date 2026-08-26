@@ -28,11 +28,37 @@
          dentaire, réservé aux groupes LPD — et le groupe de son enfant
          qui gardent vraiment.
 
-         Séquence 42 : entre « Stock du cabinet » (40) et « Matériel »
-         (45). Le magasin compte, la stérilisation prouve, le registre
-         entretient. -->
+         Sous « Intendance » (megga_dental), séquence 20 : entre « Stock
+         du cabinet » (10) et « Matériel » (30). Le magasin compte, la
+         stérilisation prouve, le registre entretient. -->
+    <!-- LE CONTENEUR EST RE-DECLARE ICI, ET C'EST INDISPENSABLE.
+
+         Il appartient a megga_dental (c'est son xml_id), mais un
+         module ne monte JAMAIS sa dependance : `button_upgrade`
+         (ir_module.py) ne parcourt que l'AVAL — les modules qui
+         dependent de lui — et `update_list` se contente d'incrementer
+         un compteur d'affichage quand la version du manifeste depasse
+         celle en base, sans jamais toucher `state`. Un module reste
+         « installed » ne rejoue pas ses donnees.
+
+         Sans ce bloc, `-u megga_dental_sterilisation` seul sur une base en
+         service mourrait sur « External ID not found in the system:
+         megga_dental.menu_dental_intendance » — et c'est justement le
+         parcours prevu pour ce module, dont le post-migrate 19.0.1.0.1 tourne APRES le
+         chargement des donnees et n'atteindrait donc plus la base.
+
+         La declaration croisee est legale (`_test_xml_id`,
+         odoo/tools/convert.py, n'exige que l'installation du module
+         cite — megga_dental est une dependance dure) et idempotente :
+         quand megga_dental monte dans la meme invocation il charge le
+         menu en premier, et ce bloc le reecrit a l'identique. Le nom
+         et la sequence sont verrouilles par un test, pour qu'une copie
+         ne puisse pas deriver en silence. -->
+    <menuitem id="megga_dental.menu_dental_intendance" name="Intendance"
+              parent="megga_dental.menu_dental_root" sequence="40"/>
+
     <menuitem id="menu_dental_sterilisation_root" name="Stérilisation"
-              parent="megga_dental.menu_dental_root" sequence="42"
+              parent="megga_dental.menu_dental_intendance" sequence="20"
               groups="maintenance.group_equipment_manager,base.group_user"/>
 
     <menuitem id="menu_dental_sterilisation_cycles" name="Cycles d'autoclave"

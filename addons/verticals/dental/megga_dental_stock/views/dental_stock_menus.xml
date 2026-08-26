@@ -7,9 +7,37 @@
          groupes du cœur (stock.group_stock_user / _manager) gardent
          chaque écran, et sans eux le menu ne s'affiche pas.
 
-         Séquence 40 : entre « Constats » (30) et « Configuration » (90). -->
+         Sous « Intendance » (megga_dental), aux côtés de la
+         stérilisation et du registre du matériel : le magasin compte,
+         la stérilisation prouve, le registre entretient. Séquence 10 :
+         il vient en premier des trois, c'est lui qu'on ouvre le plus. -->
+    <!-- LE CONTENEUR EST RE-DECLARE ICI, ET C'EST INDISPENSABLE.
+
+         Il appartient a megga_dental (c'est son xml_id), mais un
+         module ne monte JAMAIS sa dependance : `button_upgrade`
+         (ir_module.py) ne parcourt que l'AVAL — les modules qui
+         dependent de lui — et `update_list` se contente d'incrementer
+         un compteur d'affichage quand la version du manifeste depasse
+         celle en base, sans jamais toucher `state`. Un module reste
+         « installed » ne rejoue pas ses donnees.
+
+         Sans ce bloc, `-u megga_dental_stock` seul sur une base en
+         service mourrait sur « External ID not found in the system:
+         megga_dental.menu_dental_intendance » — et c'est justement le
+         parcours prevu pour ce module.
+
+         La declaration croisee est legale (`_test_xml_id`,
+         odoo/tools/convert.py, n'exige que l'installation du module
+         cite — megga_dental est une dependance dure) et idempotente :
+         quand megga_dental monte dans la meme invocation il charge le
+         menu en premier, et ce bloc le reecrit a l'identique. Le nom
+         et la sequence sont verrouilles par un test, pour qu'une copie
+         ne puisse pas deriver en silence. -->
+    <menuitem id="megga_dental.menu_dental_intendance" name="Intendance"
+              parent="megga_dental.menu_dental_root" sequence="40"/>
+
     <menuitem id="menu_dental_stock_root" name="Stock du cabinet"
-              parent="megga_dental.menu_dental_root" sequence="40"
+              parent="megga_dental.menu_dental_intendance" sequence="10"
               groups="stock.group_stock_user"/>
 
     <menuitem id="menu_dental_stock_products" name="Consommables"

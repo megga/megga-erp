@@ -37,7 +37,7 @@ Menu « Materiel » sous le menu du cabinet : les equipements groupes par
 fauteuil, et les demandes d'entretien. Des raccourcis filtres vers les
 ecrans du coeur, pas un doublon de l'app Maintenance.
 """,
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",

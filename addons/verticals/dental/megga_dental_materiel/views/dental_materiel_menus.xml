@@ -24,11 +24,38 @@
          menu dentaire, réservé aux groupes LPD du cabinet — et le
          groupe posé sur chaque enfant.
 
-         Séquence 45 : après « Stock du cabinet » (40), avant
-         « Configuration » (90) — le magasin compte, le registre
+         Sous « Intendance » (megga_dental), séquence 30 : le dernier
+         des trois, après le magasin (10) et la stérilisation (20) — le
+         magasin compte, la stérilisation prouve, le registre
          entretient. -->
+    <!-- LE CONTENEUR EST RE-DECLARE ICI, ET C'EST INDISPENSABLE.
+
+         Il appartient a megga_dental (c'est son xml_id), mais un
+         module ne monte JAMAIS sa dependance : `button_upgrade`
+         (ir_module.py) ne parcourt que l'AVAL — les modules qui
+         dependent de lui — et `update_list` se contente d'incrementer
+         un compteur d'affichage quand la version du manifeste depasse
+         celle en base, sans jamais toucher `state`. Un module reste
+         « installed » ne rejoue pas ses donnees.
+
+         Sans ce bloc, `-i megga_dental_materiel` seul sur une base en
+         service mourrait sur « External ID not found in the system:
+         megga_dental.menu_dental_intendance » — et c'est justement le
+         parcours prevu pour ce module, que le README donne en « installation
+         deliberee, jamais auto » et que init_prod.sh n'installe pas.
+
+         La declaration croisee est legale (`_test_xml_id`,
+         odoo/tools/convert.py, n'exige que l'installation du module
+         cite — megga_dental est une dependance dure) et idempotente :
+         quand megga_dental monte dans la meme invocation il charge le
+         menu en premier, et ce bloc le reecrit a l'identique. Le nom
+         et la sequence sont verrouilles par un test, pour qu'une copie
+         ne puisse pas deriver en silence. -->
+    <menuitem id="megga_dental.menu_dental_intendance" name="Intendance"
+              parent="megga_dental.menu_dental_root" sequence="40"/>
+
     <menuitem id="menu_dental_materiel_root" name="Matériel"
-              parent="megga_dental.menu_dental_root" sequence="45"
+              parent="megga_dental.menu_dental_intendance" sequence="30"
               groups="maintenance.group_equipment_manager,base.group_user"/>
 
     <menuitem id="menu_dental_materiel_equipment" name="Appareils"

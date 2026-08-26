@@ -233,6 +233,19 @@ Mise à jour d'un module Megga : `git pull`, puis
 -c /tmp/odoo.runtime.conf -d megga -u megga_camt --stop-after-init`,
 **après une sauvegarde manuelle**.
 
+**Un module ne monte JAMAIS sa dépendance.** `-u <module>` marque ce module et
+tout son **aval** — les modules qui dépendent de lui — jamais l'amont :
+`button_upgrade` ne parcourt que les dépendants, et `update_list` se contente
+d'incrémenter un compteur d'affichage quand la version du manifeste dépasse
+celle en base, sans toucher à l'état. Une dépendance restée « installed » ne
+rejoue pas ses données. Dès qu'une version référence un identifiant externe
+neuf posé par un module dont elle dépend, il faut donc monter le **parent** :
+pour la pile dentaire, `-u megga_dental`, qui entraîne `_rdv`, `_portal`,
+`_stock`, `_materiel` puis `_sterilisation`. Même règle pour une installation
+délibérée sur une base en service : `-u megga_dental -i megga_dental_materiel`
+**dans une seule invocation**, jamais `-i megga_dental_materiel` seul — les
+scripts de migration ne tournent pas à l'installation.
+
 ## Avant le premier client réel
 
 - [ ] `.env` avec des mots de passe longs et uniques (pas ceux de l'exemple)

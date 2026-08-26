@@ -45,7 +45,7 @@ Ce que le module ajoute vraiment, c'est le lien dans les deux sens :
 Aucun cycle ne s'efface : un registre de stérilisation est un document
 de preuve. Un cycle validé est figé, comme une ordonnance émise.
 """,
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'category': 'Industries',
     'author': "Megga",
     'website': "https://github.com/megga/megga-erp",

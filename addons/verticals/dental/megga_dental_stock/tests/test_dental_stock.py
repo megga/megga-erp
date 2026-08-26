@@ -353,7 +353,13 @@ class TestDentalStock(TransactionCase):
         self.assertEqual(menu.group_ids,
                          self.env.ref('stock.group_stock_user'))
         self.assertEqual(
-            menu.parent_id, self.env.ref('megga_dental.menu_dental_root'))
+            menu.parent_id,
+            self.env.ref('megga_dental.menu_dental_intendance'),
+            "Le magasin vit sous « Intendance », aux côtés du registre "
+            "et de la stérilisation.")
+        self.assertEqual(
+            menu.parent_id.parent_id,
+            self.env.ref('megga_dental.menu_dental_root'))
 
     def test_menu_invisible_sans_droits_stock(self):
         """La réception sans droits stock ne voit pas le magasin : le

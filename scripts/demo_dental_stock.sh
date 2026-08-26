@@ -250,4 +250,4 @@ PYTHON
 echo
 echo "Base de demo prete : $BASE"
 echo "  python3 $ODOO_BIN -d $BASE --addons-path=$CHEMINS --http-port=8069"
-echo "  puis Dentaire > Stock du cabinet > Lots et peremption"
+echo "  puis Dentaire > Intendance > Stock du cabinet > Lots et peremption"
