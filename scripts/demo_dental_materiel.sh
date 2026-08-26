@@ -150,6 +150,9 @@ for (nom, categorie, fauteuil, serie, modele, service, garantie,
 #    suivant tout seul — c'est la demonstration du chantier, et il n'y
 #    a pas une ligne de code maison derriere.
 terminee = env['maintenance.stage'].search([('done', '=', True)], limit=1)
+# Le shell tourne en OdooBot : sans cette ligne, toutes les demandes de
+# la demo seraient « demandees par » le robot du systeme.
+demandeur = env.ref('base.user_admin')
 autoclave = appareils["AC-B18-77421"]
 validation = env['maintenance.request'].search(
     [('equipment_id', '=', autoclave.id),
@@ -159,6 +162,7 @@ if not validation:
         'name': "Validation trimestrielle de l'autoclave",
         'equipment_id': autoclave.id,
         'maintenance_team_id': equipe.id,
+        'owner_user_id': demandeur.id,
         'maintenance_type': 'preventive',
         'recurring_maintenance': True,
         'repeat_interval': 3,
@@ -181,6 +185,7 @@ if not revision:
         'name': "Revision annuelle du compresseur",
         'equipment_id': compresseur.id,
         'maintenance_team_id': equipe.id,
+        'owner_user_id': demandeur.id,
         'maintenance_type': 'preventive',
         'recurring_maintenance': True,
         'repeat_interval': 1,
@@ -204,6 +209,7 @@ if not panne:
         'name': "Declenchement intermittent au fauteuil 1",
         'equipment_id': radio.id,
         'maintenance_team_id': equipe.id,
+        'owner_user_id': demandeur.id,
         'maintenance_type': 'corrective',
         'priority': '3',
         'kanban_state': 'blocked',
