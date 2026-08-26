@@ -148,14 +148,12 @@ class StockPicking(models.Model):
         self.ensure_one()
         alerte = []
         for move in self.move_ids:
-            perimes = move.move_line_ids.filtered(
-                lambda ml: ml.lot_id.product_expiry_alert)
-            if perimes:
-                alerte.append(_(
-                    "%(produit)s : %(lots)s écarté(s), périmé(s).") % {
-                        'produit': move.product_id.display_name,
-                        'lots': ", ".join(perimes.mapped('lot_id.name'))})
-                perimes.unlink()
+            for lignes, motif in self._megga_unservable_lines(move):
+                lignes = lignes.exists()
+                if not lignes:
+                    continue
+                alerte.append(motif)
+                lignes.unlink()
             manque = move.product_uom_qty - move.quantity
             if move.product_uom.compare(manque, 0) > 0:
                 # Rien de servable en rayon : on sort quand même. Le
@@ -178,6 +176,31 @@ class StockPicking(models.Model):
             move.picked = True
         if alerte:
             self._megga_flag_supply_gap(alerte)
+
+    def _megga_unservable_lines(self, move):
+        """Ce que le cabinet ne peut PAS servir sur ce mouvement, et pourquoi.
+
+        Rend une liste de `(lignes, motif)`. Les lignes sont retirées
+        de la réservation avant validation, et le manque repart sans
+        lot : c'est la ceinture qui fait que LE STOCK NE BLOQUE JAMAIS
+        LA CLINIQUE. Sans elle, une garde du magasin refuserait la
+        sortie depuis `_action_done` et la séance ne se clôturerait
+        plus — la garde tirerait sur le soin au lieu de tirer sur le
+        magasin.
+
+        POINT D'EXTENSION : chaque module du magasin y ajoute ses
+        refus. Toute garde ajoutée sur `stock.move.line._action_done`
+        DOIT avoir sa contrepartie ici, sans quoi elle bloque la
+        clinique — c'est la leçon du chantier 5, qui l'avait oubliée.
+        """
+        perimes = move.move_line_ids.filtered(
+            lambda ml: ml.lot_id.product_expiry_alert)
+        if not perimes:
+            return []
+        return [(perimes, _(
+            "%(produit)s : %(lots)s écarté(s), périmé(s).") % {
+                'produit': move.product_id.display_name,
+                'lots': ", ".join(perimes.mapped('lot_id.name'))})]
 
     def _megga_flag_supply_gap(self, motifs):
         """Signale l'écart au magasin — pas à la clinique.

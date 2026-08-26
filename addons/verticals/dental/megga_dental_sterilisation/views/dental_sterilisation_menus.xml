@@ -2,22 +2,41 @@
 <odoo>
     <!-- Le registre de stérilisation sous le menu du cabinet.
 
-         Gardé par le groupe d'entrée du dentaire
-         (`group_dental_reception`, impliqué par le groupe Soins) : la
-         personne qui décharge l'autoclave est de l'équipe du cabinet,
-         et l'ACL du modèle lui donne exactement ce menu. Aucun droit
-         stock n'est exigé — la validation fait entrer les sets en
-         `sudo`, effet système du flux, comme la clôture de séance
-         décompte les consommables.
+         GARDÉ PAR LE GESTIONNAIRE D'ÉQUIPEMENTS, et c'est la même
+         leçon que le chantier 4 — que ce chantier avait rouverte.
+
+         Le cycle exige un autoclave, et l'autoclave est un équipement
+         du cœur. L'ACL en donne bien la lecture à tout employé, mais
+         une règle d'enregistrement (`maintenance.equipment_rule_user`)
+         la borne aux équipements dont on est SUIVEUR. Une assistante
+         qui n'a que le groupe Réception aurait donc ouvert le
+         formulaire, cherché son autoclave dans une liste VIDE, et
+         n'aurait pas pu enregistrer une seule charge : le champ est
+         obligatoire. Menu visible, écran inutilisable.
+
+         Le registre revient donc au responsable technique — celui qui
+         tient déjà le matériel, et à qui la validation périodique de
+         l'autoclave incombe de toute façon. Un cabinet qui veut que
+         ses assistantes saisissent les charges leur donne le droit
+         « Gestionnaire d'équipements » : un geste d'administration
+         délibéré, documenté au README, comme les droits stock du
+         magasin. Le module n'invente aucun groupe et ne câble aucun
+         implied_ids.
+
+         Le menu racine porte les deux groupes, patron du cœur : il ne
+         garde donc rien à lui seul, c'est son PARENT — le menu
+         dentaire, réservé aux groupes LPD — et le groupe de son enfant
+         qui gardent vraiment.
 
          Séquence 42 : entre « Stock du cabinet » (40) et « Matériel »
          (45). Le magasin compte, la stérilisation prouve, le registre
          entretient. -->
     <menuitem id="menu_dental_sterilisation_root" name="Stérilisation"
               parent="megga_dental.menu_dental_root" sequence="42"
-              groups="megga_dental.group_dental_reception"/>
+              groups="maintenance.group_equipment_manager,base.group_user"/>
 
     <menuitem id="menu_dental_sterilisation_cycles" name="Cycles d'autoclave"
               parent="menu_dental_sterilisation_root"
-              action="action_dental_sterilisation_cycle" sequence="10"/>
+              action="action_dental_sterilisation_cycle" sequence="10"
+              groups="maintenance.group_equipment_manager"/>
 </odoo>

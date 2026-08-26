@@ -362,15 +362,19 @@ class TestDentalSterilisation(TransactionCase):
         """La question à laquelle le cabinet doit répondre en une
         minute : l'indicateur revient non conforme — qui a été soigné
         avec cette charge ?"""
+        temoin = self._cycle(lignes=[(self.set_chirurgie, 2.0)])
+        temoin.action_validate()
         cycle = self._cycle(indicator='pending')
         cycle.action_validate()
         seance = self._seance_qui_consomme(cycle)
 
-        cycle.indicator = 'fail'
         cycle.action_fail()
 
         servies = cycle._megga_served_treatments()
-        self.assertIn(seance, servies)
+        self.assertEqual(servies, seance,
+                         "Exactement la séance servie — une méthode qui "
+                         "renverrait tout passerait le test sinon.")
+        self.assertFalse(temoin._megga_served_treatments())
         action = cycle.action_megga_served_treatments()
         self.assertIn(
             seance,
@@ -388,12 +392,16 @@ class TestDentalSterilisation(TransactionCase):
     def test_la_seance_porte_les_cycles_qui_l_ont_servie(self):
         """La preuve, dans l'autre sens : « avec quoi m'a-t-on
         soigné ? »."""
+        temoin = self._cycle(lignes=[(self.set_chirurgie, 2.0)])
+        temoin.action_validate()
         cycle = self._cycle()
         cycle.action_validate()
 
         seance = self._seance_qui_consomme(cycle)
 
-        self.assertEqual(seance.sterilisation_cycle_ids, cycle)
+        self.assertEqual(seance.sterilisation_cycle_ids, cycle,
+                         "Le cycle qui l'a servie, et lui seul : la "
+                         "charge témoin existe et n'y figure pas.")
 
     def test_une_seance_sans_consommation_ne_porte_aucun_cycle(self):
         """Le compute ne doit pas inventer de preuve."""
@@ -405,17 +413,30 @@ class TestDentalSterilisation(TransactionCase):
         self.assertFalse(seance.sterilisation_cycle_ids)
 
     def test_le_fefo_sort_le_set_dont_la_sterilite_expire_en_premier(self):
-        """La raison d'être de la catégorie dédiée : sans FEFO, le
-        sachet du fond périme pendant qu'on ouvre celui du dessus, et
-        une charge entière part au rebut."""
-        ancien = self._cycle()
-        ancien.action_validate()
-        ancien.lot_ids.sudo().expiration_date = (
-            fields.Datetime.now() + timedelta(days=10))
-        recent = self._cycle()
-        recent.action_validate()
-        recent.lot_ids.sudo().expiration_date = (
-            fields.Datetime.now() + timedelta(days=200))
+        """La raison d'être de la stratégie posée sur la catégorie : le
+        sachet dont la stérilité expire en premier part en premier,
+        sinon il périme au fond du tiroir pendant qu'on ouvre celui du
+        dessus, et une charge entière part au rebut.
+
+        Les deux charges se distinguent par leur DATE, pas par une
+        retouche de la date du lot : `removal_date` — ce sur quoi le
+        FEFO trie vraiment — ne suit un changement de péremption que
+        par le delta avec `_origin`, lequel vaut zéro sur un
+        enregistrement déjà sauvé. Le module, lui, pose la date à la
+        CRÉATION du lot, où le cœur la calcule bien.
+
+        La charge validée EN PREMIER est la plus récente : FIFO et FEFO
+        ne disent donc pas la même chose, et le test ne peut plus
+        passer par hasard."""
+        recente = self._cycle()
+        recente.action_validate()
+        vieille = self._cycle(
+            date_start=fields.Datetime.now() - timedelta(days=100))
+        vieille.action_validate()
+
+        self.assertGreater(recente.lot_ids.removal_date,
+                           vieille.lot_ids.removal_date,
+                           "La charge la plus vieille expire en premier.")
 
         picking = self.env['stock.picking'].create({
             'picking_type_id': self.entrepot.out_type_id.id,
@@ -433,9 +454,9 @@ class TestDentalSterilisation(TransactionCase):
         picking.action_assign()
 
         self.assertEqual(picking.move_ids.move_line_ids.lot_id,
-                         ancien.lot_ids,
+                         vieille.lot_ids,
                          "Le sachet dont la stérilité expire en premier "
-                         "part en premier.")
+                         "part en premier — et non le premier entré.")
 
     # ------------------------------------------------------------------
     # nLPD, droits et câblage
@@ -449,38 +470,90 @@ class TestDentalSterilisation(TransactionCase):
         self.assertEqual(cycle.picking_id.origin, cycle.name)
         self.assertFalse(cycle.picking_id.partner_id)
 
-    def test_la_reception_tient_le_registre_sans_droit_stock(self):
-        """Le geste réel : la personne qui décharge l'autoclave est de
-        l'équipe du cabinet. L'entrée en rayon est un effet SYSTÈME du
-        flux — elle ne lui donne aucun droit sur le magasin."""
+    def _responsable(self, cle="steri_resp"):
+        """Le responsable technique : celui qui tient le registre."""
+        return self.env['res.users'].create({
+            'name': "Resp. technique", 'login': cle,
+            'email': "%s@exemple.ch" % cle,
+            'group_ids': [
+                (4, self.env.ref(
+                    'megga_dental.group_dental_reception').id),
+                (4, self.env.ref(
+                    'maintenance.group_equipment_manager').id)],
+        })
+
+    def test_le_responsable_tient_le_registre_sans_droit_stock(self):
+        """L'entrée en rayon est un effet SYSTÈME du flux.
+
+        Celui qui décharge l'autoclave n'a aucun droit sur le magasin —
+        il ne peut pas créer un lot à la main — et la validation en crée
+        pour lui sans lui en donner le droit."""
+        responsable = self._responsable()
+        cycle = self._cycle().with_user(responsable)
+
+        cycle.action_validate()
+
+        self.assertEqual(cycle.state, 'done')
+        self.assertTrue(cycle.sudo().lot_ids)
+        # Sa fiche s'ouvre : la date de stérilité vit sur la LIGNE de
+        # charge, pas seulement sur le lot — sans quoi l'écran de celui
+        # qui vient de valider la charge lui serait refusé.
+        cycle.read(['name', 'state', 'line_ids'])
+        self.assertEqual(cycle.line_ids.sterility_deadline,
+                         cycle.sudo().lot_ids.expiration_date)
+        with self.assertRaises(AccessError):
+            self.env['stock.lot'].with_user(responsable).create({
+                'name': "A LA MAIN",
+                'product_id': self.set_examen.id,
+            })
+
+    def test_le_responsable_voit_vraiment_son_autoclave(self):
+        """LA raison du groupe choisi, et la leçon du chantier 4.
+
+        Le cycle exige un autoclave. Le cœur ouvre la lecture des
+        équipements à tout employé, mais une règle d'enregistrement la
+        borne à ceux dont on est SUIVEUR : la réception seule aurait
+        cherché son autoclave dans une liste VIDE, sur un champ
+        obligatoire. Menu visible, écran inutilisable."""
+        responsable = self._responsable("steri_resp_voit")
+        praticien = self.env['res.users'].create({
+            'name': "Dr Steri", 'login': "steri_praticien",
+            'email': "dr.steri@exemple.ch",
+            'group_ids': [(4, self.env.ref(
+                'megga_dental.group_dental_praticien').id)],
+        })
+
+        vus = self.env['maintenance.equipment'].with_user(
+            responsable).name_search()
+        self.assertIn(self.autoclave.id, [ident for ident, _nom in vus])
+
+        rien = self.env['maintenance.equipment'].with_user(
+            praticien).name_search()
+        self.assertNotIn(
+            self.autoclave.id, [ident for ident, _nom in rien],
+            "C'est la règle du cœur, et c'est pourquoi le menu est "
+            "gardé par le gestionnaire d'équipements.")
+
+    def test_la_reception_lit_le_registre_mais_ne_le_tient_pas(self):
+        """Elle doit lire les cycles — la preuve d'une séance en dépend —
+        sans pouvoir enregistrer une charge."""
         assistante = self.env['res.users'].create({
             'name': "Assistante", 'login': "steri_assistante",
             'email': "assistante@exemple.ch",
             'group_ids': [(4, self.env.ref(
                 'megga_dental.group_dental_reception').id)],
         })
-        cycle = self._cycle().with_user(assistante)
-
+        cycle = self._cycle()
         cycle.action_validate()
 
-        self.assertEqual(cycle.state, 'done')
-        self.assertTrue(cycle.sudo().lot_ids)
-        # Et sa fiche s'ouvre : la date de stérilité vit sur la LIGNE
-        # de charge, pas seulement sur le lot — sans quoi l'écran de
-        # celle qui vient de valider la charge lui serait refusé.
-        vue = cycle.with_user(assistante)
-        vue.read(['name', 'state', 'line_ids'])
-        self.assertEqual(vue.line_ids.sterility_deadline,
-                         cycle.date_start + timedelta(days=180))
-        # Le coeur ouvre la LECTURE des quantites a tout employe
-        # (access_stock_quant_all) : ce que la reception ne peut pas,
-        # c'est tenir le magasin. Creer un lot lui est refuse — et
-        # c'est pourtant ce que la validation vient de faire pour elle.
+        cycle.with_user(assistante).read(['name', 'state'])
+
         with self.assertRaises(AccessError):
-            self.env['stock.lot'].with_user(assistante).create({
-                'name': "A LA MAIN",
-                'product_id': self.set_examen.id,
-            })
+            self.env['megga.dental.sterilisation.cycle'].with_user(
+                assistante).create({
+                    'equipment_id': self.autoclave.id,
+                    'helix_ok': True,
+                })
 
     def test_le_portail_ne_voit_pas_le_registre(self):
         """Un patient connecté n'a rien à faire dans la salle de
@@ -522,6 +595,155 @@ class TestDentalSterilisation(TransactionCase):
         # Le modèle est celui du cabinet : pas de domaine à poser, tout
         # cycle de stérilisation EST du cabinet.
         self.assertFalse(safe_eval(action.domain or '[]'))
+
+    def test_la_seance_se_clot_meme_avec_un_set_non_conforme(self):
+        """LA règle cardinale du dépôt : le stock ne bloque jamais la
+        clinique.
+
+        Une garde qui refuse une sortie depuis `_action_done` tire sur
+        le SOIN si rien ne retire la ligne fautive avant. Le chantier 2
+        avait écrit cette ceinture pour le périmé ; la garde de
+        stérilisation avait été livrée sans la sienne — la séance ne se
+        clôturait plus."""
+        cycle = self._cycle(indicator='pending')
+        cycle.action_validate()
+        cycle.indicator = 'fail'
+        self.assertEqual(cycle.state, 'failed')
+
+        seance = self._seance_qui_consomme(cycle)
+
+        self.assertEqual(seance.state, 'done',
+                         "Le soin est fait : la séance se clôt.")
+        self.assertTrue(seance.supply_picking_id)
+        # Le set non conforme n'est PAS parti : la ligne est sortie
+        # sans lot, et le magasin a été prévenu.
+        lignes = seance.supply_picking_id.sudo().move_ids.move_line_ids
+        self.assertFalse(lignes.lot_id & cycle.sudo().lot_ids)
+        self.assertTrue(seance.supply_picking_id.sudo().activity_ids)
+
+    def test_l_indicateur_non_conforme_bloque_a_lui_seul(self):
+        """Le geste réel du lendemain, c'est de changer l'indicateur —
+        pas de cliquer un bouton. La garde ne lisait que l'état : une
+        charge déclarée non conforme continuait de servir."""
+        cycle = self._cycle(indicator='pending')
+        cycle.action_validate()
+
+        cycle.indicator = 'fail'
+
+        self.assertEqual(cycle.state, 'failed')
+        with self.assertRaises(UserError):
+            self._consomme(cycle.lot_ids)
+
+    def test_deux_lignes_du_meme_set_font_deux_lots(self):
+        """Le cœur FUSIONNE les mouvements confirmés qui partagent
+        produit et emplacements. L'appariement par position perdait
+        alors une ligne : des sachets n'entraient jamais en rayon, en
+        silence."""
+        cycle = self._cycle(lignes=[(self.set_examen, 4.0),
+                                    (self.set_examen, 6.0)])
+
+        cycle.action_validate()
+
+        self.assertEqual(len(cycle.lot_ids), 2)
+        self.assertEqual(
+            self.env['stock.quant']._get_available_quantity(
+                self.set_examen, self.entrepot.lot_stock_id), 10.0,
+            "Les dix sachets sont en rayon, pas quatre.")
+
+    def test_l_etat_ne_se_force_pas_par_un_write(self):
+        """Le gel serait décoratif si un write le levait."""
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        with self.assertRaises(UserError):
+            cycle.write({'state': 'draft'})
+
+    def test_la_charge_d_un_cycle_clos_ne_se_retouche_pas(self):
+        """Le gel du cycle ne suffisait pas : ses LIGNES restaient
+        modifiables et supprimables — le registre pouvait dire autre
+        chose que ce qui est sorti de l'autoclave."""
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        with self.assertRaises(UserError):
+            cycle.line_ids.quantity = 99.0
+        with self.assertRaises(UserError):
+            cycle.line_ids.unlink()
+
+    def test_dupliquer_un_cycle_repart_en_brouillon(self):
+        """Sans `copy=False`, la copie naissait « Validée » sans le
+        moindre set — et un cycle validé ne se corrige ni ne s'efface."""
+        cycle = self._cycle()
+        cycle.action_validate()
+
+        copie = cycle.copy()
+
+        self.assertEqual(copie.state, 'draft')
+        self.assertFalse(copie.picking_id)
+        self.assertNotEqual(copie.name, cycle.name)
+
+    def test_les_sets_sont_des_consommables_du_cabinet(self):
+        """La catégorie sœur les rendait invisibles PARTOUT : dans les
+        écrans du magasin, et surtout dans le sélecteur de kit — un set
+        ne pouvait donc pas être rattaché à un acte, alors que « clore
+        une séance décompte les sets » est la promesse du module."""
+        cycle = self._cycle()
+        cycle.action_validate()
+        consommables = self.env.ref(
+            'megga_dental_stock.product_category_dental_supplies')
+
+        self.assertEqual(self.categorie.parent_id, consommables)
+        self.assertEqual(
+            self.categorie.removal_strategy_id,
+            self.env.ref('product_expiry.removal_fefo'),
+            "Le cœur ne remonte pas la chaîne des parents pour la "
+            "stratégie : elle reste posée explicitement.")
+
+        lots = self.env.ref('megga_dental_stock.action_dental_stock_lot')
+        self.assertIn(cycle.lot_ids,
+                      self.env['stock.lot'].search(safe_eval(lots.domain)))
+
+        # Et le sélecteur de kit du chantier 2 les propose.
+        vue = self.env.ref('megga_dental_stock.view_dental_position_form')
+        self.assertIn('child_of', vue.arch)
+        proposables = self.env['product.product'].search(
+            [('categ_id', 'child_of', consommables.id)])
+        self.assertIn(self.set_examen, proposables)
+
+    def test_le_menu_suit_les_droits_reels(self):
+        """La leçon du chantier 4, rouverte par celui-ci et refermée :
+        le menu porte le groupe qui peut vraiment s'en servir."""
+        menu = self.env.ref(
+            'megga_dental_sterilisation.menu_dental_sterilisation_cycles')
+
+        self.assertEqual(
+            menu.group_ids,
+            self.env.ref('maintenance.group_equipment_manager'))
+        self.assertEqual(
+            menu.group_ids,
+            self.env.ref(
+                'megga_dental_materiel.menu_dental_materiel_equipment'
+            ).group_ids,
+            "Le même groupe que le registre du matériel : les deux "
+            "écrans exigent de voir les équipements du cabinet.")
+
+    def test_le_registre_d_un_cabinet_ne_se_lit_pas_depuis_l_autre(self):
+        """Le cycle porte une société : sans règle multi-sociétés, un
+        cabinet verrait — et pourrait marquer non conforme — les
+        charges de l'autre."""
+        autre = self.env['res.company'].create({'name': "Cabinet B"})
+        cycle = self._cycle()
+        responsable = self._responsable("steri_multi")
+        responsable.write({
+            'company_ids': [(4, autre.id)],
+            'company_id': autre.id,
+        })
+
+        vus = self.env['megga.dental.sterilisation.cycle'].with_user(
+            responsable).with_context(
+                allowed_company_ids=[autre.id]).search([])
+
+        self.assertNotIn(cycle, vus)
 
     def test_aucun_cron_maison(self):
         """Rien ne tourne tout seul ici : un cycle se saisit, un

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Le registre d'un cabinet ne se lit pas depuis l'autre.
+
+             Le cycle porte une société (c'est l'entrepôt qui recevra
+             ses sets) ; sans cette règle, un cabinet à deux sociétés
+             verrait — et pourrait marquer non conforme — les charges de
+             l'autre. Patron exact des règles multi-sociétés du cœur
+             (`maintenance_equipment_comp_rule` et les autres) : le
+             `+ [False]` laisse passer ce qui n'appartient à personne. -->
+        <record id="sterilisation_cycle_comp_rule" model="ir.rule">
+            <field name="name">Cycle de stérilisation : règle multi-sociétés</field>
+            <field name="model_id" ref="model_megga_dental_sterilisation_cycle"/>
+            <field name="domain_force">[('company_id', 'in', company_ids + [False])]</field>
+        </record>
+    </data>
+</odoo>

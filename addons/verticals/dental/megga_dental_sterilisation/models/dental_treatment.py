@@ -90,3 +90,29 @@ class StockWarehouse(models.Model):
             'use_existing_lots': True,
             'create_backorder': 'never',
         })
+
+
+class StockPicking(models.Model):
+    """La ceinture du chantier 5, au même endroit que celle du chantier 2.
+
+    Une garde qui refuse une sortie depuis `_action_done` tire sur le
+    SOIN si rien ne retire la ligne fautive avant : la séance ne se
+    clôture plus, et le magasin bloque la clinique — exactement ce que
+    le produit refuse. La garde de stérilisation avait été écrite sans
+    sa ceinture ; la revue l'a rattrapée avant le premier cabinet.
+    """
+    _inherit = 'stock.picking'
+
+    def _megga_unservable_lines(self, move):
+        refus = super()._megga_unservable_lines(move)
+        non_steriles = move.move_line_ids.filtered(
+            lambda ml: ml.lot_id and ml.lot_id._megga_sterilisation_refused())
+        if non_steriles:
+            motifs = {ml.lot_id._megga_sterilisation_refused()
+                      for ml in non_steriles}
+            refus.append((non_steriles, _(
+                "%(produit)s : %(lots)s écarté(s) — %(motifs)s.") % {
+                    'produit': move.product_id.display_name,
+                    'lots': ", ".join(non_steriles.mapped('lot_id.name')),
+                    'motifs': " ; ".join(sorted(motifs))}))
+        return refus

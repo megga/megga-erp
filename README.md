@@ -181,7 +181,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`dental/`](addons/verticals/dental/) | `megga_dental_portal` (installation **délibérée**, jamais auto) | Portail patient : le patient connecté voit **son** dossier et rien d'autre (`ir.rule` sur `user.partner_id`) — ses traitements et montants, ses ordonnances **émises** (jamais un brouillon), ses questionnaires **signés**, avec téléchargement PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule absolue, le clinique profond (constats, imagerie, notes, dossier médical) reste fermé | 11 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_stock` (installation **délibérée**, jamais auto) | Magasin du cabinet : consommables tracés par lots et dates de péremption, sortie **FEFO** portée par la catégorie produit (le lot le plus proche de sa date part le premier), emplacement virtuel « Consommé en soins », et LA garde du cabinet — un lot périmé ne part **jamais** vers les soins (le cœur avertit d'un wizard qui se contourne d'un clic ; la règle du cabinet, elle, refuse), tandis que le rebut reste permis pour détruire proprement ; **kits de consommables par position tarifaire** décomptés à la clôture de séance (zéro ressaisie au fauteuil, besoins agrégés, effet système en sudo) — et le stock ne bloque **jamais** la clinique : rien en rayon, la sortie part en négatif, plus rien de servable, elle part sans lot, avec une activité au magasin dans les deux cas ; menu « Stock du cabinet » en raccourcis filtrés, gardé par les groupes stock du cœur ; **réapprovisionnement** mini/maxi et bons de commande proposés par le planificateur du cœur | 59 |
 | [`dental/`](addons/verticals/dental/) | `megga_dental_materiel` (installation **délibérée**, jamais auto) | Registre du matériel du cabinet sur `maintenance` : autoclave, compresseur, générateur de rayons X, unit — numéro de série, garantie, technicien, historique des pannes et MTBF sont ceux du cœur ; ce que le module ajoute, c'est **le rattachement au fauteuil** (« qu'est-ce qui s'arrête si cet appareil part en réparation ? ») : écran groupé par fauteuil, onglet « Matériel » et compteur sur la fiche fauteuil, et un fauteuil équipé qui ne se supprime plus — il s'archive ; **entretien préventif récurrent** du cœur (clore la validation du trimestre engendre celle du suivant, aucun cron maison) ; menu « Matériel » en raccourcis **réellement filtrés** (périmètre : le fauteuil ou l'équipe du cabinet) — le registre au gestionnaire d'équipements, « Entretiens » ouvert à tout employé, exactement comme le cœur | 24 |
-| [`dental/`](addons/verticals/dental/) | `megga_dental_sterilisation` (installation **délibérée**, jamais auto) | Traçabilité de stérilisation : chaque **charge d'autoclave** est un cycle numéroté (l'appareil du registre, l'opérateur, le programme, le test Helix, l'indicateur biologique, le rapport de cycle en pièce jointe) et valider la charge fait **entrer ses sets en rayon**, chacun avec son lot au numéro de cycle et sa **péremption de stérilité** — d'où le FEFO et la garde du magasin sans une ligne de plus ; le lien existe dans les **deux sens** : le **rappel** (l'indicateur revient non conforme le lendemain → les sets encore en rayon sont bloqués et les séances déjà servies sont nommées) et la **preuve** (depuis une séance, les cycles qui l'ont servie) ; un cycle ne s'efface pas et, validé, ne se modifie plus | 31 |
+| [`dental/`](addons/verticals/dental/) | `megga_dental_sterilisation` (installation **délibérée**, jamais auto) | Traçabilité de stérilisation : chaque **charge d'autoclave** est un cycle numéroté (l'appareil du registre, l'opérateur, le programme, le test Helix, l'indicateur biologique, le rapport de cycle en pièce jointe) et valider la charge fait **entrer ses sets en rayon**, chacun avec son lot au numéro de cycle et sa **péremption de stérilité** — d'où le FEFO et la garde du magasin sans une ligne de plus ; le lien existe dans les **deux sens** : le **rappel** (l'indicateur revient non conforme le lendemain → les sets encore en rayon sont bloqués et les séances déjà servies sont nommées) et la **preuve** (depuis une séance, les cycles qui l'ont servie) ; un cycle ne s'efface pas et, validé, ne se modifie plus | 42 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté voit **ses** véhicules (échéance d'expertise, compteur) et **ses** réparations acceptées ou terminées avec le détail des travaux — jamais un devis en rédaction, jamais la voiture d'un autre (`ir.rule` sur `megga_owner_id` / `partner_id`) ; carnet d'entretien en PDF gardé (`_document_check_access` avant tout rendu) ; lecture seule, référentiel des forfaits fermé | 16 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_rdv` (**auto_install**) | Pont réservation ↔ atelier : le véhicule du client est rattaché d'office quand il n'en a qu'un, et l'ordre de réparation se crée en un clic depuis la réservation (date locale du fuseau, mécanicien = intervenant, compteur) | 8 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
@@ -595,7 +595,11 @@ classeur, n'en veut pas.
 
 Il n'invente presque rien, et c'est le propos. Le **cycle** se rattache
 à l'autoclave du **registre du matériel** ; les **sets stérilisés**
-sont des lots datés du **magasin**. La péremption de stérilité est la
+sont des lots datés du **magasin**, dans une catégorie **enfant** des
+consommables du cabinet — enfant pour être visible partout où le
+cabinet regarde (les écrans du magasin, et surtout le sélecteur de kit
+d'une position tarifaire), et portant quand même sa propre stratégie
+FEFO, que le cœur ne fait pas hériter. La péremption de stérilité est la
 péremption tout court : le FEFO sort donc le sachet dont la stérilité
 expire en premier — sans quoi il périme au fond du tiroir pendant qu'on
 ouvre celui du dessus, et une charge entière part au rebut — et la
@@ -619,26 +623,66 @@ Ce que le module ajoute vraiment tient en deux liens :
 Le registre est un **document de preuve**, et le module le traite
 comme tel : un cycle ne se supprime pas — pas même un brouillon, qui
 dit déjà qu'une charge est passée à l'autoclave — et une charge validée
-est **figée**, comme une ordonnance émise. Un seul champ reste ouvert
-après coup, et c'est justement celui dont le résultat arrive plus
-tard : l'indicateur biologique. Une charge validée ne revient pas au
+est **figée**, comme une ordonnance émise — ses lignes de charge
+comprises, sans quoi le registre pourrait dire autre chose que ce qui
+est sorti de l'autoclave. Deux champs restent ouverts après coup :
+l'**indicateur biologique**, dont le résultat arrive plus tard — et le
+passer à « non conforme » **bloque** la charge à lui seul, sans qu'on
+ait à cliquer quoi que ce soit — et les **observations**, où l'on note
+ce qu'on a fait de la charge. L'état, lui, ne se force pas par un
+`write` : il se change par les boutons, qui font chacun ce qu'ils
+annoncent. Une charge validée ne revient pas au
 brouillon non plus : ses sets sont partis en rayon, peut-être au
 fauteuil. On repasse la charge, on ne réécrit pas l'histoire.
 
-Deux points d'intégration valent d'être connus. L'entrée en rayon est
-un **effet système du flux**, en `sudo`, exactement comme la clôture de
-séance décompte les consommables : la personne qui décharge
-l'autoclave est de l'équipe du cabinet et n'a **aucun droit sur le
-magasin** — elle ne peut pas créer un lot à la main, et la validation
-en crée pour elle sans lui en donner le droit. Conséquence assumée : la
-page « Sets produits » de la fiche est gardée par le groupe stock du
-cœur, sinon elle refuserait de s'ouvrir à celle qui vient de valider la
-charge ; la **date de stérilité**, elle, est recalculée sur la ligne de
-charge — lisible par tout le cabinet, sans ouvrir `stock.lot` (ce qui
-aurait ouvert les lots du restaurant avec). Et la **péremption de
+**Qui tient le registre.** Le menu est gardé par le **gestionnaire
+d'équipements** du cœur, pas par les groupes dentaires — et c'est la
+leçon du registre du matériel, que ce chantier avait rouverte avant
+qu'une revue ne la referme. Le cycle exige un autoclave ; l'ACL du cœur
+en ouvre bien la lecture à tout employé, mais une règle
+d'enregistrement la borne aux équipements dont on est **suiveur**. Une
+assistante n'ayant que le groupe Réception aurait ouvert le formulaire,
+cherché son autoclave dans une liste **vide**, et n'aurait pas pu
+enregistrer une seule charge. Le registre revient donc au responsable
+technique — celui qui tient déjà le matériel, et à qui la validation
+périodique de l'autoclave incombe de toute façon. Un cabinet qui veut
+que ses assistantes saisissent les charges leur donne ce droit : un
+geste d'administration délibéré, comme les droits stock du magasin. Le
+module n'invente aucun groupe et ne câble aucun `implied_ids`. La
+réception, elle, **lit** les cycles — la preuve d'une séance en
+dépend — sans pouvoir en enregistrer.
+
+L'entrée en rayon reste un **effet système du flux**, en `sudo`,
+exactement comme la clôture de séance décompte les consommables : celui
+qui valide la charge n'a **aucun droit sur le magasin** — il ne peut
+pas créer un lot à la main, et la validation en crée pour lui sans lui
+en donner le droit. Conséquence assumée : la page « Sets produits » de
+la fiche est gardée par le groupe stock du cœur, sinon elle refuserait
+de s'ouvrir à celui qui vient de valider ; la **date de stérilité**,
+elle, s'affiche sur la ligne de charge — lisible sans ouvrir
+`stock.lot` (ce qui aurait ouvert les lots du restaurant avec) et lue
+sur le **lot** dès qu'il existe, pour qu'il n'y ait jamais deux dates
+qui divergent.
+
+**Le stock ne bloque jamais la clinique — y compris ici.** Une garde
+qui refuse une sortie depuis `_action_done` tire sur le *soin* si rien
+ne retire la ligne fautive avant : la séance ne se clôture plus. Le
+chantier 2 avait écrit cette ceinture pour le périmé ; la garde de
+stérilisation est arrivée sans la sienne, et la revue l'a rattrapée
+avant le premier cabinet. La ceinture est désormais un **point
+d'extension** du magasin (`_megga_unservable_lines`) que les deux
+gardes alimentent : le set non conforme est écarté de la réservation,
+la ligne repart sans lot, et l'activité au magasin nomme le cycle.
+Toute garde ajoutée plus tard devra faire de même.
+
+**Deux limites connues**, documentées parce qu'elles ne s'inventent
+pas. Le rappel remonte aux séances par le **transfert de
+consommation** : un set sorti à la main, hors clôture de séance, n'y
+figure pas — le message du rappel le dit. Et la **péremption de
 stérilité n'existe que si le produit porte un délai** : sans
-`expiration_time` réglé sur le set, le cœur ne date rien et la garde ne
-mord pas. C'est un réglage du cabinet, pas un défaut du module.
+`expiration_time` réglé sur le set, le cœur ne date rien, ni FEFO ni
+garde ne mordent. L'écran le signale désormais en orange sur la ligne
+de charge, plutôt que de le laisser au seul README.
 
 Le **portail client du garage** (`megga_auto_portal`) est le pendant du
 portail patient, côté atelier — même doctrine, même patron. Module

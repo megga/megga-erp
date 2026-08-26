@@ -78,20 +78,31 @@
                         <page string="Sets de la charge" name="charge">
                             <field name="line_ids"
                                    readonly="state != 'draft'">
-                                <list editable="bottom">
+                                <!-- Sans delai de peremption sur le
+                                     produit, le coeur ne date rien : le
+                                     sachet n'a pas de sterilite, le FEFO
+                                     ne le range pas et la garde ne mord
+                                     pas. L'ecran doit le dire a celui
+                                     qui saisit, pas seulement le README. -->
+                                <list editable="bottom"
+                                      decoration-warning="not sterility_deadline">
                                     <field name="product_id"
                                            options="{'no_create': True}"/>
                                     <field name="quantity"/>
                                     <field name="uom_name" string="Unité"/>
                                     <field name="sterility_deadline"
-                                           readonly="1"/>
+                                           readonly="1"
+                                           string="Stérilité jusqu'au"/>
                                 </list>
                             </field>
                             <p class="text-muted">
                                 Chaque ligne devient un lot à la
                                 validation : le sachet porte le numéro
                                 de cycle, et sa stérilité expire au
-                                délai réglé sur le produit.
+                                délai réglé sur le produit. Une ligne
+                                <b>en orange</b> est un set SANS délai
+                                réglé : il entrera en rayon, mais sans
+                                date de stérilité — ni FEFO, ni garde.
                             </p>
                         </page>
                         <!-- Gardée par le groupe stock : `lot_ids`
@@ -238,6 +249,38 @@
                         sets consommés par cette séance.
                     </p>
                 </group>
+            </xpath>
+        </field>
+    </record>
+    <!-- Le cycle sur le lot : « le magasinier voit le cycle et sa
+         conformité » n'était vrai nulle part — le champ existait sans
+         qu'aucune vue ne le montre. Il s'ajoute donc là où le magasin
+         regarde vraiment : la liste des lots du cabinet, et sa
+         recherche. -->
+    <record id="view_dental_lot_list_sterilisation" model="ir.ui.view">
+        <field name="name">stock.lot.list.sterilisation</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="megga_dental_stock.view_dental_lot_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="sterilisation_cycle_id" optional="show"/>
+                <field name="sterilisation_state" optional="show"
+                       string="Cycle"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_dental_lot_search_sterilisation" model="ir.ui.view">
+        <field name="name">stock.lot.search.sterilisation</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id"
+               ref="megga_dental_stock.view_dental_lot_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="sterilisation_cycle_id"/>
+                <filter name="sterilisation_non_conforme"
+                        string="Cycle non conforme"
+                        domain="[('sterilisation_cycle_id.state', '=', 'failed')]"/>
             </xpath>
         </field>
     </record>

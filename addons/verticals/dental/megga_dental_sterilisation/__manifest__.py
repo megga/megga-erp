@@ -56,6 +56,7 @@ de preuve. Un cycle validé est figé, comme une ordonnance émise.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'security/dental_sterilisation_security.xml',
         'data/dental_sterilisation_data.xml',
         'views/dental_sterilisation_views.xml',
         'views/dental_sterilisation_menus.xml',

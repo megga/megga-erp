@@ -73,7 +73,8 @@ class MeggaDentalSterilisationCycle(models.Model):
         [('draft', "Brouillon"),
          ('done', "Validé"),
          ('failed', "Non conforme")],
-        string="État", default='draft', required=True, tracking=True)
+        string="État", default='draft', required=True, tracking=True,
+        copy=False)
     line_ids = fields.One2many(
         'megga.dental.sterilisation.line', 'cycle_id', string="Charge",
         copy=True)
@@ -120,10 +121,15 @@ class MeggaDentalSterilisationCycle(models.Model):
         L'état et les observations suivent — marquer non conforme est
         justement le geste qu'on attend après coup.
         """
-        OUVERTS = {'indicator', 'state', 'note', 'picking_id',
+        OUVERTS = {'indicator', 'note', 'picking_id',
                    'message_ids', 'message_follower_ids',
                    'activity_ids', 'message_main_attachment_id'}
         figes = set(vals) - OUVERTS
+        # `state` ne s'ecrit que par les actions : le laisser ouvert
+        # aurait rendu le gel decoratif — un write({'state': 'draft'})
+        # et tout redevenait modifiable.
+        if 'state' in figes and self.env.context.get('megga_sterilisation_state'):
+            figes.discard('state')
         if figes:
             clos = self.filtered(lambda c: c.state != 'draft')
             if clos:
@@ -135,7 +141,28 @@ class MeggaDentalSterilisationCycle(models.Model):
                     "marquez le cycle NON CONFORME — ses sets seront "
                     "bloqués et les séances servies seront nommées.",
                     cycle=clos[0].name))
-        return super().write(vals)
+        if 'state' in vals and not self.env.context.get(
+                'megga_sterilisation_state'):
+            raise UserError(_(
+                "L'état d'un cycle se change par ses boutons : valider "
+                "la charge, ou la marquer non conforme. Chacun fait ce "
+                "qu'il annonce — l'un fait entrer les sets en rayon, "
+                "l'autre les bloque et nomme les séances servies."))
+        res = super().write(vals)
+        # L'indicateur biologique qui revient NON CONFORME est le geste
+        # du lendemain : il doit bloquer les sets, pas seulement noircir
+        # une case. Sans cela, la garde du magasin — qui ne lit que
+        # l'etat — laissait passer une charge declaree non conforme.
+        if vals.get('indicator') == 'fail':
+            a_bloquer = self.filtered(lambda c: c.state == 'done')
+            if a_bloquer:
+                a_bloquer.action_fail()
+        return res
+
+    def _megga_set_state(self, valeur):
+        """Le seul chemin vers `state` — les actions passent par ici."""
+        return self.with_context(megga_sterilisation_state=True).write(
+            {'state': valeur})
 
     def unlink(self):
         """Aucun cycle ne s'efface, jamais — pas même en brouillon.
@@ -184,7 +211,7 @@ class MeggaDentalSterilisationCycle(models.Model):
                     "Si le test a échoué, marquez la charge non "
                     "conforme.", cycle.name))
             cycle._megga_enter_stock()
-            cycle.state = 'done'
+            cycle._megga_set_state('done')
         return True
 
     def action_fail(self):
@@ -197,20 +224,26 @@ class MeggaDentalSterilisationCycle(models.Model):
         for cycle in self:
             if cycle.state == 'failed':
                 continue
-            cycle.state = 'failed'
+            cycle._megga_set_state('failed')
             servies = cycle._megga_served_treatments()
             if servies:
                 cycle.message_post(body=_(
                     "Charge marquée NON CONFORME. %(nombre)s séance(s) "
                     "ont déjà consommé des sets de ce cycle : "
-                    "%(seances)s",
+                    "%(seances)s\n\n"
+                    "Ce relevé suit les sorties passées par la clôture "
+                    "de séance. Un set sorti à la main, hors séance, "
+                    "n'y figure pas : vérifiez aussi ce qui manque en "
+                    "rayon.",
                     nombre=len(servies),
                     seances=", ".join(servies.mapped('name'))))
             else:
                 cycle.message_post(body=_(
                     "Charge marquée NON CONFORME. Aucune séance n'a "
                     "encore consommé de set de ce cycle ; ceux qui "
-                    "restent en rayon sont bloqués."))
+                    "restent en rayon sont bloqués.\n\n"
+                    "Ce relevé suit les sorties passées par la clôture "
+                    "de séance. Un set sorti à la main n'y figure pas."))
         return True
 
     def action_back_to_draft(self):
@@ -227,7 +260,7 @@ class MeggaDentalSterilisationCycle(models.Model):
                     "il ne revient pas au brouillon.\n\n"
                     "Repassez la charge à l'autoclave et enregistrez un "
                     "NOUVEAU cycle.", cycle.name))
-            cycle.state = 'draft'
+            cycle._megga_set_state('draft')
         return True
 
     def _megga_enter_stock(self):
@@ -270,10 +303,21 @@ class MeggaDentalSterilisationCycle(models.Model):
                 'product_uom': line.product_id.uom_id.id,
                 'location_id': source.id,
                 'location_dest_id': destination.id,
+                # Le lien qui tient tout : il retrouve le mouvement de
+                # CETTE ligne après confirmation, et il empêche le cœur
+                # de fusionner deux lignes du même set.
+                'sterilisation_line_id': line.id,
             }) for line in self.line_ids],
         })
         picking.action_confirm()
-        for move, line in zip(picking.move_ids, self.line_ids):
+        for line in self.line_ids:
+            move = picking.move_ids.filtered(
+                lambda m: m.sterilisation_line_id == line)
+            if not move:
+                raise UserError(_(
+                    "Le mouvement d'entrée de %s est introuvable : "
+                    "l'entrée en rayon est annulée.",
+                    line.product_id.display_name))
             lot = self.env['stock.lot'].sudo().create({
                 'name': line._megga_lot_name(),
                 'product_id': line.product_id.id,
@@ -296,9 +340,18 @@ class MeggaDentalSterilisationCycle(models.Model):
                 'quantity': line.quantity,
             })
             move.picked = True
-        picking.with_context(skip_backorder=True).button_validate()
+        # `button_validate` peut rendre une ACTION (un assistant du
+        # cœur) au lieu de valider : le prendre pour un succès figeait
+        # le cycle en « Validé » alors que rien n'était en rayon.
+        resultat = picking.with_context(
+            skip_backorder=True).button_validate()
+        if picking.state != 'done':
+            raise UserError(_(
+                "L'entrée en rayon du cycle %(cycle)s n'a pas abouti "
+                "(%(etat)s) : la charge n'est pas validée.",
+                cycle=self.name, etat=picking.state))
         self.picking_id = picking.id
-        return picking
+        return resultat
 
     # ------------------------------------------------------------------
     # Les deux sens de la traçabilité
@@ -307,15 +360,24 @@ class MeggaDentalSterilisationCycle(models.Model):
         """Les séances qui ont consommé un set de ce cycle.
 
         En `sudo` sur le MAGASIN : remonter des lots aux mouvements est
-        de la logistique. Ce qui en sort — des séances — reste gardé
-        par les droits dentaires du lecteur, et c'est bien ainsi : le
-        magasinier n'a rien à faire dans les dossiers.
+        de la logistique, et le geste est destiné à l'équipe du
+        cabinet, qui n'a aucun droit sur `stock.lot`.
+
+        LIMITE CONNUE, dite au rappel lui-même : le lien passe par le
+        TRANSFERT de consommation, donc par la clôture de séance. Un
+        set sorti à la main — soin d'urgence, sortie manuelle — n'a pas
+        de séance à nommer et n'y figure pas.
         """
         self.ensure_one()
-        if not self.lot_ids:
+        # Le sudo commence ICI, sur les lots : `lot_ids` est un One2many
+        # vers stock.lot, ferme a qui n'a pas le magasin — c'est-a-dire
+        # a toute l'equipe du cabinet. Le poser une ligne plus bas
+        # rendait le rappel inaccessible a ceux a qui il est destine.
+        lots = self.sudo().lot_ids
+        if not lots:
             return self.env['megga.dental.treatment']
         lignes = self.env['stock.move.line'].sudo().search([
-            ('lot_id', 'in', self.lot_ids.ids),
+            ('lot_id', 'in', lots.ids),
             ('state', '=', 'done'),
         ])
         pickings = lignes.picking_id
@@ -363,7 +425,8 @@ class MeggaDentalSterilisationLine(models.Model):
              "le produit. C'est la date que porte l'étiquette du "
              "sachet.")
 
-    @api.depends('product_id', 'cycle_id.date_start')
+    @api.depends('product_id', 'cycle_id.date_start',
+                 'cycle_id.lot_ids.expiration_date')
     def _compute_sterility_deadline(self):
         """La même date que celle posée sur le lot, une seule source.
 
@@ -376,7 +439,18 @@ class MeggaDentalSterilisationLine(models.Model):
         déduit pas d'un droit.
         """
         for line in self:
-            line.sterility_deadline = line._megga_sterility_deadline()
+            # Une fois la charge validée, c'est le LOT qui fait foi :
+            # sa date est celle qui a été posée à la validation, et
+            # elle ne bouge plus. Recalculer aurait fait mentir l'écran
+            # dès qu'on change le délai réglé sur le produit — « une
+            # seule source » n'aurait pas été vrai.
+            lot = line.cycle_id.sudo().lot_ids.filtered(
+                lambda l: l.product_id == line.product_id
+                and l.name == line._megga_lot_name())
+            if lot:
+                line.sterility_deadline = lot[:1].expiration_date
+            else:
+                line.sterility_deadline = line._megga_sterility_deadline()
 
     @api.constrains('quantity')
     def _check_quantity(self):
@@ -395,6 +469,31 @@ class MeggaDentalSterilisationLine(models.Model):
                     "numéro de cycle ne peut être porté par le sachet, "
                     "et la traçabilité n'existe pas.",
                     line.product_id.display_name))
+
+    def _megga_check_cycle_draft(self, geste):
+        """Une charge close ne se retouche pas, ligne par ligne non plus.
+
+        Le gel du cycle ne suffisait pas : ses LIGNES restaient
+        modifiables et supprimables, si bien qu'on pouvait réécrire la
+        composition d'une charge déjà validée — le registre disait
+        alors autre chose que ce qui est sorti de l'autoclave.
+        """
+        clos = self.filtered(lambda l: l.cycle_id.state != 'draft')
+        if clos:
+            raise UserError(_(
+                "La charge du cycle %(cycle)s est close : sa "
+                "composition ne se %(geste)s plus.\n\n"
+                "Le registre doit dire ce qui est sorti de "
+                "l'autoclave, pas ce qu'on aurait voulu y mettre.",
+                cycle=clos[0].cycle_id.name, geste=geste))
+
+    def write(self, vals):
+        self._megga_check_cycle_draft(_("modifie"))
+        return super().write(vals)
+
+    def unlink(self):
+        self._megga_check_cycle_draft(_("supprime"))
+        return super().unlink()
 
     def _megga_lot_name(self):
         """Le lot porte le numéro de cycle — c'est l'étiquette.

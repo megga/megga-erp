@@ -31,19 +31,30 @@
         </record>
 
         <!-- Les sets stérilisés sont des consommables du cabinet comme
-             les autres — et ils portent la MÊME stratégie de sortie.
+             les autres. ENFANT de la catégorie du magasin, et portant
+             quand même SA stratégie de sortie : les deux à la fois, et
+             chacun pour une raison différente.
 
-             Le FEFO est ici plus qu'un confort : le sachet dont la
-             stérilité expire en premier doit partir en premier, sinon
-             il périme au fond du tiroir pendant qu'on ouvre celui du
-             dessus, et une charge entière part au rebut.
-
-             Catégorie propre, et non un enfant des consommables :
+             La stratégie est posée explicitement parce que
              `_get_removal_strategy` du cœur lit `categ_id` sans
-             remonter la chaîne des parents — un enfant n'hériterait
-             pas de la stratégie. Vérifié dans le cœur avant d'écrire. -->
+             remonter la chaîne des parents — un enfant n'hériterait de
+             rien. Le FEFO est ici plus qu'un confort : le sachet dont
+             la stérilité expire en premier doit partir en premier,
+             sinon il périme au fond du tiroir pendant qu'on ouvre
+             celui du dessus, et une charge entière part au rebut.
+
+             Le PARENTAGE, lui, est ce qui rend les sets visibles du
+             reste du cabinet : les écrans du magasin et surtout le
+             sélecteur de KIT de la position tarifaire filtrent tous en
+             `child_of` sur la catégorie des consommables. Une catégorie
+             SŒUR — le premier jet — rendait les sets invisibles partout
+             et impossibles à rattacher à un acte : « clore une séance
+             décompte les sets » était alors une phrase sans code
+             derrière. -->
         <record id="product_category_dental_sets" model="product.category">
             <field name="name">Sets stérilisés</field>
+            <field name="parent_id"
+                   ref="megga_dental_stock.product_category_dental_supplies"/>
             <field name="removal_strategy_id" ref="product_expiry.removal_fefo"/>
         </record>
     </data>
