@@ -75,7 +75,7 @@ python3 "$ODOO_BIN" -d "$BASE" \
     -i "$MODULES" \
     --test-enable --test-tags "$TAGS" \
     --http-interface=127.0.0.1 --http-port="${TEST_HTTP_PORT:-8199}" \
-    --without-demo=all --stop-after-init --max-cron-threads=0 \
+    --without-demo --stop-after-init --max-cron-threads=0 \
     --log-level=warn --log-handler=odoo.tests.result:INFO 2>&1 | tee "$JOURNAL"
 CODE=${PIPESTATUS[0]}
 set -e
