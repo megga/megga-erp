@@ -1,0 +1,976 @@
+<title>Megga Restaurant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:wght@300;400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #F1F2ED;
+    --surface:     #FBFBF8;
+    --surface-2:   #E7E9E1;
+    --ink:         #1A1D18;
+    --ink-soft:    #3E433A;
+    --muted:       #6C7266;
+    --rule:        #D5D8CD;
+    --rule-strong: #B7BBAE;
+    --accent:      #2E5B4C;
+    --accent-soft: #DCE7E1;
+    --brass:       #8C6A1B;
+    --brass-soft:  #EFE7D0;
+    --brick:       #8C4034;
+    --brick-soft:  #F1E0DB;
+
+    --display: "Bodoni Moda", "Didot", Georgia, serif;
+    --body: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #131512;
+      --surface:     #1B1E19;
+      --surface-2:   #242820;
+      --ink:         #E9EBE3;
+      --ink-soft:    #C2C7BA;
+      --muted:       #8E958A;
+      --rule:        #2C3129;
+      --rule-strong: #414838;
+      --accent:      #82C1A5;
+      --accent-soft: #1E2E27;
+      --brass:       #D5AC5C;
+      --brass-soft:  #2C2718;
+      --brick:       #D3907E;
+      --brick-soft:  #2F211D;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #131512;
+    --surface:     #1B1E19;
+    --surface-2:   #242820;
+    --ink:         #E9EBE3;
+    --ink-soft:    #C2C7BA;
+    --muted:       #8E958A;
+    --rule:        #2C3129;
+    --rule-strong: #414838;
+    --accent:      #82C1A5;
+    --accent-soft: #1E2E27;
+    --brass:       #D5AC5C;
+    --brass-soft:  #2C2718;
+    --brick:       #D3907E;
+    --brick-soft:  #2F211D;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 62rem;
+    margin-inline: auto;
+    padding: clamp(2rem, 5vw, 4.5rem) clamp(1.1rem, 4vw, 3rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.75rem, 5vw, 4rem);
+  }
+
+  .prose { max-width: 40rem; }
+  .prose p { margin: 0 0 0.9rem; color: var(--ink-soft); }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ---------- en-tête ---------- */
+
+  .masthead { display: flex; flex-direction: column; gap: 1.4rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .masthead h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.9rem, 8vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .deck {
+    font-size: clamp(1.06rem, 1.6vw, 1.2rem);
+    line-height: 1.55;
+    font-weight: 300;
+    color: var(--ink-soft);
+    max-width: 38rem;
+    margin: 0;
+  }
+
+  .identity {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .identity div {
+    padding: 0.85rem 1.1rem 0.9rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .identity dt {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .identity dd {
+    margin: 0;
+    font-size: 1.02rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .identity .big {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    line-height: 1.1;
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.35rem;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+  }
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+  }
+  .toc a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  a:focus-visible,
+  .toc a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- registre des modules ---------- */
+
+  .ledger-wrap { overflow-x: auto; }
+
+  table.ledger {
+    width: 100%;
+    min-width: 40rem;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  table.ledger th {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 1rem 0.6rem 0;
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+  table.ledger td {
+    padding: 0.95rem 1rem 0.95rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  table.ledger tr:last-child td { border-bottom: 1px solid var(--rule-strong); }
+  table.ledger td:last-child, table.ledger th:last-child { padding-right: 0; }
+  .pkg {
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .bar-cell { width: 9rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.6rem; }
+  .bar {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .bar span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--accent);
+  }
+  .bar-n {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.6rem;
+    text-align: right;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag-auto  { color: var(--accent); }
+  .tag-delib { color: var(--brass); }
+  .tag-app   { color: var(--ink); }
+
+  /* ---------- sections ---------- */
+
+  section { display: flex; flex-direction: column; gap: 1.35rem; }
+
+  .sec-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .sec-head h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(1.65rem, 3.2vw, 2.15rem);
+    line-height: 1.1;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec-head .pkg { margin-left: auto; color: var(--muted); }
+
+  h3 {
+    font-family: var(--body);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  /* liste de mécanismes : marqueur carré, pas de puce ronde */
+  ul.notes { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+  ul.notes li {
+    padding: 0.7rem 0 0.75rem 1.4rem;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    color: var(--ink-soft);
+  }
+  ul.notes li:last-child { border-bottom: 0; }
+  ul.notes li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1.32rem;
+    width: 5px; height: 5px;
+    background: var(--accent);
+  }
+  ul.notes b { color: var(--ink); font-weight: 600; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0 2.5rem; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.87em;
+    background: var(--surface-2);
+    padding: 0.08em 0.32em;
+    color: var(--ink);
+  }
+
+  /* ---------- flux d'états ---------- */
+
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.55rem; }
+  .st {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.32rem 0.65rem;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    color: var(--ink);
+  }
+  .st-end { border-color: var(--accent); color: var(--accent); }
+  .st-out { border-color: var(--brick); color: var(--brick); background: var(--brick-soft); }
+  .arw { color: var(--muted); font-size: 0.9rem; }
+  .flow-note { font-size: 0.86rem; color: var(--muted); margin: 0.55rem 0 0; }
+
+  /* ---------- addition / fiche technique ---------- */
+
+  .bill {
+    background: var(--surface);
+    border-top: 3px double var(--rule-strong);
+    border-bottom: 3px double var(--rule-strong);
+    padding: 1.5rem clamp(1rem, 3vw, 1.9rem);
+    max-width: 34rem;
+  }
+  .bill-title {
+    font-family: var(--display);
+    font-size: 1.25rem;
+    margin: 0 0 0.15rem;
+  }
+  .bill-sub {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 1.1rem;
+  }
+  table.bill-t { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  table.bill-t td { padding: 0.38rem 0; border-bottom: 1px dotted var(--rule-strong); }
+  table.bill-t td.q, table.bill-t td.m {
+    font-family: var(--mono);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    padding-left: 0.8rem;
+  }
+  table.bill-t td.q { color: var(--muted); }
+  table.bill-t tr.tot td {
+    border-bottom: 0;
+    border-top: 1px solid var(--ink);
+    padding-top: 0.55rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  table.bill-t tr.res td {
+    border-bottom: 0;
+    padding-top: 0.1rem;
+    color: var(--accent);
+  }
+  table.bill-t tr.res td.m { color: var(--accent); font-weight: 600; }
+  .bill-foot {
+    margin: 1.1rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ---------- TVA ---------- */
+
+  .rates { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1px; background: var(--rule-strong); border: 1px solid var(--rule-strong); }
+  .rate { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .rate .n {
+    font-family: var(--display);
+    font-size: 2.3rem;
+    line-height: 1;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+  .rate .l { font-weight: 600; font-size: 0.95rem; }
+  .rate .d { font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
+
+  /* ---------- manques ---------- */
+
+  .gaps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 0 2.5rem; }
+  .gaps li {
+    padding: 0.75rem 0 0.8rem 1.4rem;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    color: var(--ink-soft);
+  }
+  .gaps li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 1.35rem;
+    width: 9px; height: 1px;
+    background: var(--brick);
+  }
+  .gaps b { color: var(--ink); font-weight: 600; }
+
+  .callout {
+    border-left: 2px solid var(--brass);
+    background: var(--brass-soft);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    max-width: 40rem;
+  }
+
+  /* ---------- prochains chantiers ---------- */
+
+  .graals { display: flex; flex-direction: column; }
+  .graal {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 clamp(0.9rem, 2.5vw, 1.4rem);
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .graal:first-child { border-top: 1px solid var(--rule-strong); }
+  .graal:last-child { border-bottom: 1px solid var(--rule-strong); }
+  .graal .rank {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    line-height: 0.85;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+  /* le h3 global est l'étiquette capitale ; ici c'est un vrai titre */
+  .graal h3 {
+    font-family: var(--body);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ink);
+    margin: 0 0 0.4rem;
+    text-wrap: balance;
+  }
+  .graal p { margin: 0 0 0.6rem; color: var(--ink-soft); }
+  .graal p:last-child { margin-bottom: 0; }
+  .built-on {
+    font-size: 0.86rem;
+    color: var(--muted);
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--accent);
+    line-height: 1.5;
+  }
+  .built-on b { color: var(--accent); font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--rule-strong);
+    padding-top: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 2rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Megga ERP · addons/verticals/resto · Odoo 19 Community</p>
+    <h1>Megga&nbsp;Restaurant</h1>
+    <p class="deck">Tout le métier d'un restaurant suisse posé sur le POS du cœur : le carnet
+      de réservations sur les vraies tables du plan de salle, les fiches techniques avec coût
+      matière, les productions de cuisine, et la TVA sur place / à l'emporter câblée sur la caisse.</p>
+
+    <dl class="identity">
+      <div><dt>Modules</dt><dd class="big">5</dd></div>
+      <div><dt>Tests</dt><dd class="big">102</dd></div>
+      <div><dt>Version</dt><dd>19.0.1.0.0</dd></div>
+      <div><dt>Licence</dt><dd>Other proprietary</dd></div>
+      <div><dt>Cœur requis</dt><dd><code>pos_restaurant</code></dd></div>
+    </dl>
+
+    <nav class="toc">
+      <a href="#carnet">Carnet de réservations</a>
+      <a href="#fiches">Fiches techniques</a>
+      <a href="#productions">Productions</a>
+      <a href="#enligne">Réservation en ligne</a>
+      <a href="#portail">Portail client</a>
+      <a href="#tva">TVA restauration</a>
+      <a href="#declaration">Déclaration légale</a>
+      <a href="#socle">Ce qui vient du socle</a>
+      <a href="#manques">Ce qui n'existe pas</a>
+      <a href="#chantiers">Prochains chantiers</a>
+    </nav>
+  </header>
+
+  <section id="registre">
+    <div class="sec-head"><h2>Les quatre modules</h2></div>
+    <div class="prose">
+      <p>Le méta-module <code>megga_resto</code> tire tout le métier d'un coup : le socle Megga
+        complet (débranding, QR-facture, camt, pain.001, décompte TVA) et les briques du cœur
+        Community (<code>pos_restaurant</code> pour le plan de salle, les tables et la cuisine ;
+        <code>contacts</code>). Les trois autres se greffent selon le déploiement.</p>
+    </div>
+
+    <div class="ledger-wrap">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Installation</th>
+            <th>Ce qu'il apporte</th>
+            <th class="bar-cell">Tests</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pkg">megga_resto</td>
+            <td><span class="tag tag-app">Application</span></td>
+            <td>Carnet de réservations, fiches techniques et coût matière, productions de cuisine et liste de courses</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:100%"></span></div><div class="bar-n">44</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_portal</td>
+            <td><span class="tag tag-delib">Délibérée</span></td>
+            <td>Le client suit ses réservations et annule en ligne celles qui peuvent encore l'être</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:29.5%"></span></div><div class="bar-n">13</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_rdv</td>
+            <td><span class="tag tag-auto">Auto-install</span></td>
+            <td>Le carnet s'expose au moteur de créneaux public : couverts, attribution de table, refus quand complet</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:25%"></span></div><div class="bar-n">11</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_tva</td>
+            <td><span class="tag tag-auto">Auto-install</span></td>
+            <td>Position fiscale « à l'emporter » et taxe de remplacement, reliées au preset de la caisse</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:15.9%"></span></div><div class="bar-n">7</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_declaration</td>
+            <td><span class="tag tag-delib">Délibérée</span></td>
+            <td>Allergènes et pays de production portés par l'ingrédient, déclaration du plat calculée et imprimée</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:61.4%"></span></div><div class="bar-n">27</div></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="flow-note">Auto-install : présent dès que sa dépendance l'est (<code>megga_rdv</code> pour l'un,
+      <code>l10n_ch</code> pour l'autre). Délibérée : jamais posé tout seul — ouvrir un portail est
+      une décision du restaurant.</p>
+  </section>
+
+  <section id="carnet">
+    <div class="sec-head">
+      <h2>Carnet de réservations</h2>
+      <span class="pkg">models/resto_reservation.py</span>
+    </div>
+    <div class="prose">
+      <p>Adossé aux vraies <code>restaurant.table</code> du plan de salle : la brique Community
+        fournit les tables, la surcouche apporte ce qui n'existe qu'en Enterprise. Chaque entrée
+        porte une référence <code>RSV/2026/0001</code>, le nom du client, un contact facultatif,
+        le téléphone, l'arrivée et la durée, les couverts, une ou plusieurs tables.</p>
+    </div>
+
+    <div>
+      <h3>Cycle de vie</h3>
+      <div class="flow">
+        <span class="st">Demande</span><span class="arw" aria-hidden="true">→</span>
+        <span class="st">Confirmée</span><span class="arw" aria-hidden="true">→</span>
+        <span class="st">Installés</span><span class="arw" aria-hidden="true">→</span>
+        <span class="st st-end">Terminée</span>
+        <span class="arw" aria-hidden="true">·</span>
+        <span class="st st-out">Non venus</span>
+        <span class="st st-out">Annulée</span>
+      </div>
+      <p class="flow-note">Chaque transition est gardée : on ne clôture que ce qui est installé, on ne
+        marque « non venus » qu'une réservation confirmée, on n'annule plus une table déjà assise.</p>
+    </div>
+
+    <div class="cols">
+      <ul class="notes">
+        <li><b>Anti-collision des tables.</b> Aucune table ne porte deux réservations actives qui se
+          chevauchent. Chevauchement <i>strict</i> : enchaîner 18h–20h puis 20h–22h sur la même table
+          reste permis.</li>
+        <li><b>Contrôle de capacité.</b> La somme des places des tables choisies doit couvrir les
+          couverts — sinon refus nominatif.</li>
+        <li><b>Non-venus automatiques.</b> Un cron quotidien bascule en « non venus » toute réservation
+          restée confirmée au-delà du délai de grâce (2 h), avec la trace au chatter. Idempotent.</li>
+      </ul>
+      <ul class="notes">
+        <li><b>Écrans.</b> Calendrier hebdomadaire coloré par état (vue par défaut, filtré « à venir »),
+          liste avec somme des couverts et badges, formulaire avec chatter et activités.</li>
+        <li><b>Recherche.</b> Aujourd'hui, À venir, Confirmées, Non venus ; regroupement par état ou
+          par jour.</li>
+        <li><b>Notes de service fermées.</b> Allergies, occasion, chaise haute — mais aussi les remarques
+          de la salle : le champ est protégé par l'ORM, pas seulement absent des gabarits.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="fiches">
+    <div class="sec-head">
+      <h2>Fiches techniques et coût matière</h2>
+      <span class="pkg">models/resto_recipe.py</span>
+    </div>
+    <div class="prose">
+      <p>Une fiche par article vendu (unicité en base) : les ingrédients d'une portion, leur coût
+        au prix de revient, et ce que cela donne face au prix de carte. Le nerf de la guerre d'un
+        restaurant, absent du cœur Community.</p>
+    </div>
+
+    <div class="bill">
+      <p class="bill-title">Entrecôte café de Paris, frites</p>
+      <p class="bill-sub">Fiche technique · 1 portion · données de démo</p>
+      <table class="bill-t">
+        <tbody>
+          <tr><td>Entrecôte de bœuf</td><td class="q">0.300 kg × 38.00</td><td class="m">11.40</td></tr>
+          <tr><td>Beurre café de Paris</td><td class="q">0.050 kg × 24.00</td><td class="m">1.20</td></tr>
+          <tr><td>Pommes frites</td><td class="q">0.400 kg × 2.00</td><td class="m">0.80</td></tr>
+          <tr class="tot"><td>Coût matière / portion</td><td class="q"></td><td class="m">13.40</td></tr>
+          <tr class="res"><td>Prix de carte</td><td class="q"></td><td class="m">42.00</td></tr>
+          <tr class="res"><td>Marge brute — 68.1 %</td><td class="q">food cost 31.9 %</td><td class="m">28.60</td></tr>
+        </tbody>
+      </table>
+      <p class="bill-foot">Le bouton <b>Appliquer le coût</b> reporte les 13.40 comme prix de revient de
+        l'article : POS et analytique repartent alors du même chiffre que la fiche.</p>
+    </div>
+
+    <ul class="notes">
+      <li><b>Chaque ligne dans SON unité.</b> 200 g d'un article acheté au kilo, 5 cl d'une huile au
+        litre — les unités maison se créent en un clic, relatives au litre. Seules les unités
+        convertibles sont proposées : en 19, les catégories d'unités ont disparu, la convertibilité
+        se lit sur l'arbre <code>relative_uom_id</code> (même racine).</li>
+      <li><b>Le piège d'arrondi, désamorcé.</b> La conversion se fait en <code>round=False</code> :
+        l'arrondi par défaut du cœur, qui arrondit à l'unité cible et vers le haut, transformerait
+        1 g en 0.01 kg — un coût multiplié par dix.</li>
+    </ul>
+  </section>
+
+  <section id="productions">
+    <div class="sec-head">
+      <h2>Productions de cuisine et liste de courses</h2>
+      <span class="pkg">models/resto_production.py</span>
+    </div>
+    <div class="prose">
+      <p>Une production — un banquet, un service du samedi soir, la semaine 38 — aligne des plats à
+        fiche technique et leurs portions sous une référence <code>PROD/2026/0001</code>. La liste
+        de courses en découle, et c'est l'outil que le chef emporte au marché.</p>
+    </div>
+    <div class="cols">
+      <ul class="notes">
+        <li><b>Agrégation multi-plats.</b> Le beurre de l'entrecôte et celui de la purée font une
+          seule ligne, dans l'ordre du menu — jamais dans un ordre de hasard.</li>
+        <li><b>Unité de l'économat.</b> La fiche pèse en grammes, la liste parle en kilos : chaque
+          besoin est converti dans l'unité de l'article avant d'être additionné.</li>
+        <li><b>Coût matière prévu</b> au prix de revient du jour, stocké sur la production.</li>
+      </ul>
+      <ul class="notes">
+        <li><b>Gardes.</b> Pas de production sans plat ; refus nominatif des plats sans fiche
+          technique ; pas de recalcul quand la production est soldée — le marché est fait ; une
+          production engagée s'annule au lieu de se supprimer.</li>
+        <li><b>Impression QWeb.</b> La liste sort en PDF : le papier qu'on emporte au marché ou
+          qu'on envoie au fournisseur.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="enligne">
+    <div class="sec-head">
+      <h2>Réservation de table en ligne</h2>
+      <span class="pkg">megga_resto_rdv</span>
+    </div>
+    <div class="prose">
+      <p>Pont vers <code>megga_rdv</code>, l'équivalent Community du module Enterprise
+        <code>appointment</code>. Un type de rendez-vous coché « réservation de table » bascule la
+        sémantique : on réserve des <b>tables</b>, pas des personnes.</p>
+    </div>
+    <ul class="notes">
+      <li><b>Le créneau n'occupe pas l'agenda.</b> L'événement passe en <code>show_as='free'</code> :
+        plusieurs tablées à la même heure. La capacité réelle, c'est le plan de salle.</li>
+      <li><b>Attribution automatique.</b> La plus petite table suffisante encore libre (à égalité, le
+        plus petit identifiant). Complet : refus propre au visiteur, toute la réservation est annulée
+        — « appelez-nous, on trouvera une solution ».</li>
+      <li><b>Couverts demandés au formulaire public</b>, bornés de 1 à 50 : jamais de passage aveugle
+        des paramètres de la requête vers la base.</li>
+      <li><b>Annulations synchronisées dans les deux sens</b>, lien public à jeton compris. En cas de
+        course entre deux visiteurs sur la même table, la contrainte du carnet reste l'arbitre final.</li>
+    </ul>
+  </section>
+
+  <section id="portail">
+    <div class="sec-head">
+      <h2>Portail client</h2>
+      <span class="pkg">megga_resto_portal</span>
+    </div>
+    <div class="prose">
+      <p>Le client connecté trouve « Mes réservations » : les siennes, à venir et passées, annulées
+        comprises — il doit voir ce qu'il a annulé. Et il peut <b>annuler en ligne</b> ce qui peut
+        encore l'être : c'est le seul geste d'écriture de tous les portails Megga, parce qu'une table
+        libérée à temps se revend.</p>
+    </div>
+    <ul class="notes">
+      <li><b>L'écriture ne passe jamais par un droit générique.</b> Les ACL du portail restent en
+        lecture seule pure ; l'annulation emprunte une action dédiée — contrôle d'accès d'abord,
+        gardes métier ensuite (la sienne, encore en demande ou confirmée, service à venir),
+        exécution en <code>sudo</code>, trace au chatter.</li>
+      <li><b>La vue ne protège rien.</b> Le bouton n'apparaît que sur ce qui est annulable, mais le
+        contrôleur revalide tout.</li>
+      <li><b>Deux réserves assumées.</b> Une réservation prise au téléphone sans contact n'appartient
+        à personne au portail et n'y figure pas ; les notes de service ne redescendent jamais.</li>
+    </ul>
+  </section>
+
+  <section id="tva">
+    <div class="sec-head">
+      <h2>TVA de la restauration</h2>
+      <span class="pkg">megga_resto_tva</span>
+    </div>
+    <div class="prose">
+      <p>Le même sandwich ne paie pas la même TVA selon qu'il se mange sur place ou s'emporte.</p>
+    </div>
+
+    <div class="rates">
+      <div class="rate">
+        <div class="n">8.1 %</div>
+        <div class="l">Sur place</div>
+        <div class="d">Taux normal — prestation de la restauration.</div>
+      </div>
+      <div class="rate">
+        <div class="n">2.6 %</div>
+        <div class="l">À l'emporter</div>
+        <div class="d">Taux réduit — livraison de denrées alimentaires, art. 25 al. 2 LTVA.</div>
+      </div>
+      <div class="rate">
+        <div class="n">313a</div>
+        <div class="l">Grille AFC</div>
+        <div class="d">Conservée par la taxe de remplacement : les ventes à l'emporter restent
+          distinguables des autres ventes au taux réduit.</div>
+      </div>
+    </div>
+
+    <ul class="notes">
+      <li><b>Câblé sur la caisse.</b> La position fiscale et sa taxe de remplacement sont créées par
+        société, puis reliées au preset « À l'emporter » de <code>pos_restaurant</code> : le service
+        encaisse au bon taux en choisissant le mode de la commande. Même patron que
+        <code>l10n_be_pos_restaurant</code> du cœur.</li>
+      <li><b>Rejouable et idempotent.</b> Une société qui reçoit son plan comptable après coup relance
+        le câblage par <b>Restaurant ▸ Configuration ▸ TVA à l'emporter (CH)</b>.</li>
+    </ul>
+
+    <p class="callout">Le taux réduit à l'emporter suppose des <b>mesures organisationnelles
+      appropriées</b> — des tickets distincts par mode de vente, ce que fait la caisse ainsi
+      configurée. À défaut, tout est dû au taux normal (Info TVA 08, « Hôtellerie et restauration »).</p>
+  </section>
+
+  <section id="declaration">
+    <div class="sec-head">
+      <h2>Déclaration légale de la carte</h2>
+      <span class="pkg">megga_resto_declaration</span>
+    </div>
+    <div class="prose">
+      <p>Le droit alimentaire suisse impose de renseigner le client sur les allergènes de ce qu'il
+        mange et, pour la viande et le poisson, sur le pays de production. Tout se déclare sur
+        <b>l'article ingrédient</b>, une fois : chaque plat qui l'emploie en hérite, et un
+        changement de fournisseur met la carte à jour d'un coup.</p>
+    </div>
+
+    <div>
+      <h3>La règle qui tient le module</h3>
+      <div class="flow">
+        <span class="st st-out">Pas encore regardé</span>
+        <span class="arw" aria-hidden="true">≠</span>
+        <span class="st st-end">Vérifié, rien à signaler</span>
+      </div>
+      <p class="flow-note">Une liste d'allergènes vide ne vaut pas déclaration tant que personne n'a
+        coché « vérifié » — une liste vide ne se signe pas. Cocher un allergène vaut vérification :
+        personne ne coche « lait » sans avoir lu l'étiquette.</p>
+    </div>
+
+    <div class="cols">
+      <ul class="notes">
+        <li><b>Le référentiel des 14 allergènes est livré.</b> La liste est fixée par la loi ; un
+          restaurant n'a pas à la taper. Lecture pour tout employé — la salle doit pouvoir répondre —,
+          écriture en configuration.</li>
+        <li><b>Sur chaque fiche</b> : les allergènes réunis du plat, l'état de la déclaration, et
+          nommément ce qui manque (« Entrecôte : provenance manquante »).</li>
+        <li><b>Recherche par allergène</b> dans les deux sens : les plats qui contiennent du gluten,
+          et ceux qui n'en contiennent pas — la négation s'inversant au bon niveau, car tout plat au
+          gluten a aussi des ingrédients sans gluten.</li>
+      </ul>
+      <ul class="notes">
+        <li><b>Ne bloque jamais.</b> Une fiche incomplète se modifie, se cuisine et se vend ; elle est
+          signalée, pas barrée — même règle que le magasin du cabinet, qui ne bloque jamais la
+          clinique.</li>
+        <li><b>Le rapport dit la vérité.</b> Un plat incomplet sort avec son avertissement (« ne pas
+          afficher en salle ») au lieu d'être passé sous silence, et un ingrédient à déclarer dont le
+          pays manque paraît quand même, avec un pays vide : un trou doit se voir sur le papier.</li>
+        <li><b>Reste à faire</b> : la déclaration des méthodes de production interdites en Suisse,
+          qui demande son propre référentiel de mentions.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="socle">
+    <div class="sec-head"><h2>Ce que le restaurant reçoit sans rien faire</h2></div>
+    <div class="cols">
+      <ul class="notes">
+        <li><b>Du cœur Community.</b> Le POS restaurant complet : plan de salle, tables, écran de
+          cuisine, presets de commande.</li>
+        <li><b>Du socle Megga.</b> QR-facture SIX pour la facturation B2B, import camt.053/054 pour
+          les encaissements, paiements fournisseurs pain.001, décompte TVA AFC, débranding.</li>
+      </ul>
+      <ul class="notes">
+        <li><b>Installables en plus.</b> <code>megga_relances</code> — rappels d'impayés à crans
+          réglables, proposés en brouillon par un cron, jamais envoyés seuls. <code>megga_pilotage</code>
+          — balance âgée du poste clients, en liste, pivot, graphe et rapport imprimable.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="manques">
+    <div class="sec-head"><h2>Ce qui n'existe pas encore</h2></div>
+    <div class="prose">
+      <p>Le périmètre actuel s'arrête net à ces frontières — utile à savoir avant de promettre une
+        démo.</p>
+    </div>
+    <ul class="gaps">
+      <li><b>Aucun lien réservation ↔ ticket POS.</b> Pas de chiffre d'affaires par table réservée,
+        pas de « la 102 est arrivée, ouvre sa commande ».</li>
+      <li><b>Aucun lien avec le stock ni les achats.</b> La liste de courses est un prévisionnel
+        imprimable : elle ne décrémente rien et n'engendre aucune commande fournisseur.</li>
+      <li><b>Pas de statistiques resto.</b> Ni menu engineering, ni taux de remplissage, ni taux de
+        non-présentation.</li>
+      <li><b>Pas d'arrhes ni de pénalité.</b> Le non-venu est marqué, pas facturé.</li>
+      <li><b>Pas de liste d'attente, pas de SMS</b>, et pas d'horaires d'ouverture sur le carnet
+        lui-même — les plages vivent sur le type de rendez-vous en ligne.</li>
+      <li><b>Pas d'HACCP</b> ni de relevés de température, et pas de planning du personnel.</li>
+      <li><b>Déploiement mono-société.</b> Le choix des tables et la détection de conflits ne filtrent
+        pas par société.</li>
+    </ul>
+  </section>
+
+  <section id="chantiers">
+    <div class="sec-head"><h2>Prochains chantiers</h2></div>
+    <div class="prose">
+      <p>Cette section n'est pas un relevé : c'est une <b>proposition</b>, classée par valeur
+        rapportée au code déjà écrit. Le graal dépend de qui signe — pour le patron c'est la marge,
+        pour le gérant c'est le personnel, pour l'inspecteur cantonal c'est la conformité.</p>
+    </div>
+
+    <div class="graals">
+      <article class="graal">
+        <div class="rank" aria-hidden="true">1</div>
+        <div>
+          <h3>L'écart matière — théorique contre réel</h3>
+          <p>Le seul chiffre qui rend un restaurant rentable. La caisse a vendu 42 entrecôtes, donc
+            12.6 kg de viande sont théoriquement partis (0.300 × 42) ; l'inventaire en compte 14.8 de
+            moins en chambre froide. L'écart — 2.2 kg, CHF 83.60 sur un service — c'est le gaspillage,
+            les portions trop généreuses, la casse, parfois le vol. Personne ne le calcule à la main,
+            et c'est ce que facturent les logiciels spécialisés au mois.</p>
+          <p class="built-on"><b>Se pose sur :</b> les fiches techniques (la consommation théorique)
+            et le POS (les volumes vendus). Il manque le milieu — décrémenter le stock à la vente et
+            un inventaire tournant. La verticale dentaire a déjà prouvé le savoir-faire stock : lots,
+            FEFO, péremption, sorties gardées.</p>
+        </div>
+      </article>
+
+      <article class="graal">
+        <div class="rank" aria-hidden="true">2</div>
+        <div>
+          <h3>La déclaration légale suisse — allergènes et provenance</h3>
+          <p style="margin-bottom:0.6rem;">
+            <span class="tag tag-auto">Premier incrément livré</span>
+          </p>
+          <p>Obligatoire, tenue à la main partout, et déjà à moitié en base. Le droit alimentaire
+            suisse impose de déclarer les allergènes (l'oral est admis si un écrit signale que
+            l'information est disponible) et — ce qui est propre à la Suisse — la <b>provenance de la
+            viande et du poisson</b> ainsi que les méthodes de production interdites en Suisse.
+            Aucun éditeur international ne code cette obligation-là.</p>
+          <p class="built-on"><b>Où ça en est :</b> allergènes et provenance sont livrés
+            (<code>megga_resto_declaration</code>, 27 tests — voir la section ci-dessus). Reste la
+            déclaration des <b>méthodes de production interdites en Suisse</b>, qui demande son
+            propre référentiel de mentions. Le détail légal se vérifie contre l'ordonnance en
+            vigueur avant d'être codé.</p>
+        </div>
+      </article>
+
+      <article class="graal">
+        <div class="rank" aria-hidden="true">3</div>
+        <div>
+          <h3>Le personnel — planning et saisie du temps</h3>
+          <p>La plus grosse ligne de charge d'un restaurant, 35 à 45 % du chiffre, et la plus mal
+            outillée. La loi sur le travail et la <b>convention collective de l'hôtellerie-restauration</b>
+            — de force obligatoire, donc valable pour presque tout le secteur — imposent
+            l'enregistrement de la durée du travail, et portent des règles que personne n'encode :
+            treizième salaire, cinq semaines de vacances, seuils d'heures supplémentaires, jours de
+            repos.</p>
+          <p class="built-on"><b>Se pose sur :</b> rien d'existant — c'est le plus gros chantier des
+            trois. Le module <code>planning</code> d'Odoo est Enterprise, et Community ne parle pas
+            la convention. C'est aussi le seul pour lequel un patron change de logiciel.</p>
+        </div>
+      </article>
+    </div>
+
+    <div>
+      <h3>Le second rang</h3>
+      <div class="prose">
+        <p>Beaucoup de valeur pour peu de code, parce que les fondations sont déjà posées.</p>
+      </div>
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <thead>
+            <tr><th>Chantier</th><th>Ce sur quoi il se pose déjà</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lien réservation ↔ ticket POS</td>
+              <td>Le carnet marque déjà les non-venus par cron. Avec le ticket viennent le ticket
+                moyen par couvert et le <b>coût réel d'un no-show</b> — le chiffre qui justifie les arrhes.</td>
+            </tr>
+            <tr>
+              <td>Menu engineering</td>
+              <td>La marge par plat existe (28.60 sur l'entrecôte), la caisse a les volumes. La matrice
+                popularité × marge, c'est deux vues pivot.</td>
+            </tr>
+            <tr>
+              <td>Arrhes et Twint</td>
+              <td>Twint est incontournable en Suisse et manque à Community. Utile pour l'acompte de
+                réservation comme pour la vente à l'emporter.</td>
+            </tr>
+            <tr>
+              <td>Autocontrôle HACCP</td>
+              <td>Relevés de température, plans de nettoyage, traçabilité des lots :
+                <b>la doctrine de la stérilisation dentaire s'y transpose telle quelle</b> — un cycle,
+                une conformité, un rappel quand l'indicateur revient non conforme. Le module est
+                déjà écrit, pour l'autoclave.</td>
+            </tr>
+            <tr>
+              <td>Commande en ligne à l'emporter</td>
+              <td>La TVA à 2.6 % est <b>déjà câblée</b> : le canal direct est à moitié construit, et
+                il évite la commission des plateformes.</td>
+            </tr>
+            <tr>
+              <td>Rappel par SMS</td>
+              <td>Le moteur de réservation rappelle déjà par courriel la veille. Le SMS réduit
+                nettement les non-venus ; il faut une passerelle vers un opérateur suisse.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="callout"><b>Ce qu'on ne construirait pas.</b> Les intégrations aux plateformes de
+      livraison — leurs interfaces changent et elles ne veulent personne dans la boucle. Un inventaire
+      complet chez un client qui ne comptera jamais ses stocks : sans comptage, l'écart matière ne vaut
+      rien. Et une caisse fiscale certifiée : la Suisse n'impose pas de dispositif certifié comme la
+      France ou l'Allemagne, seulement une comptabilité traçable et non modifiable.</p>
+  </section>
+
+  <footer>
+    <span>Source : addons/verticals/resto — le code fait foi</span>
+    <span>docs/etat-verticale-resto.html</span>
+    <span>Relevé le 05.09.2026</span>
+  </footer>
+
+</div>

@@ -1,8 +1,10 @@
-# Documents du chantier « Intendance »
+# Documents
 
-Trois documents, sortis des sessions de conception et d'exécution. Ils ne sont
-pas du code : ils disent ce qui a été décidé, pourquoi, et ce qu'il reste. En
-cas de divergence avec le dépôt, **le dépôt fait foi**.
+Sortis des sessions de conception, d'exécution et de relevé. Ils ne sont pas du
+code : ils disent ce qui a été décidé, pourquoi, et ce qu'il reste. En cas de
+divergence avec le dépôt, **le dépôt fait foi**.
+
+## Chantier « Intendance »
 
 | Fichier | Ce que c'est |
 |---|---|
@@ -12,3 +14,11 @@ cas de divergence avec le dépôt, **le dépôt fait foi**.
 
 Les deux plans existent aussi en pages publiées, mais **ces fichiers-ci font
 référence** : ils suivent le dépôt, donc les commits.
+
+## États des lieux par verticale
+
+| Fichier | Ce que c'est |
+|---|---|
+| [`etat-verticale-resto.html`](etat-verticale-resto.html) | L'**état global de la verticale restaurant** : les quatre modules livrés et leur mode d'installation, les mécanismes de chaque domaine (carnet, fiches techniques, productions, réservation en ligne, portail, TVA), une fiche technique chiffrée sur les données de démonstration du dépôt, et les frontières du périmètre actuel. Une dernière section, **proposition assumée et non relevé**, classe les prochains chantiers par valeur rapportée au code déjà écrit. Page autonome : à ouvrir dans un navigateur. |
+
+Relevé dans le code au 05.09.2026 — un état des lieux vieillit, le code non.
