@@ -19,6 +19,6 @@ référence** : ils suivent le dépôt, donc les commits.
 
 | Fichier | Ce que c'est |
 |---|---|
-| [`etat-verticale-resto.html`](etat-verticale-resto.html) | L'**état global de la verticale restaurant** : les quatre modules livrés et leur mode d'installation, les mécanismes de chaque domaine (carnet, fiches techniques, productions, réservation en ligne, portail, TVA), une fiche technique chiffrée sur les données de démonstration du dépôt, et les frontières du périmètre actuel. Page autonome : à ouvrir dans un navigateur. |
+| [`etat-verticale-resto.html`](etat-verticale-resto.html) | L'**état global de la verticale restaurant** : les quatre modules livrés et leur mode d'installation, les mécanismes de chaque domaine (carnet, fiches techniques, productions, réservation en ligne, portail, TVA), une fiche technique chiffrée sur les données de démonstration du dépôt, et les frontières du périmètre actuel. Une dernière section, **proposition assumée et non relevé**, classe les prochains chantiers par valeur rapportée au code déjà écrit. Page autonome : à ouvrir dans un navigateur. |
 
 Relevé dans le code au 05.09.2026 — un état des lieux vieillit, le code non.

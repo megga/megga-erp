@@ -412,6 +412,48 @@
     max-width: 40rem;
   }
 
+  /* ---------- prochains chantiers ---------- */
+
+  .graals { display: flex; flex-direction: column; }
+  .graal {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 clamp(0.9rem, 2.5vw, 1.4rem);
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .graal:first-child { border-top: 1px solid var(--rule-strong); }
+  .graal:last-child { border-bottom: 1px solid var(--rule-strong); }
+  .graal .rank {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    line-height: 0.85;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+  /* le h3 global est l'étiquette capitale ; ici c'est un vrai titre */
+  .graal h3 {
+    font-family: var(--body);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ink);
+    margin: 0 0 0.4rem;
+    text-wrap: balance;
+  }
+  .graal p { margin: 0 0 0.6rem; color: var(--ink-soft); }
+  .graal p:last-child { margin-bottom: 0; }
+  .built-on {
+    font-size: 0.86rem;
+    color: var(--muted);
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--accent);
+    line-height: 1.5;
+  }
+  .built-on b { color: var(--accent); font-weight: 600; }
+
   footer {
     border-top: 1px solid var(--rule-strong);
     padding-top: 1.2rem;
@@ -455,6 +497,7 @@
       <a href="#tva">TVA restauration</a>
       <a href="#socle">Ce qui vient du socle</a>
       <a href="#manques">Ce qui n'existe pas</a>
+      <a href="#chantiers">Prochains chantiers</a>
     </nav>
   </header>
 
@@ -751,6 +794,120 @@
       <li><b>Déploiement mono-société.</b> Le choix des tables et la détection de conflits ne filtrent
         pas par société.</li>
     </ul>
+  </section>
+
+  <section id="chantiers">
+    <div class="sec-head"><h2>Prochains chantiers</h2></div>
+    <div class="prose">
+      <p>Cette section n'est pas un relevé : c'est une <b>proposition</b>, classée par valeur
+        rapportée au code déjà écrit. Le graal dépend de qui signe — pour le patron c'est la marge,
+        pour le gérant c'est le personnel, pour l'inspecteur cantonal c'est la conformité.</p>
+    </div>
+
+    <div class="graals">
+      <article class="graal">
+        <div class="rank" aria-hidden="true">1</div>
+        <div>
+          <h3>L'écart matière — théorique contre réel</h3>
+          <p>Le seul chiffre qui rend un restaurant rentable. La caisse a vendu 42 entrecôtes, donc
+            12.6 kg de viande sont théoriquement partis (0.300 × 42) ; l'inventaire en compte 14.8 de
+            moins en chambre froide. L'écart — 2.2 kg, CHF 83.60 sur un service — c'est le gaspillage,
+            les portions trop généreuses, la casse, parfois le vol. Personne ne le calcule à la main,
+            et c'est ce que facturent les logiciels spécialisés au mois.</p>
+          <p class="built-on"><b>Se pose sur :</b> les fiches techniques (la consommation théorique)
+            et le POS (les volumes vendus). Il manque le milieu — décrémenter le stock à la vente et
+            un inventaire tournant. La verticale dentaire a déjà prouvé le savoir-faire stock : lots,
+            FEFO, péremption, sorties gardées.</p>
+        </div>
+      </article>
+
+      <article class="graal">
+        <div class="rank" aria-hidden="true">2</div>
+        <div>
+          <h3>La déclaration légale suisse — allergènes et provenance</h3>
+          <p>Obligatoire, tenue à la main partout, et déjà à moitié en base. Le droit alimentaire
+            suisse impose de déclarer les allergènes (l'oral est admis si un écrit signale que
+            l'information est disponible) et — ce qui est propre à la Suisse — la <b>provenance de la
+            viande et du poisson</b> ainsi que les méthodes de production interdites en Suisse.
+            Aucun éditeur international ne code cette obligation-là.</p>
+          <p class="built-on"><b>Se pose sur :</b> la fiche technique, qui porte déjà la liste des
+            ingrédients. Deux informations sur l'article ingrédient — allergènes, pays de production
+            — et la déclaration de chaque plat se calcule seule, puis s'imprime avec la carte. Le
+            jour où le fournisseur change de pays, la carte le sait. Le meilleur rapport valeur /
+            effort du lot ; le détail se vérifie contre l'ordonnance en vigueur avant d'être codé.</p>
+        </div>
+      </article>
+
+      <article class="graal">
+        <div class="rank" aria-hidden="true">3</div>
+        <div>
+          <h3>Le personnel — planning et saisie du temps</h3>
+          <p>La plus grosse ligne de charge d'un restaurant, 35 à 45 % du chiffre, et la plus mal
+            outillée. La loi sur le travail et la <b>convention collective de l'hôtellerie-restauration</b>
+            — de force obligatoire, donc valable pour presque tout le secteur — imposent
+            l'enregistrement de la durée du travail, et portent des règles que personne n'encode :
+            treizième salaire, cinq semaines de vacances, seuils d'heures supplémentaires, jours de
+            repos.</p>
+          <p class="built-on"><b>Se pose sur :</b> rien d'existant — c'est le plus gros chantier des
+            trois. Le module <code>planning</code> d'Odoo est Enterprise, et Community ne parle pas
+            la convention. C'est aussi le seul pour lequel un patron change de logiciel.</p>
+        </div>
+      </article>
+    </div>
+
+    <div>
+      <h3>Le second rang</h3>
+      <div class="prose">
+        <p>Beaucoup de valeur pour peu de code, parce que les fondations sont déjà posées.</p>
+      </div>
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <thead>
+            <tr><th>Chantier</th><th>Ce sur quoi il se pose déjà</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lien réservation ↔ ticket POS</td>
+              <td>Le carnet marque déjà les non-venus par cron. Avec le ticket viennent le ticket
+                moyen par couvert et le <b>coût réel d'un no-show</b> — le chiffre qui justifie les arrhes.</td>
+            </tr>
+            <tr>
+              <td>Menu engineering</td>
+              <td>La marge par plat existe (28.60 sur l'entrecôte), la caisse a les volumes. La matrice
+                popularité × marge, c'est deux vues pivot.</td>
+            </tr>
+            <tr>
+              <td>Arrhes et Twint</td>
+              <td>Twint est incontournable en Suisse et manque à Community. Utile pour l'acompte de
+                réservation comme pour la vente à l'emporter.</td>
+            </tr>
+            <tr>
+              <td>Autocontrôle HACCP</td>
+              <td>Relevés de température, plans de nettoyage, traçabilité des lots :
+                <b>la doctrine de la stérilisation dentaire s'y transpose telle quelle</b> — un cycle,
+                une conformité, un rappel quand l'indicateur revient non conforme. Le module est
+                déjà écrit, pour l'autoclave.</td>
+            </tr>
+            <tr>
+              <td>Commande en ligne à l'emporter</td>
+              <td>La TVA à 2.6 % est <b>déjà câblée</b> : le canal direct est à moitié construit, et
+                il évite la commission des plateformes.</td>
+            </tr>
+            <tr>
+              <td>Rappel par SMS</td>
+              <td>Le moteur de réservation rappelle déjà par courriel la veille. Le SMS réduit
+                nettement les non-venus ; il faut une passerelle vers un opérateur suisse.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="callout"><b>Ce qu'on ne construirait pas.</b> Les intégrations aux plateformes de
+      livraison — leurs interfaces changent et elles ne veulent personne dans la boucle. Un inventaire
+      complet chez un client qui ne comptera jamais ses stocks : sans comptage, l'écart matière ne vaut
+      rien. Et une caisse fiscale certifiée : la Suisse n'impose pas de dispositif certifié comme la
+      France ou l'Allemagne, seulement une comptabilité traçable et non modifiable.</p>
   </section>
 
   <footer>
