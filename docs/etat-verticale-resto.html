@@ -481,8 +481,8 @@
       matière, les productions de cuisine, et la TVA sur place / à l'emporter câblée sur la caisse.</p>
 
     <dl class="identity">
-      <div><dt>Modules</dt><dd class="big">4</dd></div>
-      <div><dt>Tests</dt><dd class="big">75</dd></div>
+      <div><dt>Modules</dt><dd class="big">5</dd></div>
+      <div><dt>Tests</dt><dd class="big">102</dd></div>
       <div><dt>Version</dt><dd>19.0.1.0.0</dd></div>
       <div><dt>Licence</dt><dd>Other proprietary</dd></div>
       <div><dt>Cœur requis</dt><dd><code>pos_restaurant</code></dd></div>
@@ -495,6 +495,7 @@
       <a href="#enligne">Réservation en ligne</a>
       <a href="#portail">Portail client</a>
       <a href="#tva">TVA restauration</a>
+      <a href="#declaration">Déclaration légale</a>
       <a href="#socle">Ce qui vient du socle</a>
       <a href="#manques">Ce qui n'existe pas</a>
       <a href="#chantiers">Prochains chantiers</a>
@@ -544,6 +545,12 @@
             <td><span class="tag tag-auto">Auto-install</span></td>
             <td>Position fiscale « à l'emporter » et taxe de remplacement, reliées au preset de la caisse</td>
             <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:15.9%"></span></div><div class="bar-n">7</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_declaration</td>
+            <td><span class="tag tag-delib">Délibérée</span></td>
+            <td>Allergènes et pays de production portés par l'ingrédient, déclaration du plat calculée et imprimée</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:61.4%"></span></div><div class="bar-n">27</div></div></td>
           </tr>
         </tbody>
       </table>
@@ -756,6 +763,54 @@
       configurée. À défaut, tout est dû au taux normal (Info TVA 08, « Hôtellerie et restauration »).</p>
   </section>
 
+  <section id="declaration">
+    <div class="sec-head">
+      <h2>Déclaration légale de la carte</h2>
+      <span class="pkg">megga_resto_declaration</span>
+    </div>
+    <div class="prose">
+      <p>Le droit alimentaire suisse impose de renseigner le client sur les allergènes de ce qu'il
+        mange et, pour la viande et le poisson, sur le pays de production. Tout se déclare sur
+        <b>l'article ingrédient</b>, une fois : chaque plat qui l'emploie en hérite, et un
+        changement de fournisseur met la carte à jour d'un coup.</p>
+    </div>
+
+    <div>
+      <h3>La règle qui tient le module</h3>
+      <div class="flow">
+        <span class="st st-out">Pas encore regardé</span>
+        <span class="arw" aria-hidden="true">≠</span>
+        <span class="st st-end">Vérifié, rien à signaler</span>
+      </div>
+      <p class="flow-note">Une liste d'allergènes vide ne vaut pas déclaration tant que personne n'a
+        coché « vérifié » — une liste vide ne se signe pas. Cocher un allergène vaut vérification :
+        personne ne coche « lait » sans avoir lu l'étiquette.</p>
+    </div>
+
+    <div class="cols">
+      <ul class="notes">
+        <li><b>Le référentiel des 14 allergènes est livré.</b> La liste est fixée par la loi ; un
+          restaurant n'a pas à la taper. Lecture pour tout employé — la salle doit pouvoir répondre —,
+          écriture en configuration.</li>
+        <li><b>Sur chaque fiche</b> : les allergènes réunis du plat, l'état de la déclaration, et
+          nommément ce qui manque (« Entrecôte : provenance manquante »).</li>
+        <li><b>Recherche par allergène</b> dans les deux sens : les plats qui contiennent du gluten,
+          et ceux qui n'en contiennent pas — la négation s'inversant au bon niveau, car tout plat au
+          gluten a aussi des ingrédients sans gluten.</li>
+      </ul>
+      <ul class="notes">
+        <li><b>Ne bloque jamais.</b> Une fiche incomplète se modifie, se cuisine et se vend ; elle est
+          signalée, pas barrée — même règle que le magasin du cabinet, qui ne bloque jamais la
+          clinique.</li>
+        <li><b>Le rapport dit la vérité.</b> Un plat incomplet sort avec son avertissement (« ne pas
+          afficher en salle ») au lieu d'être passé sous silence, et un ingrédient à déclarer dont le
+          pays manque paraît quand même, avec un pays vide : un trou doit se voir sur le papier.</li>
+        <li><b>Reste à faire</b> : la déclaration des méthodes de production interdites en Suisse,
+          qui demande son propre référentiel de mentions.</li>
+      </ul>
+    </div>
+  </section>
+
   <section id="socle">
     <div class="sec-head"><h2>Ce que le restaurant reçoit sans rien faire</h2></div>
     <div class="cols">
@@ -789,8 +844,7 @@
       <li><b>Pas d'arrhes ni de pénalité.</b> Le non-venu est marqué, pas facturé.</li>
       <li><b>Pas de liste d'attente, pas de SMS</b>, et pas d'horaires d'ouverture sur le carnet
         lui-même — les plages vivent sur le type de rendez-vous en ligne.</li>
-      <li><b>Pas d'allergènes structurés</b> (texte libre), pas d'HACCP ni de relevés de température,
-        pas de planning du personnel.</li>
+      <li><b>Pas d'HACCP</b> ni de relevés de température, et pas de planning du personnel.</li>
       <li><b>Déploiement mono-société.</b> Le choix des tables et la détection de conflits ne filtrent
         pas par société.</li>
     </ul>
@@ -825,16 +879,19 @@
         <div class="rank" aria-hidden="true">2</div>
         <div>
           <h3>La déclaration légale suisse — allergènes et provenance</h3>
+          <p style="margin-bottom:0.6rem;">
+            <span class="tag tag-auto">Premier incrément livré</span>
+          </p>
           <p>Obligatoire, tenue à la main partout, et déjà à moitié en base. Le droit alimentaire
             suisse impose de déclarer les allergènes (l'oral est admis si un écrit signale que
             l'information est disponible) et — ce qui est propre à la Suisse — la <b>provenance de la
             viande et du poisson</b> ainsi que les méthodes de production interdites en Suisse.
             Aucun éditeur international ne code cette obligation-là.</p>
-          <p class="built-on"><b>Se pose sur :</b> la fiche technique, qui porte déjà la liste des
-            ingrédients. Deux informations sur l'article ingrédient — allergènes, pays de production
-            — et la déclaration de chaque plat se calcule seule, puis s'imprime avec la carte. Le
-            jour où le fournisseur change de pays, la carte le sait. Le meilleur rapport valeur /
-            effort du lot ; le détail se vérifie contre l'ordonnance en vigueur avant d'être codé.</p>
+          <p class="built-on"><b>Où ça en est :</b> allergènes et provenance sont livrés
+            (<code>megga_resto_declaration</code>, 27 tests — voir la section ci-dessus). Reste la
+            déclaration des <b>méthodes de production interdites en Suisse</b>, qui demande son
+            propre référentiel de mentions. Le détail légal se vérifie contre l'ordonnance en
+            vigueur avant d'être codé.</p>
         </div>
       </article>
 
