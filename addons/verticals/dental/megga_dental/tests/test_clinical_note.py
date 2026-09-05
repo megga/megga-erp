@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from odoo import fields
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase
 from odoo.tools import mute_logger
@@ -41,8 +44,19 @@ class TestClinicalNote(TransactionCase):
                 'date_time': '2020-01-01 08:00:00',
                 'author_id': self.reception.id,
             })
-        # Toute valeur fournie est ecrasee par le serveur.
-        self.assertEqual(str(note.date_time)[:7], "2026-08")
+        # Toute valeur fournie est ecrasee par le serveur : on compare a
+        # MAINTENANT, jamais a un mois ecrit en dur. La version figee
+        # (« 2026-08 ») passait tant qu'on etait dans le mois de sa
+        # redaction et echouait des le 1er septembre — et avec elle la
+        # suite entiere, donc le rituel mensuel qui garde l'arrivee des
+        # correctifs de securite du coeur.
+        self.assertLess(
+            abs(fields.Datetime.now() - note.date_time),
+            timedelta(minutes=5),
+            "l'horodatage doit etre celui du serveur")
+        # Et ce que le test veut vraiment dire : la note antidatee n'a
+        # pas ete retenue.
+        self.assertNotEqual(str(note.date_time)[:10], '2020-01-01')
         self.assertEqual(note.author_id, self.soins)
 
     def test_aucune_modification(self):
