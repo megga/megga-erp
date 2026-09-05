@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- La déclaration de la carte : ce qui s'affiche en salle ou se
+         range dans le classeur du service. Impression depuis la liste
+         des fiches techniques (menu Imprimer). -->
+    <record id="action_report_declaration" model="ir.actions.report">
+        <field name="name">Déclaration de la carte</field>
+        <field name="model">megga.resto.recipe</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_resto_declaration.report_declaration</field>
+        <field name="report_file">megga_resto_declaration.report_declaration</field>
+        <field name="binding_model_id" ref="megga_resto.model_megga_resto_recipe"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_declaration">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- Titre en div.h2, pas en élément h2 : les mises en
+                         page du cœur s'approprient les h2 du corps (leçon
+                         de la liste de courses). -->
+                    <div class="h2">Déclaration de la carte</div>
+                    <p class="mb-4">
+                        Allergènes et pays de production des plats servis.
+                    </p>
+
+                    <t t-foreach="docs" t-as="recipe">
+                        <div class="mb-4">
+                            <div class="h4 mb-1">
+                                <span t-field="recipe.product_id.display_name"/>
+                            </div>
+
+                            <!-- Un plat incomplet ne se tait pas : il porte
+                                 son avertissement. Une déclaration qui
+                                 passe sous silence ce qu'elle ignore est
+                                 pire que pas de déclaration du tout. -->
+                            <div t-if="recipe.declaration_state != 'complete'"
+                                 class="alert alert-warning py-1 px-2 mb-2">
+                                <strong>Déclaration incomplète — ne pas afficher en salle.</strong>
+                                <div t-esc="recipe.declaration_missing"
+                                     style="white-space: pre-line;"/>
+                            </div>
+
+                            <div>
+                                <strong>Allergènes :</strong>
+                                <t t-if="recipe.allergen_ids">
+                                    <span t-esc="', '.join(recipe.allergen_ids.mapped('name'))"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-if="recipe.declaration_state == 'complete'">aucun</span>
+                                    <span t-else="" class="text-danger">non renseignés</span>
+                                </t>
+                            </div>
+
+                            <t t-set="origines" t-value="recipe._declaration_origins()"/>
+                            <div t-if="origines">
+                                <strong>Provenance :</strong>
+                                <t t-foreach="origines" t-as="origine">
+                                    <span t-esc="origine['product'].display_name"/><t>&#160;: </t>
+                                    <span t-if="origine['country']"
+                                          t-esc="origine['country'].name"/>
+                                    <span t-else="" class="text-danger">à compléter</span>
+                                    <t t-if="not origine_last">&#160;· </t>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+
+                    <p class="mt-4 small">
+                        Des informations détaillées sur les allergènes sont
+                        disponibles auprès du personnel de service.
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

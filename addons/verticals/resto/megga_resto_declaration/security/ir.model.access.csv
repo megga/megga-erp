@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_resto_allergen_user,resto.allergen.utilisateur,model_megga_resto_allergen,base.group_user,1,0,0,0
+access_resto_allergen_system,resto.allergen.configuration,model_megga_resto_allergen,base.group_system,1,1,1,1

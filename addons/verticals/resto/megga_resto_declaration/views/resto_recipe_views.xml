@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_resto_recipe_form_declaration" model="ir.ui.view">
+        <field name="name">megga.resto.recipe.form.declaration</field>
+        <field name="model">megga.resto.recipe</field>
+        <field name="inherit_id" ref="megga_resto.view_resto_recipe_form"/>
+        <field name="arch" type="xml">
+            <!-- Après les ingrédients : la déclaration en DÉCOULE, elle
+                 ne se saisit pas. La lire avant la liste inviterait à la
+                 corriger au mauvais endroit. -->
+            <xpath expr="//field[@name='line_ids']" position="after">
+                <group string="Déclaration légale">
+                    <field name="declaration_state" widget="badge"
+                           decoration-success="declaration_state == 'complete'"
+                           decoration-warning="declaration_state == 'incomplete'"/>
+                    <field name="allergen_ids" widget="many2many_tags"/>
+                    <field name="declaration_missing"
+                           invisible="declaration_state == 'complete'"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_resto_recipe_list_declaration" model="ir.ui.view">
+        <field name="name">megga.resto.recipe.list.declaration</field>
+        <field name="model">megga.resto.recipe</field>
+        <field name="inherit_id" ref="megga_resto.view_resto_recipe_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='margin_pct']" position="after">
+                <field name="declaration_state" widget="badge"
+                       decoration-success="declaration_state == 'complete'"
+                       decoration-warning="declaration_state == 'incomplete'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- megga_resto ne définit aucune vue de recherche pour les fiches :
+         celle-ci devient donc LA vue de recherche du modèle, et l'action
+         « Fiches techniques » la reprend sans rien changer. -->
+    <record id="view_resto_recipe_search_declaration" model="ir.ui.view">
+        <field name="name">megga.resto.recipe.search</field>
+        <field name="model">megga.resto.recipe</field>
+        <field name="arch" type="xml">
+            <search string="Fiches techniques">
+                <field name="product_id"/>
+                <field name="allergen_ids" string="Allergène"/>
+                <filter name="a_completer" string="Déclaration à compléter"
+                        domain="[('declaration_state', '=', 'incomplete')]"/>
+                <filter name="declarable" string="Déclarables"
+                        domain="[('declaration_state', '=', 'complete')]"/>
+                <group>
+                    <filter name="group_declaration" string="Déclaration"
+                            context="{'group_by': 'declaration_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>
