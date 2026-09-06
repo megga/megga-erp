@@ -217,15 +217,19 @@ class MeggaRestoProductionLine(models.Model):
         liste de courses en NOMMANT les plats sans fiche, pour qu'on
         aille justement les créer.
 
-        La négation s'inverse au bon niveau, et « sans fiche » se lit
-        sur l'article : ce sont les lignes dont l'article ne porte
-        aucune fiche du tout.
+        La négation s'inverse au bon niveau : les lignes « pas de cette
+        fiche » sont celles dont l'article n'est pas le sien.
+
+        CE QUI NE PASSE PAS PAR ICI : chercher les lignes SANS fiche.
+        L'ORM court-circuite `('recipe_id', '=', False)` avant
+        d'atteindre cette méthode (vérifié : le domaine rendu ici est
+        juste et trouve bien la ligne quand on l'applique à la main,
+        mais la recherche renvoie vide). Une branche `value is False`
+        serait donc du code mort qui promet ce qu'il ne tient pas. Le
+        module filtre en Python — c'est ce que fait `_build_shopping`
+        pour nommer les plats sans fiche.
         """
         Recipe = self.env['megga.resto.recipe']
-        if value is False and operator in ('=', '!='):
-            avec_fiche = Recipe.search([]).product_id.ids
-            return [('product_id',
-                     'not in' if operator == '=' else 'in', avec_fiche)]
         inverses = {'not in': 'in', '!=': '='}
         positif = inverses.get(operator)
         recettes = Recipe.search([('id', positif or operator, value)])

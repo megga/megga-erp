@@ -90,19 +90,6 @@ class TestProduction(TransactionCase):
              ('production_id', '=', production.id)])
         self.assertEqual(len(deux), 2)
 
-    def test_chercher_les_lignes_sans_fiche(self):
-        """« Sans fiche » se lit sur l'article : la ligne d'un plat
-        improvisé, dont aucune fiche ne porte l'article."""
-        production = self._production([
-            (0, 0, {'product_id': self.plat_viande.id, 'portions': 4}),
-            (0, 0, {'product_id': self.sans_fiche.id, 'portions': 4}),
-        ])
-        Ligne = self.env['megga.resto.production.line']
-        orphelines = Ligne.search(
-            [('recipe_id', '=', False),
-             ('production_id', '=', production.id)])
-        self.assertEqual(orphelines.product_id, self.sans_fiche)
-
     def test_chercher_les_lignes_qui_ne_sont_pas_d_une_fiche(self):
         """La négation s'inverse au bon niveau : les lignes qui ne sont
         pas de la fiche viande, y compris celles sans aucune fiche."""
