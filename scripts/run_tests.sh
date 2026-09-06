@@ -55,9 +55,9 @@ ODOO_BIN="$SUB/odoo-bin"
 [ -d "${PREFIXE}addons" ] || { echo "ERREUR: ${PREFIXE}addons introuvable"; exit 1; }
 
 BASE="${TEST_DB:-megga_ci_$$}"
-MODULES="${TEST_MODULES:-megga_base,megga_relances,megga_pilotage,megga_qr_export,megga_camt,megga_pain001,megga_qr_import,megga_tva_ch,megga_rdv,megga_retrocession,megga_dental,megga_dental_rdv,megga_dental_portal,megga_dental_stock,megga_dental_materiel,megga_dental_sterilisation,megga_resto,megga_resto_portal,megga_resto_rdv,megga_resto_tva,megga_auto,megga_auto_portal,megga_auto_rdv,megga_auto_occasion,megga_care,megga_care_import}"
-TAGS="${TEST_TAGS:-/megga_relances,/megga_pilotage,/megga_qr_export,/megga_camt,/megga_pain001,/megga_qr_import,/megga_tva_ch,/megga_rdv,/megga_retrocession,/megga_dental,/megga_dental_rdv,/megga_dental_portal,/megga_dental_stock,/megga_dental_materiel,/megga_dental_sterilisation,/megga_resto,/megga_resto_portal,/megga_resto_rdv,/megga_resto_tva,/megga_auto,/megga_auto_portal,/megga_auto_rdv,/megga_auto_occasion,/megga_care,/megga_care_import}"
-MIN="${TEST_MIN:-594}"
+MODULES="${TEST_MODULES:-megga_base,megga_relances,megga_pilotage,megga_qr_export,megga_camt,megga_pain001,megga_qr_import,megga_tva_ch,megga_rdv,megga_retrocession,megga_dental,megga_dental_rdv,megga_dental_portal,megga_dental_stock,megga_dental_materiel,megga_dental_sterilisation,megga_resto,megga_resto_portal,megga_resto_rdv,megga_resto_tva,megga_resto_declaration,megga_auto,megga_auto_portal,megga_auto_rdv,megga_auto_occasion,megga_care,megga_care_import}"
+TAGS="${TEST_TAGS:-/megga_relances,/megga_pilotage,/megga_qr_export,/megga_camt,/megga_pain001,/megga_qr_import,/megga_tva_ch,/megga_rdv,/megga_retrocession,/megga_dental,/megga_dental_rdv,/megga_dental_portal,/megga_dental_stock,/megga_dental_materiel,/megga_dental_sterilisation,/megga_resto,/megga_resto_portal,/megga_resto_rdv,/megga_resto_tva,/megga_resto_declaration,/megga_auto,/megga_auto_portal,/megga_auto_rdv,/megga_auto_occasion,/megga_care,/megga_care_import}"
+MIN="${TEST_MIN:-623}"
 # Chaque verticale (addons/verticals/<secteur>/) est un chemin d'addons
 # supplémentaire : le rituel teste ainsi le cœur + le socle + TOUTES les
 # verticales d'un coup à chaque bump.
@@ -75,7 +75,7 @@ python3 "$ODOO_BIN" -d "$BASE" \
     -i "$MODULES" \
     --test-enable --test-tags "$TAGS" \
     --http-interface=127.0.0.1 --http-port="${TEST_HTTP_PORT:-8199}" \
-    --without-demo=all --stop-after-init --max-cron-threads=0 \
+    --without-demo --stop-after-init --max-cron-threads=0 \
     --log-level=warn --log-handler=odoo.tests.result:INFO 2>&1 | tee "$JOURNAL"
 CODE=${PIPESTATUS[0]}
 set -e

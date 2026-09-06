@@ -43,9 +43,13 @@ CHEMINS="$SUB/addons,${PREFIXE}addons,${PREFIXE}addons/verticals/dental,${PREFIX
 echo "Base de demo : $BASE (detruite et recreee)"
 dropdb --if-exists "$BASE" 2>/dev/null || true
 
+# --with-demo est INDISPENSABLE : depuis 19.0, une base creee en ligne
+# de commande n'embarque plus la demo par defaut (verifie dans le
+# source : option with_demo, my_default=False). Sans lui, le decor
+# pose plus bas s'installe sur une base privee de la demo du module.
 python3 "$ODOO_BIN" -d "$BASE" \
     --addons-path="$CHEMINS" \
-    -i "$MODULES" \
+    -i "$MODULES" --with-demo \
     --stop-after-init --max-cron-threads=0 --log-level=warn
 
 python3 "$ODOO_BIN" shell -d "$BASE" \

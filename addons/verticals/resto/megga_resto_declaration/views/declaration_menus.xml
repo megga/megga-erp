@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sous Configuration, comme les tables et la TVA à l'emporter : le
+         référentiel se règle une fois, il ne se consulte pas au service.
+         Le parent porte déjà groups="base.group_system". -->
+    <menuitem id="menu_resto_allergens" name="Allergènes"
+              parent="megga_resto.menu_resto_config"
+              action="action_resto_allergen"
+              sequence="20"/>
+</odoo>

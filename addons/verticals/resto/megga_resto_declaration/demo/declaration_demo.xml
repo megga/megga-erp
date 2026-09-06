@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- On complète les ingrédients de la démonstration de megga_resto.
+         Le beurre café de Paris raconte à lui seul l'intérêt du module :
+         le plat n'a l'air de rien, et il apporte trois allergènes — le
+         lait, la moutarde et le poisson (l'anchois de la recette). -->
+    <record id="megga_resto.demo_ing_entrecote" model="product.product">
+        <field name="megga_allergens_checked" eval="True"/>
+        <field name="megga_origin_required" eval="True"/>
+        <field name="megga_origin_country_id" ref="base.ch"/>
+    </record>
+
+    <record id="megga_resto.demo_ing_beurre" model="product.product">
+        <field name="megga_allergen_ids"
+               eval="[(6, 0, [
+                   ref('megga_resto_declaration.allergen_lait'),
+                   ref('megga_resto_declaration.allergen_moutarde'),
+                   ref('megga_resto_declaration.allergen_poissons'),
+               ])]"/>
+    </record>
+
+    <!-- Vérifiées, aucun allergène : le cas que la case « vérifié »
+         existe pour distinguer d'un ingrédient jamais regardé. -->
+    <record id="megga_resto.demo_ing_frites" model="product.product">
+        <field name="megga_allergens_checked" eval="True"/>
+    </record>
+
+    <!-- Un second plat, resté INCOMPLET à dessein : la perche est un
+         poisson (provenance obligatoire) et personne n'a encore dit d'où
+         elle vient. C'est ce que le rapport barre d'un avertissement. -->
+    <record id="demo_ing_perche" model="product.product">
+        <field name="name">Filets de perche (kg)</field>
+        <field name="type">consu</field>
+        <field name="standard_price">42.0</field>
+        <field name="purchase_ok">True</field>
+        <field name="sale_ok">False</field>
+        <field name="megga_allergens_checked" eval="True"/>
+        <field name="megga_allergen_ids"
+               eval="[(6, 0, [ref('megga_resto_declaration.allergen_poissons')])]"/>
+        <field name="megga_origin_required" eval="True"/>
+    </record>
+
+    <record id="demo_plat_perche" model="product.product">
+        <field name="name">Filets de perche, sauce tartare</field>
+        <field name="type">consu</field>
+        <field name="list_price">38.0</field>
+    </record>
+
+    <record id="demo_recette_perche" model="megga.resto.recipe">
+        <field name="product_id" ref="demo_plat_perche"/>
+        <field name="notes">Meunière, citron, pommes vapeur.</field>
+        <field name="line_ids"
+               eval="[(0, 0, {
+                   'product_id': ref('demo_ing_perche'),
+                   'quantity': 0.18,
+               })]"/>
+    </record>
+</odoo>

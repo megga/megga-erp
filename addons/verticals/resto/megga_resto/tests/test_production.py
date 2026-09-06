@@ -70,6 +70,39 @@ class TestProduction(TransactionCase):
         vals.update(kw)
         return self.Production.create(vals)
 
+    def test_chercher_les_lignes_par_fiche(self):
+        """`recipe_id` est calculé, non stocké : c'est sa méthode de
+        recherche qui traduit la question en requête sur l'article.
+        Sans elle, l'ORM avertissait au démarrage qu'il ne savait pas
+        remonter des fiches vers les lignes."""
+        production = self._production([
+            (0, 0, {'product_id': self.plat_viande.id, 'portions': 4}),
+            (0, 0, {'product_id': self.plat_puree.id, 'portions': 4}),
+        ])
+        Ligne = self.env['megga.resto.production.line']
+        viande = Ligne.search(
+            [('recipe_id', '=', self.recette_viande.id),
+             ('production_id', '=', production.id)])
+        self.assertEqual(viande.product_id, self.plat_viande)
+        deux = Ligne.search(
+            [('recipe_id', 'in',
+              (self.recette_viande + self.recette_puree).ids),
+             ('production_id', '=', production.id)])
+        self.assertEqual(len(deux), 2)
+
+    def test_chercher_les_lignes_qui_ne_sont_pas_d_une_fiche(self):
+        """La négation s'inverse au bon niveau : les lignes qui ne sont
+        pas de la fiche viande, y compris celles sans aucune fiche."""
+        production = self._production([
+            (0, 0, {'product_id': self.plat_viande.id, 'portions': 4}),
+            (0, 0, {'product_id': self.plat_puree.id, 'portions': 4}),
+        ])
+        Ligne = self.env['megga.resto.production.line']
+        autres = Ligne.search(
+            [('recipe_id', '!=', self.recette_viande.id),
+             ('production_id', '=', production.id)])
+        self.assertEqual(autres.product_id, self.plat_puree)
+
     def test_sequence_et_affichage(self):
         production = self._production(
             [(0, 0, {'product_id': self.plat_viande.id, 'portions': 4})])

@@ -187,6 +187,7 @@ mensuel teste toutes les verticales contre chaque bump du cœur.
 | [`resto/`](addons/verticals/resto/) | `megga_resto_portal` (installation **délibérée**, jamais auto) | Portail client : le client connecté suit **ses** réservations (à venir et passées) et **annule en ligne** celles qui peuvent encore l'être — seul geste d'écriture de tous les portails Megga, par action dédiée et gardée (la sienne, à venir, pas encore installée), tracée au chatter ; les notes de service ne redescendent pas (fermées par l'ORM) | 13 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_rdv` (**auto_install**) | Pont réservation en ligne ↔ carnet : le type « réservation de table » demande les couverts, n'occupe pas l'agenda (`show_as='free'` — plusieurs tablées par créneau) et attribue la plus petite table suffisante ; complet = refus propre ; annulations synchronisées dans les deux sens | 11 |
 | [`resto/`](addons/verticals/resto/) | `megga_resto_tva` (**auto_install**) | TVA suisse de la restauration : sur place 8.1 % (TN) / à l'emporter 2.6 % (TR, art. 25 LTVA) — position fiscale et taxe de remplacement créées par société (grille 313a conservée), reliées au preset « À l'emporter » de la caisse ; même patron que `l10n_be_pos_restaurant` du cœur | 7 |
+| [`resto/`](addons/verticals/resto/) | `megga_resto_declaration` (installation **délibérée**, jamais auto) | Déclaration légale de la carte : allergènes et pays de production portés par l'**article ingrédient** (une saisie, tous les plats qui l'emploient en héritent — changer de fournisseur met la carte à jour d'un coup), référentiel des 14 allergènes livré ; sur chaque fiche, les allergènes réunis du plat, l'état de la déclaration et **nommément** ce qui manque ; la règle qui tient tout : une liste vide ne vaut pas déclaration tant que personne n'a coché « vérifié » — « rien à signaler » et « pas encore regardé » ne se confondent jamais ; impression pour la salle, où un plat incomplet sort **barré d'un avertissement** plutôt que passé sous silence ; ne bloque jamais la fiche | 27 |
 | [`auto/`](addons/verticals/auto/) | `megga_auto_occasion` (**auto_install**) | Commerce d'occasion : reprise → stock → revente (le nouveau propriétaire entre au parc clients). Régime ordinaire = impôt préalable fictif (art. 28a LTVA, taxe incluse extraite du prix de reprise, revente TTC — la charge nette est la TVA de la marge) ; pièces de collection = imposition de la marge (art. 24a : TVA sur la marge seule, marge négative sans crédit, facture de vente **sans mention de TVA**). Factures de reprise et de vente en un clic | 15 |
 
 Chaque méta-module tire tout son métier : socle Megga complet + les briques
@@ -749,6 +750,36 @@ décompte AFC, et les tickets distincts par mode constituent les
 « mesures organisationnelles » qu'exige le taux réduit (Info TVA 08).
 Une société qui reçoit son plan comptable après coup relance le
 câblage via Restaurant ▸ Configuration ▸ TVA à l'emporter (CH).
+
+La **déclaration légale de la carte** (`megga_resto_declaration`,
+installation délibérée) part d'un constat : la fiche technique porte
+déjà la liste des ingrédients. Il suffit de dire, **sur l'article
+ingrédient**, ce qu'il apporte d'allergène et d'où il vient — et la
+déclaration de chaque plat se calcule seule. Une saisie, et tous les
+plats qui l'emploient en héritent ; changer de fournisseur met la carte
+à jour d'un coup. Le référentiel des quatorze allergènes à déclaration
+obligatoire est livré : la liste est fixée par la loi, un restaurant
+n'a pas à la taper.
+
+La règle qui tient tout le module tient en une phrase : **une liste
+d'allergènes vide ne vaut pas déclaration tant que personne n'a coché
+« vérifié »**. « Rien à signaler » et « pas encore regardé » ne se
+confondent jamais — c'est tout l'objet d'une déclaration, et c'est ce
+que la logique pure (`declaration_logic.py`, testée seule comme
+`resto_logic` et `dental_logic`) garantit. Cocher un allergène vaut
+vérification : personne ne coche « lait » sans avoir lu l'étiquette.
+
+Deux partis pris de doctrine. Le module **ne bloque jamais** : une
+fiche incomplète se modifie, se cuisine et se vend ; elle est signalée,
+nommément (« Entrecôte : provenance manquante »), pas barrée — même
+règle que le magasin du cabinet, qui ne bloque jamais la clinique. Et
+le **rapport dit la vérité** : un plat incomplet y sort avec son
+avertissement (« ne pas afficher en salle ») plutôt que passé sous
+silence, et un ingrédient à déclarer dont le pays manque paraît quand
+même, avec un pays vide — un trou doit se voir sur le papier, pas
+disparaître de la liste. Hors périmètre à ce stade : la déclaration des
+méthodes de production interdites en Suisse, qui demande son propre
+référentiel de mentions.
 
 L'**outillage de production** prolonge les fiches techniques : une
 *production* — un banquet, un service, une semaine — aligne des plats

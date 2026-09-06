@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_resto_allergen_list" model="ir.ui.view">
+        <field name="name">megga.resto.allergen.list</field>
+        <field name="model">megga.resto.allergen</field>
+        <field name="arch" type="xml">
+            <!-- Éditable en ligne : le seul geste courant est de
+                 compléter la note d'aide de la maison. -->
+            <list string="Allergènes" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="note"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_resto_allergen_form" model="ir.ui.view">
+        <field name="name">megga.resto.allergen.form</field>
+        <field name="model">megga.resto.allergen</field>
+        <field name="arch" type="xml">
+            <form string="Allergène">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Céréales contenant du gluten"/></h1>
+                    </div>
+                    <group>
+                        <field name="code"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="note"
+                           placeholder="Les denrées visées, pour que la salle sache répondre…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_resto_allergen" model="ir.actions.act_window">
+        <field name="name">Allergènes</field>
+        <field name="res_model">megga.resto.allergen</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Le référentiel est livré avec le module</p>
+            <p>La liste des allergènes à déclaration obligatoire est fixée
+               par la loi : elle arrive complète et se met à jour avec le
+               module. Archivez ce que votre maison ne sert jamais.</p>
+        </field>
+    </record>
+</odoo>

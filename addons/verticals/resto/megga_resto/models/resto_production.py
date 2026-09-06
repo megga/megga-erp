@@ -165,7 +165,7 @@ class MeggaRestoProductionLine(models.Model):
         'product.product', string="Plat", required=True)
     recipe_id = fields.Many2one(
         'megga.resto.recipe', string="Fiche technique",
-        compute='_compute_recipe_id',
+        compute='_compute_recipe_id', search='_search_recipe_id',
         help="La fiche du plat — sans elle, pas de liste de courses.")
     portions = fields.Float("Portions", required=True, default=10.0)
     currency_id = fields.Many2one(related='production_id.currency_id')
@@ -197,6 +197,44 @@ class MeggaRestoProductionLine(models.Model):
             line.recipe_id = Recipe.search(
                 [('product_id', '=', line.product_id.id)], limit=1) \
                 if line.product_id else False
+
+    def _search_recipe_id(self, operator, value):
+        """La fiche d'une ligne est celle de son plat : chercher les
+        lignes d'une fiche revient à chercher les lignes dont l'article
+        est celui de la fiche.
+
+        Sans cette méthode, `recipe_id` n'est pas « cherchable », et
+        l'ORM ne sait pas remonter des fiches vers les lignes — il le
+        disait lui-même à chaque démarrage, pour les dépendances de
+        cost_portion et de subtotal.
+
+        Le champ reste NON STOCKÉ à dessein. Le stocker ferait taire le
+        même avertissement, mais une ligne saisie AVANT que la fiche du
+        plat existe garderait une fiche vide pour toujours : créer une
+        fiche ne recalcule pas un champ qui ne dépend que de l'article.
+        Non stocké, la fiche créée après coup est vue dès la lecture
+        suivante — et c'est le flux normal du module, qui refuse la
+        liste de courses en NOMMANT les plats sans fiche, pour qu'on
+        aille justement les créer.
+
+        La négation s'inverse au bon niveau : les lignes « pas de cette
+        fiche » sont celles dont l'article n'est pas le sien.
+
+        CE QUI NE PASSE PAS PAR ICI : chercher les lignes SANS fiche.
+        L'ORM court-circuite `('recipe_id', '=', False)` avant
+        d'atteindre cette méthode (vérifié : le domaine rendu ici est
+        juste et trouve bien la ligne quand on l'applique à la main,
+        mais la recherche renvoie vide). Une branche `value is False`
+        serait donc du code mort qui promet ce qu'il ne tient pas. Le
+        module filtre en Python — c'est ce que fait `_build_shopping`
+        pour nommer les plats sans fiche.
+        """
+        Recipe = self.env['megga.resto.recipe']
+        inverses = {'not in': 'in', '!=': '='}
+        positif = inverses.get(operator)
+        recettes = Recipe.search([('id', positif or operator, value)])
+        return [('product_id', 'not in' if positif else 'in',
+                 recettes.product_id.ids)]
 
     @api.depends('portions', 'recipe_id.cost_total')
     def _compute_subtotal(self):

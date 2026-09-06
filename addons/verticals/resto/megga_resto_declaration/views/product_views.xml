@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_declaration" model="ir.ui.view">
+        <field name="name">product.template.form.megga.declaration</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Un onglet à part plutôt qu'un groupe glissé dans la page
+                 générale : product.template est l'écran le plus partagé
+                 du cœur, et la déclaration ne concerne que les denrées. -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Déclaration (restaurant)"
+                      name="megga_resto_declaration">
+                    <group>
+                        <group string="Allergènes">
+                            <field name="megga_allergens_checked"/>
+                            <field name="megga_allergen_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Provenance">
+                            <field name="megga_origin_required"/>
+                            <!-- Pas de `required=` : cocher « à déclarer »
+                                 sans connaître encore le pays doit pouvoir
+                                 se sauver. Le manque se signale sur la
+                                 fiche technique, il ne bloque pas la
+                                 saisie. -->
+                            <field name="megga_origin_country_id"
+                                   invisible="not megga_origin_required"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        Cocher « allergènes vérifiés » même sans aucun
+                        allergène : c'est ce qui distingue « rien à
+                        signaler » de « pas encore regardé ».
+                    </p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
