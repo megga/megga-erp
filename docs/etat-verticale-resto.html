@@ -497,7 +497,7 @@
       <a href="#tva">TVA restauration</a>
       <a href="#declaration">Déclaration légale</a>
       <a href="#ecart">Écart matière</a>
-      <a href="#socle">Ce qui vient du socle</a>
+      <a href="#socle">Ce que le cœur donne</a>
       <a href="#manques">Ce qui n'existe pas</a>
       <a href="#chantiers">Prochains chantiers</a>
     </nav>
@@ -873,20 +873,101 @@
   </section>
 
   <section id="socle">
-    <div class="sec-head"><h2>Ce que le restaurant reçoit sans rien faire</h2></div>
-    <div class="cols">
-      <ul class="notes">
-        <li><b>Du cœur Community.</b> Le POS restaurant complet : plan de salle, tables, écran de
-          cuisine, presets de commande.</li>
-        <li><b>Du socle Megga.</b> QR-facture SIX pour la facturation B2B, import camt.053/054 pour
-          les encaissements, paiements fournisseurs pain.001, décompte TVA AFC, débranding.</li>
-      </ul>
-      <ul class="notes">
-        <li><b>Installables en plus.</b> <code>megga_relances</code> — rappels d'impayés à crans
-          réglables, proposés en brouillon par un cron, jamais envoyés seuls. <code>megga_pilotage</code>
-          — balance âgée du poste clients, en liste, pivot, graphe et rapport imprimable.</li>
-      </ul>
+    <div class="sec-head">
+      <h2>Ce que le cœur donne déjà</h2>
+      <span class="pkg">odoo/addons — 632 modules</span>
     </div>
+    <div class="prose">
+      <p>Relevé <b>module par module dans le sous-module épinglé</b>, pas d'après une page de
+        comparaison. C'est la partie de l'inventaire qui compte le plus : la meilleure fonctionnalité
+        est celle qu'on n'écrit pas, et le cœur en donne plus qu'on ne le croit.</p>
+    </div>
+
+    <div class="ledger-wrap">
+      <table class="ledger">
+        <thead>
+          <tr><th>Ce dont un restaurant a besoin</th><th>Où ça se trouve</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Caisse, plan de salle, tables, service par plats, menus et combos, notes de commande, imprimantes de cuisine</td>
+            <td class="pkg">point_of_sale · pos_restaurant</td>
+          </tr>
+          <tr>
+            <td><b>Commande par le client lui-même</b> — carte au téléphone via QR à table, borne</td>
+            <td class="pkg">pos_self_order</td>
+          </tr>
+          <tr>
+            <td>Caisse par serveur, avec identification</td>
+            <td class="pkg">pos_hr · pos_hr_restaurant</td>
+          </tr>
+          <tr>
+            <td><b>Terminaux de paiement</b> — Stripe, Adyen, Viva, Mollie, Razorpay, Mercado Pago…</td>
+            <td class="pkg">pos_restaurant_stripe · pos_restaurant_adyen · …</td>
+          </tr>
+          <tr>
+            <td>Paiement en ligne, y compris sur la commande en libre-service</td>
+            <td class="pkg">pos_online_payment · pos_online_payment_self_order</td>
+          </tr>
+          <tr>
+            <td><b>Fidélité, bons de réduction, cartes cadeaux</b></td>
+            <td class="pkg">loyalty · pos_loyalty · pos_restaurant_loyalty</td>
+          </tr>
+          <tr>
+            <td>SMS depuis la caisse</td>
+            <td class="pkg">pos_sms · sms</td>
+          </tr>
+          <tr>
+            <td>Stock, achats, production, marge sur les ventes</td>
+            <td class="pkg">stock · purchase · mrp · pos_sale_margin</td>
+          </tr>
+          <tr>
+            <td><b>Temps de travail, pointage, congés</b></td>
+            <td class="pkg">hr_attendance · hr_timesheet · hr_holidays</td>
+          </tr>
+          <tr>
+            <td>Matériel et entretien préventif</td>
+            <td class="pkg">maintenance</td>
+          </tr>
+          <tr>
+            <td>Comptabilité et plan comptable suisse</td>
+            <td class="pkg">account · l10n_ch</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3>Ce que Megga ajoute par-dessus</h3>
+      <div class="prose">
+        <p>Le socle suisse — QR-facture SIX, import camt.053/054, paiements pain.001, décompte TVA
+          AFC, débranding — et les six modules du registre en tête de page. Plus deux briques du
+          socle qui servent aussi le restaurant : <code>megga_relances</code> (rappels d'impayés) et
+          <code>megga_pilotage</code> (balance âgée).</p>
+      </div>
+    </div>
+
+    <div>
+      <h3>Ce qui n'est pas dans le cœur</h3>
+      <div class="prose">
+        <p>Vérifié par absence dans <code>odoo/addons</code> : <code>appointment</code>,
+          <code>planning</code>, <code>account_followup</code>, <code>account_reports</code>,
+          <code>iot</code>, <code>documents</code>, <code>sign</code>, <code>studio</code>,
+          <code>helpdesk</code>, <code>quality</code>, <code>field_service</code>,
+          <code>approvals</code>, <code>marketing_automation</code>.</p>
+        <p><b>Megga en a déjà rebâti trois</b> : la prise de rendez-vous en ligne
+          (<code>megga_rdv</code>), les rappels d'impayés et la balance âgée. Reste, pour un
+          restaurant : le <b>planning des équipes</b>, et l'<b>IoT</b> pour le matériel de caisse.</p>
+      </div>
+    </div>
+
+    <p class="callout"><b>Une mise en garde sur les sources.</b> Les comparatifs « Community contre
+      Enterprise » que l'on trouve en ligne affirment couramment que la fidélité, les cartes cadeaux,
+      les terminaux de paiement et le plan de salle sont réservés à l'Enterprise. <b>C'est faux pour
+      la 19</b> : les quatre sont dans l'arbre, et cette page les nomme. La page d'éditions d'Odoo
+      elle-même présente <code>Planning</code>, <code>Appointments</code> et <code>IoT</code> comme
+      partagés, alors qu'aucun des trois n'y figure. En cas de doute, c'est le sous-module épinglé
+      qui fait foi — pas une page de marketing, celle d'Odoo comprise.</p>
   </section>
 
   <section id="manques">
