@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_resto_ecart_form" model="ir.ui.view">
+        <field name="name">megga.resto.ecart.form</field>
+        <field name="model">megga.resto.ecart</field>
+        <field name="arch" type="xml">
+            <form string="Relevé d'écart matière">
+                <header>
+                    <button name="action_calculer" type="object"
+                            string="Calculer la théorique"
+                            class="btn-primary" invisible="state != 'draft'"
+                            help="Relit les ventes de la caisse sur la période. Ne touche pas aux comptages saisis."/>
+                    <button name="action_confirm" type="object"
+                            string="Arrêter le relevé"
+                            invisible="state != 'draft'"
+                            confirm="Arrêter le relevé fige ses chiffres. Continuer ?"/>
+                    <button name="action_cancel" type="object" string="Annuler"
+                            invisible="state == 'cancelled'"/>
+                    <button name="action_draft" type="object"
+                            string="Remettre en brouillon"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Période">
+                            <field name="label"/>
+                            <field name="date_start"/>
+                            <field name="date_stop"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Ce que la période a coûté">
+                            <field name="perte_total"/>
+                            <field name="ecart_value_total"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state != 'draft'">
+                        <list editable="bottom" string="Ingrédients">
+                            <field name="product_id"/>
+                            <field name="uom_id"/>
+                            <field name="stock_initial"/>
+                            <field name="achats"/>
+                            <field name="stock_final"/>
+                            <field name="reelle"/>
+                            <field name="theorique"/>
+                            <field name="ecart_qty"
+                                   decoration-danger="ecart_qty &gt; 0"
+                                   decoration-info="ecart_qty &lt; 0"/>
+                            <field name="ecart_pct" optional="show"/>
+                            <field name="cost_unit" optional="hide"/>
+                            <field name="ecart_value" sum="Écart net"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <field name="note" placeholder="Ce que l'inventaire a appris…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_resto_ecart_list" model="ir.ui.view">
+        <field name="name">megga.resto.ecart.list</field>
+        <field name="model">megga.resto.ecart</field>
+        <field name="arch" type="xml">
+            <list string="Écarts matière">
+                <field name="name"/>
+                <field name="label"/>
+                <field name="date_start"/>
+                <field name="date_stop"/>
+                <field name="perte_total" sum="Pertes"/>
+                <field name="ecart_value_total" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-info="state == 'draft'"
+                       decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_resto_ecart_search" model="ir.ui.view">
+        <field name="name">megga.resto.ecart.search</field>
+        <field name="model">megga.resto.ecart</field>
+        <field name="arch" type="xml">
+            <search string="Écarts matière">
+                <field name="name"/>
+                <field name="label"/>
+                <filter name="brouillons" string="Brouillons"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="arretes" string="Arrêtés"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <group>
+                    <filter name="group_state" string="État"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_resto_ecart" model="ir.actions.act_window">
+        <field name="name">Écarts matière</field>
+        <field name="res_model">megga.resto.ecart</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Ouvrir un premier relevé</p>
+            <p>Comptez vos stocks au début et à la fin d'une période, saisissez
+               vos entrées : le module confronte le résultat à ce que les fiches
+               techniques disaient des plats vendus. L'écart, c'est le
+               gaspillage, les portions trop généreuses, la casse.</p>
+        </field>
+    </record>
+</odoo>

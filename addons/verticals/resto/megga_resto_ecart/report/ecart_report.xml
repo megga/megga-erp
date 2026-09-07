@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Le relevé qu'on emporte en cuisine pour le discuter avec le
+         chef : les plus grosses pertes en tête, ligne par ligne. -->
+    <record id="action_report_ecart" model="ir.actions.report">
+        <field name="name">Relevé d'écart matière</field>
+        <field name="model">megga.resto.ecart</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">megga_resto_ecart.report_ecart</field>
+        <field name="report_file">megga_resto_ecart.report_ecart</field>
+        <field name="print_report_name">'Ecart - %s' % (object.label or object.name)</field>
+        <field name="binding_model_id" ref="model_megga_resto_ecart"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_ecart">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="releve">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Titre en div.h2, pas en element h2 : les mises
+                             en page du coeur s'approprient les h2 du corps
+                             (lecon de la liste de courses). -->
+                        <div class="h2">Relevé d'écart matière</div>
+
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong t-esc="releve.label"/>
+                                <div>Référence : <span t-esc="releve.name"/></div>
+                            </div>
+                            <div class="col-6">
+                                <div>Du <span t-field="releve.date_start"/>
+                                     au <span t-field="releve.date_stop"/></div>
+                                <div>État :
+                                    <span t-esc="dict(releve._fields['state'].selection)[releve.state]"/></div>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Ingrédient</th>
+                                    <th class="text-end">Départ</th>
+                                    <th class="text-end">Entrées</th>
+                                    <th class="text-end">Fin</th>
+                                    <th class="text-end">Réelle</th>
+                                    <th class="text-end">Théorique</th>
+                                    <th class="text-end">Écart</th>
+                                    <th class="text-end">Valorisé</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="releve.line_ids" t-as="ligne">
+                                    <td>
+                                        <span t-esc="ligne.product_id.display_name"/>
+                                        <span class="text-muted"
+                                              t-esc="ligne.uom_id.name"/>
+                                    </td>
+                                    <td class="text-end"><span t-esc="ligne.stock_initial"/></td>
+                                    <td class="text-end"><span t-esc="ligne.achats"/></td>
+                                    <td class="text-end"><span t-esc="ligne.stock_final"/></td>
+                                    <td class="text-end"><span t-esc="ligne.reelle"/></td>
+                                    <td class="text-end"><span t-esc="ligne.theorique"/></td>
+                                    <td class="text-end">
+                                        <span t-esc="ligne.ecart_qty"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="ligne.ecart_value"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-4">
+                            <div class="col-6 offset-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Pertes</strong></td>
+                                        <td class="text-end">
+                                            <span t-field="releve.perte_total"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Écart net</td>
+                                        <td class="text-end">
+                                            <span t-field="releve.ecart_value_total"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <p class="small text-muted mt-3">
+                            Un écart positif signale une consommation
+                            supérieure à la théorie : gaspillage, portions
+                            trop généreuses, casse. Les pertes ne somment que
+                            les écarts positifs — une sous-consommation ne
+                            compense pas une perte, elle pose sa propre
+                            question.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

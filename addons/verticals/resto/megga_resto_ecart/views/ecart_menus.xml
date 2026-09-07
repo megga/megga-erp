@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_resto_ecarts" name="Écarts matière"
+              parent="megga_resto.menu_resto_root"
+              action="action_resto_ecart"
+              sequence="25"/>
+</odoo>
