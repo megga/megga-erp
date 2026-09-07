@@ -50,7 +50,15 @@ class TestEcart(TransactionCase):
                         'quantity': 50.0, 'uom_id': cls.g.id}),
             ]})
 
-        config = cls.env['pos.config'].create({'name': "Caisse de test"})
+        # payment_method_ids fourni EXPLICITEMENT : son defaut cree un
+        # journal bancaire quand aucun moyen de paiement n'existe, ce qui
+        # exige un plan comptable installe sur la societe. Une base de
+        # test qui n'installe que ce module n'en a pas, et le defaut
+        # levait « Ensure that there is an existing bank journal ». Le
+        # module ne touche a aucun paiement : la caisse de test n'en a
+        # pas besoin.
+        config = cls.env['pos.config'].create({
+            'name': "Caisse de test", 'payment_method_ids': []})
         cls.session = cls.env['pos.session'].create({
             'config_id': config.id, 'user_id': cls.env.uid})
         cls.session.action_pos_session_open()
