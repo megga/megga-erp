@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_resto_ecart_user,resto.ecart.user,model_megga_resto_ecart,base.group_user,1,1,1,1
+access_resto_ecart_line_user,resto.ecart.line.user,model_megga_resto_ecart_line,base.group_user,1,1,1,1
