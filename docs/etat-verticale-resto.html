@@ -481,8 +481,8 @@
       matière, les productions de cuisine, et la TVA sur place / à l'emporter câblée sur la caisse.</p>
 
     <dl class="identity">
-      <div><dt>Modules</dt><dd class="big">5</dd></div>
-      <div><dt>Tests</dt><dd class="big">102</dd></div>
+      <div><dt>Modules</dt><dd class="big">6</dd></div>
+      <div><dt>Tests</dt><dd class="big">127</dd></div>
       <div><dt>Version</dt><dd>19.0.1.0.0</dd></div>
       <div><dt>Licence</dt><dd>Other proprietary</dd></div>
       <div><dt>Cœur requis</dt><dd><code>pos_restaurant</code></dd></div>
@@ -496,7 +496,8 @@
       <a href="#portail">Portail client</a>
       <a href="#tva">TVA restauration</a>
       <a href="#declaration">Déclaration légale</a>
-      <a href="#socle">Ce qui vient du socle</a>
+      <a href="#ecart">Écart matière</a>
+      <a href="#socle">Ce que le cœur donne</a>
       <a href="#manques">Ce qui n'existe pas</a>
       <a href="#chantiers">Prochains chantiers</a>
     </nav>
@@ -526,31 +527,37 @@
             <td class="pkg">megga_resto</td>
             <td><span class="tag tag-app">Application</span></td>
             <td>Carnet de réservations, fiches techniques et coût matière, productions de cuisine et liste de courses</td>
-            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:100%"></span></div><div class="bar-n">44</div></div></td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:100%"></span></div><div class="bar-n">46</div></div></td>
           </tr>
           <tr>
             <td class="pkg">megga_resto_portal</td>
             <td><span class="tag tag-delib">Délibérée</span></td>
             <td>Le client suit ses réservations et annule en ligne celles qui peuvent encore l'être</td>
-            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:29.5%"></span></div><div class="bar-n">13</div></div></td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:28.3%"></span></div><div class="bar-n">13</div></div></td>
           </tr>
           <tr>
             <td class="pkg">megga_resto_rdv</td>
             <td><span class="tag tag-auto">Auto-install</span></td>
             <td>Le carnet s'expose au moteur de créneaux public : couverts, attribution de table, refus quand complet</td>
-            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:25%"></span></div><div class="bar-n">11</div></div></td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:23.9%"></span></div><div class="bar-n">11</div></div></td>
           </tr>
           <tr>
             <td class="pkg">megga_resto_tva</td>
             <td><span class="tag tag-auto">Auto-install</span></td>
             <td>Position fiscale « à l'emporter » et taxe de remplacement, reliées au preset de la caisse</td>
-            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:15.9%"></span></div><div class="bar-n">7</div></div></td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:15.2%"></span></div><div class="bar-n">7</div></div></td>
           </tr>
           <tr>
             <td class="pkg">megga_resto_declaration</td>
             <td><span class="tag tag-delib">Délibérée</span></td>
             <td>Allergènes et pays de production portés par l'ingrédient, déclaration du plat calculée et imprimée</td>
-            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:61.4%"></span></div><div class="bar-n">27</div></div></td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:58.7%"></span></div><div class="bar-n">27</div></div></td>
+          </tr>
+          <tr>
+            <td class="pkg">megga_resto_ecart</td>
+            <td><span class="tag tag-delib">Délibérée</span></td>
+            <td>Consommation théorique (fiches × ventes de la caisse) confrontée à la réelle (inventaire), écart valorisé</td>
+            <td class="bar-cell"><div class="bar-row"><div class="bar"><span style="width:50%"></span></div><div class="bar-n">23</div></div></td>
           </tr>
         </tbody>
       </table>
@@ -811,21 +818,156 @@
     </div>
   </section>
 
-  <section id="socle">
-    <div class="sec-head"><h2>Ce que le restaurant reçoit sans rien faire</h2></div>
+  <section id="ecart">
+    <div class="sec-head">
+      <h2>Écart matière</h2>
+      <span class="pkg">megga_resto_ecart</span>
+    </div>
+    <div class="prose">
+      <p>Le chiffre qui dit où part la marge. Sur une période, le module confronte deux
+        consommations : la <b>théorique</b>, que les fiches techniques calculent sur les plats
+        réellement encaissés à la caisse, et la <b>réelle</b>, que l'inventaire mesure — stock de
+        départ, plus les entrées, moins le stock de fin. L'écart, c'est le gaspillage, les portions
+        trop généreuses, la casse.</p>
+    </div>
+
+    <div class="bill">
+      <p class="bill-title">Entrecôte, 10 portions vendues</p>
+      <p class="bill-sub">Écart matière · un ingrédient · exemple chiffré</p>
+      <table class="bill-t">
+        <tbody>
+          <tr><td>Théorique (0.200 kg × 10)</td><td class="q"></td><td class="m">2.000</td></tr>
+          <tr><td>Réelle (5.000 + 0 − 2.800)</td><td class="q"></td><td class="m">2.200</td></tr>
+          <tr class="tot"><td>Écart — 10 %</td><td class="q">0.200 kg × 38.00</td><td class="m">7.60</td></tr>
+        </tbody>
+      </table>
+      <p class="bill-foot">Deux cents grammes partis sans être vendus, sur un seul ingrédient et un
+        seul service. Répété sur une carte et sur un mois, c'est la marge du restaurant.</p>
+    </div>
+
     <div class="cols">
       <ul class="notes">
-        <li><b>Du cœur Community.</b> Le POS restaurant complet : plan de salle, tables, écran de
-          cuisine, presets de commande.</li>
-        <li><b>Du socle Megga.</b> QR-facture SIX pour la facturation B2B, import camt.053/054 pour
-          les encaissements, paiements fournisseurs pain.001, décompte TVA AFC, débranding.</li>
+        <li><b>Ce n'est pas un module de stock.</b> Aucun mouvement, aucune décrémentation, aucune
+          exigence que les ingrédients soient stockables. Le restaurant compte, le module fait
+          l'arithmétique qu'il trace déjà sur son carnet — c'est ce qui rend l'usage possible.</li>
+        <li><b>Un écart positif est une perte.</b> Un écart négatif n'est pas une bonne nouvelle
+          pour autant : ou la fiche ment, ou l'inventaire est faux. Dans les deux sens, c'est une
+          question, jamais un résultat.</li>
+        <li><b>Les pertes ne se compensent pas.</b> Le total des pertes ne somme que les écarts
+          positifs : additionner les écarts signés donnerait un total rassurant et faux, où le
+          beurre gaspillé effacerait la farine sous-consommée.</li>
       </ul>
       <ul class="notes">
-        <li><b>Installables en plus.</b> <code>megga_relances</code> — rappels d'impayés à crans
-          réglables, proposés en brouillon par un cron, jamais envoyés seuls. <code>megga_pilotage</code>
-          — balance âgée du poste clients, en liste, pivot, graphe et rapport imprimable.</li>
+        <li><b>La théorique est une mesure, pas un calcul vivant.</b> Elle est figée à l'instant du
+          calcul, prix de revient compris : la recalculer parce qu'une fiche a changé ensuite
+          falsifierait un relevé déjà arrêté.</li>
+        <li><b>Recalculer ne touche jamais aux comptages.</b> Un chef qui a passé sa soirée à
+          compter ne perd pas ses chiffres parce qu'il relance le calcul.</li>
+        <li><b>Les bornes se lisent dans le fuseau du restaurant.</b> Une commande encaissée à 00h30
+          le samedi l'a été à 22h30 UTC le vendredi : sans conversion, tout le service de fin de
+          soirée tombait dans le mauvais jour.</li>
+        <li><b>Reste à faire</b> : les entrées se saisissent à la main. Les tirer des factures
+          fournisseurs est le seul endroit où ce module gagnerait à se coupler au reste.</li>
       </ul>
     </div>
+  </section>
+
+  <section id="socle">
+    <div class="sec-head">
+      <h2>Ce que le cœur donne déjà</h2>
+      <span class="pkg">odoo/addons — 632 modules</span>
+    </div>
+    <div class="prose">
+      <p>Relevé <b>module par module dans le sous-module épinglé</b>, pas d'après une page de
+        comparaison. C'est la partie de l'inventaire qui compte le plus : la meilleure fonctionnalité
+        est celle qu'on n'écrit pas, et le cœur en donne plus qu'on ne le croit.</p>
+    </div>
+
+    <div class="ledger-wrap">
+      <table class="ledger">
+        <thead>
+          <tr><th>Ce dont un restaurant a besoin</th><th>Où ça se trouve</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Caisse, plan de salle, tables, service par plats, menus et combos, notes de commande, imprimantes de cuisine</td>
+            <td class="pkg">point_of_sale · pos_restaurant</td>
+          </tr>
+          <tr>
+            <td><b>Commande par le client lui-même</b> — carte au téléphone via QR à table, borne</td>
+            <td class="pkg">pos_self_order</td>
+          </tr>
+          <tr>
+            <td>Caisse par serveur, avec identification</td>
+            <td class="pkg">pos_hr · pos_hr_restaurant</td>
+          </tr>
+          <tr>
+            <td><b>Terminaux de paiement</b> — Stripe, Adyen, Viva, Mollie, Razorpay, Mercado Pago…</td>
+            <td class="pkg">pos_restaurant_stripe · pos_restaurant_adyen · …</td>
+          </tr>
+          <tr>
+            <td>Paiement en ligne, y compris sur la commande en libre-service</td>
+            <td class="pkg">pos_online_payment · pos_online_payment_self_order</td>
+          </tr>
+          <tr>
+            <td><b>Fidélité, bons de réduction, cartes cadeaux</b></td>
+            <td class="pkg">loyalty · pos_loyalty · pos_restaurant_loyalty</td>
+          </tr>
+          <tr>
+            <td>SMS depuis la caisse</td>
+            <td class="pkg">pos_sms · sms</td>
+          </tr>
+          <tr>
+            <td>Stock, achats, production, marge sur les ventes</td>
+            <td class="pkg">stock · purchase · mrp · pos_sale_margin</td>
+          </tr>
+          <tr>
+            <td><b>Temps de travail, pointage, congés</b></td>
+            <td class="pkg">hr_attendance · hr_timesheet · hr_holidays</td>
+          </tr>
+          <tr>
+            <td>Matériel et entretien préventif</td>
+            <td class="pkg">maintenance</td>
+          </tr>
+          <tr>
+            <td>Comptabilité et plan comptable suisse</td>
+            <td class="pkg">account · l10n_ch</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3>Ce que Megga ajoute par-dessus</h3>
+      <div class="prose">
+        <p>Le socle suisse — QR-facture SIX, import camt.053/054, paiements pain.001, décompte TVA
+          AFC, débranding — et les six modules du registre en tête de page. Plus deux briques du
+          socle qui servent aussi le restaurant : <code>megga_relances</code> (rappels d'impayés) et
+          <code>megga_pilotage</code> (balance âgée).</p>
+      </div>
+    </div>
+
+    <div>
+      <h3>Ce qui n'est pas dans le cœur</h3>
+      <div class="prose">
+        <p>Vérifié par absence dans <code>odoo/addons</code> : <code>appointment</code>,
+          <code>planning</code>, <code>account_followup</code>, <code>account_reports</code>,
+          <code>iot</code>, <code>documents</code>, <code>sign</code>, <code>studio</code>,
+          <code>helpdesk</code>, <code>quality</code>, <code>field_service</code>,
+          <code>approvals</code>, <code>marketing_automation</code>.</p>
+        <p><b>Megga en a déjà rebâti trois</b> : la prise de rendez-vous en ligne
+          (<code>megga_rdv</code>), les rappels d'impayés et la balance âgée. Reste, pour un
+          restaurant : le <b>planning des équipes</b>, et l'<b>IoT</b> pour le matériel de caisse.</p>
+      </div>
+    </div>
+
+    <p class="callout"><b>Une mise en garde sur les sources.</b> Les comparatifs « Community contre
+      Enterprise » que l'on trouve en ligne affirment couramment que la fidélité, les cartes cadeaux,
+      les terminaux de paiement et le plan de salle sont réservés à l'Enterprise. <b>C'est faux pour
+      la 19</b> : les quatre sont dans l'arbre, et cette page les nomme. La page d'éditions d'Odoo
+      elle-même présente <code>Planning</code>, <code>Appointments</code> et <code>IoT</code> comme
+      partagés, alors qu'aucun des trois n'y figure. En cas de doute, c'est le sous-module épinglé
+      qui fait foi — pas une page de marketing, celle d'Odoo comprise.</p>
   </section>
 
   <section id="manques">
@@ -837,8 +979,9 @@
     <ul class="gaps">
       <li><b>Aucun lien réservation ↔ ticket POS.</b> Pas de chiffre d'affaires par table réservée,
         pas de « la 102 est arrivée, ouvre sa commande ».</li>
-      <li><b>Aucun lien avec le stock ni les achats.</b> La liste de courses est un prévisionnel
-        imprimable : elle ne décrémente rien et n'engendre aucune commande fournisseur.</li>
+      <li><b>Aucun mouvement de stock, aucune commande fournisseur.</b> La liste de courses est un
+        prévisionnel imprimable, et l'écart matière se mesure par comptage périodique : ni l'un ni
+        l'autre ne décrémente quoi que ce soit ni n'engendre d'achat.</li>
       <li><b>Pas de statistiques resto.</b> Ni menu engineering, ni taux de remplissage, ni taux de
         non-présentation.</li>
       <li><b>Pas d'arrhes ni de pénalité.</b> Le non-venu est marqué, pas facturé.</li>
@@ -863,15 +1006,18 @@
         <div class="rank" aria-hidden="true">1</div>
         <div>
           <h3>L'écart matière — théorique contre réel</h3>
+          <p style="margin-bottom:0.6rem;">
+            <span class="tag tag-auto">Premier incrément livré</span>
+          </p>
           <p>Le seul chiffre qui rend un restaurant rentable. La caisse a vendu 42 entrecôtes, donc
             12.6 kg de viande sont théoriquement partis (0.300 × 42) ; l'inventaire en compte 14.8 de
             moins en chambre froide. L'écart — 2.2 kg, CHF 83.60 sur un service — c'est le gaspillage,
             les portions trop généreuses, la casse, parfois le vol. Personne ne le calcule à la main,
             et c'est ce que facturent les logiciels spécialisés au mois.</p>
-          <p class="built-on"><b>Se pose sur :</b> les fiches techniques (la consommation théorique)
-            et le POS (les volumes vendus). Il manque le milieu — décrémenter le stock à la vente et
-            un inventaire tournant. La verticale dentaire a déjà prouvé le savoir-faire stock : lots,
-            FEFO, péremption, sorties gardées.</p>
+          <p class="built-on"><b>Où ça en est :</b> livré (<code>megga_resto_ecart</code>, 23 tests
+            — voir la section ci-dessus), par comptage périodique plutôt que par mouvements de stock :
+            un restaurant qui ne compte pas ne tire rien d'un inventaire permanent. Reste à tirer les
+            <b>entrées des factures fournisseurs</b>, une fois l'usage installé.</p>
         </div>
       </article>
 
